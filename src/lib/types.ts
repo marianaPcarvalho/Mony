@@ -1,14 +1,22 @@
+export interface SubCategory {
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface Category {
   id: string;
   name: string;
   icon: string;
   color: string;
   monthlyBudget: number;
+  subCategories?: SubCategory[];
 }
 
 export interface Expense {
   id: string;
   categoryId: string;
+  subCategoryId?: string;
   amount: number;
   description: string;
   date: string; // ISO string
@@ -17,6 +25,7 @@ export interface Expense {
 export interface MonthlyConfig {
   month: string; // "YYYY-MM"
   salary: number;
+  budget: number; // separate monthly budget cap
 }
 
 export interface YearlyPlan {
@@ -27,6 +36,13 @@ export interface YearlyPlan {
   categoryId?: string;
 }
 
+export interface SavingsFundEntry {
+  id: string;
+  amount: number;
+  date: string; // ISO string
+  note?: string;
+}
+
 export interface SavingsGoal {
   id: string;
   name: string;
@@ -34,6 +50,9 @@ export interface SavingsGoal {
   currentAmount: number;
   icon: string;
   color: string;
+  targetDate?: string; // ISO date
+  fundHistory: SavingsFundEntry[];
+  monthlyContribution?: number;
 }
 
 export interface AppData {

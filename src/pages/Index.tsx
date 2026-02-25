@@ -8,21 +8,22 @@ import { ExpenseList } from "@/components/ExpenseList";
 import { CategoryManager } from "@/components/CategoryManager";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { YearlyPlanner } from "@/components/YearlyPlanner";
+import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, Calendar, PiggyBank, Settings2 } from "lucide-react";
+import { LayoutDashboard, Calendar, PiggyBank, Settings2, BarChart3 } from "lucide-react";
 
 const Index = () => {
   return (
     <StoreProvider>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <header className="border-b border-border bg-card sticky top-0 z-10">
           <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg budget-gradient flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg budget-gradient flex items-center justify-center" aria-hidden="true">
                 <span className="text-sm">💰</span>
               </div>
-              <h1 className="text-lg font-bold tracking-tight">BudgetFlow</h1>
+              <h1 className="text-lg font-bold tracking-tight text-foreground">BudgetFlow</h1>
             </div>
             <div className="flex items-center gap-3">
               <SalaryInput />
@@ -34,9 +35,12 @@ const Index = () => {
         {/* Main Content */}
         <main className="container max-w-6xl mx-auto px-4 py-6">
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="bg-muted/50 p-1">
+            <TabsList className="bg-muted p-1">
               <TabsTrigger value="dashboard" className="gap-1.5 text-xs">
                 <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="annual" className="gap-1.5 text-xs">
+                <BarChart3 className="h-3.5 w-3.5" /> Annual
               </TabsTrigger>
               <TabsTrigger value="yearly" className="gap-1.5 text-xs">
                 <Calendar className="h-3.5 w-3.5" /> Yearly Plan
@@ -56,6 +60,10 @@ const Index = () => {
                 <ExpenseList />
                 <CategoryBudgets />
               </div>
+            </TabsContent>
+
+            <TabsContent value="annual">
+              <AnnualDashboard />
             </TabsContent>
 
             <TabsContent value="yearly">
