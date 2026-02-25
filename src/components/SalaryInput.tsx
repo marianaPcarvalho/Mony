@@ -3,43 +3,63 @@ import { useStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Check } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { DollarSign, Check, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function SalaryInput() {
-  const { selectedMonth, getSalary, setSalary } = useStore();
-  const current = getSalary(selectedMonth);
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(String(current));
+  const { selectedMonth, getSalary, setSalary, getBudget, setBudget } = useStore();
+  const currentSalary = getSalary(selectedMonth);
+  const currentBudget = getBudget(selectedMonth);
+  const [open, setOpen] = useState(false);
+  const [salaryVal, setSalaryVal] = useState("");
+  const [budgetVal, setBudgetVal] = useState("");
 
-  const handleSave = () => {
-    setSalary(selectedMonth, parseFloat(value) || 0);
-    setEditing(false);
+  const handleOpen = () => {
+    setSalaryVal(String(currentSalary));
+    setBudgetVal(String(currentBudget));
+    setOpen(true);
   };
 
-  if (!editing) {
-    return (
-      <button onClick={() => { setValue(String(current)); setEditing(true); }}
-        className="text-left">
-        <Card className="glass-card p-3 flex items-center gap-3 hover:border-accent/50 transition-colors cursor-pointer">
-          <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
-            <DollarSign className="h-4 w-4 text-accent" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Monthly Salary</p>
-            <p className="font-mono font-bold text-sm">€{current.toLocaleString("en", { minimumFractionDigits: 2 })}</p>
-          </div>
-        </Card>
-      </button>
-    );
-  }
+  const handleSave = () => {
+    setSalary(selectedMonth, parseFloat(salaryVal) || 0);
+    setBudget(selectedMonth, parseFloat(budgetVal) || 0);
+    setOpen(false);
+  };
 
   return (
-    <Card className="glass-card p-3 flex items-center gap-2">
-      <Input type="number" value={value} onChange={e => setValue(e.target.value)} className="h-8 font-mono" autoFocus
-        onKeyDown={e => e.key === "Enter" && handleSave()} />
-      <Button size="icon" className="h-8 w-8 bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSave}>
-        <Check className="h-3.5 w-3.5" />
-      </Button>
-    </Card>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button onClick={handleOpen} className="text-left" aria-label="Edit salary and budget">
+          <Card className="glass-card p-2.5 flex items-center gap-2.5 hover:border-accent/50 transition-colors cursor-pointer">
+            <div className="h-7 w-7 rounded-lg bg-accent/10 flex items-center justify-center" aria-hidden="true">
+              <DollarSign className="h-3.5 w-3.5 text-accent" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground font-medium">Salary / Budget</p>
+              <p className="font-mono font-bold text-xs text-foreground">
+                €{currentSalary.toLocaleString("en", { minimumFractionDigits: 2 })} / €{(currentBudget || 0).toLocaleString("en", { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </Card>
+        </button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Monthly Salary &amp; Budget</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label htmlFor="salary-input">Monthly Salary (€)</Label>
+            <Input id="salary-input" type="number" min="0" step="0.01" inputMode="decimal" value={salaryVal} onChange={e => setSalaryVal(e.target.value)} placeholder="0.00" />
+            <p className="text-xs text-muted-foreground">Your total income for this month.</p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="budget-input">Monthly Budget (€)</Label>
+            <Input id="budget-input" type="number" min="0" step="0.01" inputMode="decimal" value={budgetVal} onChange={e => setBudgetVal(e.target.value)} placeholder="0.00" />
+            <p className="text-xs text-muted-foreground">Maximum you plan to spend this month (separate from salary).</p>
+          </div>
+          <Button onClick={handleSave} className="w-full">Save</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

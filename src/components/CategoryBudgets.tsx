@@ -20,12 +20,12 @@ export function CategoryBudgets() {
             <div key={cat.id} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2">
-                  <span>{cat.icon}</span>
-                  <span className="font-medium">{cat.name}</span>
+                  <span aria-hidden="true">{cat.icon}</span>
+                  <span className="font-medium text-foreground">{cat.name}</span>
                 </span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  <span className={over ? "text-destructive font-semibold" : ""}>€{cat.spent.toFixed(0)}</span>
-                  {" / "}€{cat.monthlyBudget.toFixed(0)}
+                <span className="font-mono text-xs">
+                  <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{cat.spent.toFixed(2)}</span>
+                  <span className="text-muted-foreground"> / €{cat.monthlyBudget.toFixed(2)}</span>
                 </span>
               </div>
               <Progress

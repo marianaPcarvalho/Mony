@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry } from "./types";
 
 const STORAGE_KEY = "budget-app-data";
 
 const defaultCategories: Category[] = [
-  { id: "1", name: "Housing", icon: "🏠", color: "hsl(var(--chart-1))", monthlyBudget: 800 },
-  { id: "2", name: "Food", icon: "🍕", color: "hsl(var(--chart-2))", monthlyBudget: 400 },
-  { id: "3", name: "Transport", icon: "🚗", color: "hsl(var(--chart-3))", monthlyBudget: 200 },
-  { id: "4", name: "Entertainment", icon: "🎬", color: "hsl(var(--chart-4))", monthlyBudget: 150 },
-  { id: "5", name: "Health", icon: "💊", color: "hsl(var(--chart-5))", monthlyBudget: 100 },
-  { id: "6", name: "Shopping", icon: "🛍️", color: "hsl(var(--chart-6))", monthlyBudget: 200 },
+  { id: "1", name: "Housing", icon: "🏠", color: "hsl(var(--chart-1))", monthlyBudget: 800, subCategories: [] },
+  { id: "2", name: "Food", icon: "🍕", color: "hsl(var(--chart-2))", monthlyBudget: 400, subCategories: [] },
+  { id: "3", name: "Transport", icon: "🚗", color: "hsl(var(--chart-3))", monthlyBudget: 200, subCategories: [] },
+  { id: "4", name: "Entertainment", icon: "🎬", color: "hsl(var(--chart-4))", monthlyBudget: 150, subCategories: [] },
+  { id: "5", name: "Health", icon: "💊", color: "hsl(var(--chart-5))", monthlyBudget: 100, subCategories: [] },
+  { id: "6", name: "Shopping", icon: "🛍️", color: "hsl(var(--chart-6))", monthlyBudget: 200, subCategories: [] },
 ];
 
 const currentMonth = () => {
@@ -20,7 +20,7 @@ const currentMonth = () => {
 const defaultData: AppData = {
   categories: defaultCategories,
   expenses: [],
-  monthlyConfigs: [{ month: currentMonth(), salary: 3000 }],
+  monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
 };
@@ -28,7 +28,31 @@ const defaultData: AppData = {
 function loadData(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Migration: ensure new fields exist
+      if (parsed.monthlyConfigs) {
+        parsed.monthlyConfigs = parsed.monthlyConfigs.map((mc: any) => ({
+          ...mc,
+          budget: mc.budget ?? 0,
+        }));
+      }
+      if (parsed.savingsGoals) {
+        parsed.savingsGoals = parsed.savingsGoals.map((sg: any) => ({
+          ...sg,
+          fundHistory: sg.fundHistory ?? [],
+          targetDate: sg.targetDate ?? undefined,
+          monthlyContribution: sg.monthlyContribution ?? undefined,
+        }));
+      }
+      if (parsed.categories) {
+        parsed.categories = parsed.categories.map((c: any) => ({
+          ...c,
+          subCategories: c.subCategories ?? [],
+        }));
+      }
+      return parsed;
+    }
   } catch {}
   return defaultData;
 }
@@ -41,22 +65,37 @@ interface StoreContextType {
   data: AppData;
   selectedMonth: string;
   setSelectedMonth: (m: string) => void;
+  // Categories
   addCategory: (c: Omit<Category, "id">) => void;
   updateCategory: (c: Category) => void;
   deleteCategory: (id: string) => void;
+  addSubCategory: (categoryId: string, sub: Omit<SubCategory, "id">) => void;
+  deleteSubCategory: (categoryId: string, subId: string) => void;
+  // Expenses
   addExpense: (e: Omit<Expense, "id">) => void;
+  updateExpense: (e: Expense) => void;
   deleteExpense: (id: string) => void;
+  // Monthly config
   setSalary: (month: string, salary: number) => void;
   getSalary: (month: string) => number;
+  setBudget: (month: string, budget: number) => void;
+  getBudget: (month: string) => number;
+  getMonthConfig: (month: string) => MonthlyConfig;
+  // Yearly plans
   addYearlyPlan: (p: Omit<YearlyPlan, "id">) => void;
+  updateYearlyPlan: (p: YearlyPlan) => void;
   deleteYearlyPlan: (id: string) => void;
+  // Savings
   addSavingsGoal: (g: Omit<SavingsGoal, "id">) => void;
   updateSavingsGoal: (g: SavingsGoal) => void;
   deleteSavingsGoal: (id: string) => void;
+  addFundsToGoal: (goalId: string, amount: number, note?: string) => void;
+  // Computed
   getMonthExpenses: (month: string) => Expense[];
   getCategorySpent: (categoryId: string, month: string) => number;
   getTotalSpent: (month: string) => number;
   getTotalBudget: () => number;
+  getTotalSavingsMonthly: () => number;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -73,39 +112,88 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const uid = () => crypto.randomUUID();
 
+  // Categories
   const addCategory = (c: Omit<Category, "id">) =>
-    update(d => ({ ...d, categories: [...d.categories, { ...c, id: uid() }] }));
+    update(d => ({ ...d, categories: [...d.categories, { ...c, id: uid(), subCategories: c.subCategories ?? [] }] }));
   const updateCategory = (c: Category) =>
     update(d => ({ ...d, categories: d.categories.map(x => x.id === c.id ? c : x) }));
   const deleteCategory = (id: string) =>
     update(d => ({ ...d, categories: d.categories.filter(x => x.id !== id) }));
+  const addSubCategory = (categoryId: string, sub: Omit<SubCategory, "id">) =>
+    update(d => ({
+      ...d,
+      categories: d.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, subCategories: [...(c.subCategories ?? []), { ...sub, id: uid() }] }
+          : c
+      ),
+    }));
+  const deleteSubCategory = (categoryId: string, subId: string) =>
+    update(d => ({
+      ...d,
+      categories: d.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, subCategories: (c.subCategories ?? []).filter(s => s.id !== subId) }
+          : c
+      ),
+    }));
 
+  // Expenses
   const addExpense = (e: Omit<Expense, "id">) =>
     update(d => ({ ...d, expenses: [...d.expenses, { ...e, id: uid() }] }));
+  const updateExpense = (e: Expense) =>
+    update(d => ({ ...d, expenses: d.expenses.map(x => x.id === e.id ? e : x) }));
   const deleteExpense = (id: string) =>
     update(d => ({ ...d, expenses: d.expenses.filter(x => x.id !== id) }));
 
+  // Monthly config
+  const getMonthConfig = (month: string): MonthlyConfig =>
+    data.monthlyConfigs.find(m => m.month === month) ?? { month, salary: 0, budget: 0 };
   const setSalary = (month: string, salary: number) =>
     update(d => {
       const existing = d.monthlyConfigs.find(m => m.month === month);
       if (existing) return { ...d, monthlyConfigs: d.monthlyConfigs.map(m => m.month === month ? { ...m, salary } : m) };
-      return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary }] };
+      return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary, budget: 0 }] };
     });
-  const getSalary = (month: string) =>
-    data.monthlyConfigs.find(m => m.month === month)?.salary ?? 0;
+  const getSalary = (month: string) => getMonthConfig(month).salary;
+  const setBudget = (month: string, budget: number) =>
+    update(d => {
+      const existing = d.monthlyConfigs.find(m => m.month === month);
+      if (existing) return { ...d, monthlyConfigs: d.monthlyConfigs.map(m => m.month === month ? { ...m, budget } : m) };
+      return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary: 0, budget }] };
+    });
+  const getBudget = (month: string) => getMonthConfig(month).budget;
 
+  // Yearly plans
   const addYearlyPlan = (p: Omit<YearlyPlan, "id">) =>
     update(d => ({ ...d, yearlyPlans: [...d.yearlyPlans, { ...p, id: uid() }] }));
+  const updateYearlyPlan = (p: YearlyPlan) =>
+    update(d => ({ ...d, yearlyPlans: d.yearlyPlans.map(x => x.id === p.id ? p : x) }));
   const deleteYearlyPlan = (id: string) =>
     update(d => ({ ...d, yearlyPlans: d.yearlyPlans.filter(x => x.id !== id) }));
 
+  // Savings
   const addSavingsGoal = (g: Omit<SavingsGoal, "id">) =>
-    update(d => ({ ...d, savingsGoals: [...d.savingsGoals, { ...g, id: uid() }] }));
+    update(d => ({ ...d, savingsGoals: [...d.savingsGoals, { ...g, id: uid(), fundHistory: g.fundHistory ?? [] }] }));
   const updateSavingsGoal = (g: SavingsGoal) =>
     update(d => ({ ...d, savingsGoals: d.savingsGoals.map(x => x.id === g.id ? g : x) }));
   const deleteSavingsGoal = (id: string) =>
     update(d => ({ ...d, savingsGoals: d.savingsGoals.filter(x => x.id !== id) }));
+  const addFundsToGoal = (goalId: string, amount: number, note?: string) =>
+    update(d => ({
+      ...d,
+      savingsGoals: d.savingsGoals.map(g =>
+        g.id === goalId
+          ? {
+              ...g,
+              currentAmount: g.currentAmount + amount,
+              fundHistory: [...(g.fundHistory ?? []), { id: uid(), amount, date: new Date().toISOString(), note }],
+            }
+          : g
+      ),
+    }));
 
+  // Computed
   const getMonthExpenses = (month: string) =>
     data.expenses.filter(e => e.date.startsWith(month));
   const getCategorySpent = (categoryId: string, month: string) =>
@@ -114,16 +202,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     getMonthExpenses(month).reduce((s, e) => s + e.amount, 0);
   const getTotalBudget = () =>
     data.categories.reduce((s, c) => s + c.monthlyBudget, 0);
+  const getTotalSavingsMonthly = () =>
+    data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
 
   return (
     <StoreContext.Provider value={{
       data, selectedMonth, setSelectedMonth,
-      addCategory, updateCategory, deleteCategory,
-      addExpense, deleteExpense,
-      setSalary, getSalary,
-      addYearlyPlan, deleteYearlyPlan,
-      addSavingsGoal, updateSavingsGoal, deleteSavingsGoal,
-      getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
+      addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory,
+      addExpense, updateExpense, deleteExpense,
+      setSalary, getSalary, setBudget, getBudget, getMonthConfig,
+      addYearlyPlan, updateYearlyPlan, deleteYearlyPlan,
+      addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
+      getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget, getTotalSavingsMonthly,
     }}>
       {children}
     </StoreContext.Provider>
