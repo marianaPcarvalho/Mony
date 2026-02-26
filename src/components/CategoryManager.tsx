@@ -7,7 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Settings2, ChevronDown, ChevronRight } from "lucide-react";
 
-const ICONS = ["🏠", "🍕", "🚗", "🎬", "💊", "🛍️", "📱", "✈️", "📚", "💡", "🏋️", "🎮", "👶", "🐕", "💰", "🎵", "🔧", "🧾"];
+const ICONS = [
+  "🏠", "🍕", "🚗", "🎬", "💊", "🛍️", "📱", "✈️", "📚", "💡", "🏋️", "🎮",
+  "👶", "🐕", "💰", "🎵", "🔧", "🧾", "☕", "🎨", "🏥", "🎁", "💇", "🧹",
+  "📮", "🎓", "🍺", "🏊", "⛽", "🅿️", "🛒", "🏦", "💳", "🎯", "🏖️", "💍",
+  "🧳", "🎤", "🖥️", "📷", "🧴", "🪴", "🐈", "🦷", "👕", "🎂",
+];
 
 export function CategoryManager() {
   const { data, addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory } = useStore();
@@ -36,6 +41,10 @@ export function CategoryManager() {
     resetForm();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSave();
+  };
+
   const handleEdit = (id: string) => {
     const cat = data.categories.find(c => c.id === id);
     if (!cat) return;
@@ -54,6 +63,10 @@ export function CategoryManager() {
     setSubIcon("📦");
   };
 
+  const handleSubKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleAddSub();
+  };
+
   return (
     <Card className="glass-card p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -69,10 +82,10 @@ export function CategoryManager() {
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label>Icon</Label>
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Select icon">
+                <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto" role="radiogroup" aria-label="Select icon">
                   {ICONS.map(i => (
                     <button key={i} onClick={() => setIcon(i)} role="radio" aria-checked={icon === i} aria-label={`Icon ${i}`}
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg transition-colors ${icon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${icon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
                       {i}
                     </button>
                   ))}
@@ -80,11 +93,11 @@ export function CategoryManager() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cat-name">Name</Label>
-                <Input id="cat-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Groceries" />
+                <Input id="cat-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., Groceries" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cat-budget">Monthly Budget (€)</Label>
-                <Input id="cat-budget" type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={e => setBudget(e.target.value)} placeholder="0.00" />
+                <Input id="cat-budget" type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={e => setBudget(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
               </div>
               <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Create"} Category</Button>
             </div>
@@ -99,11 +112,11 @@ export function CategoryManager() {
           return (
             <div key={cat.id} className="rounded-lg border border-border/50 overflow-hidden">
               <div className="flex items-center justify-between p-3 bg-muted/30 group">
-                <button className="flex items-center gap-2.5 text-left flex-1" onClick={() => setExpandedCat(isExpanded ? null : cat.id)} aria-expanded={isExpanded} aria-label={`${cat.name} category, ${subs.length} sub-categories`}>
+                <button className="flex items-center gap-2.5 text-left flex-1" onClick={() => setExpandedCat(isExpanded ? null : cat.id)} aria-expanded={isExpanded}>
                   {subs.length > 0 ? (isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />) : <span className="w-3.5" />}
                   <span className="text-lg" aria-hidden="true">{cat.icon}</span>
                   <div>
-                    <p className="text-sm font-medium leading-tight">{cat.name}</p>
+                    <p className="text-sm font-medium leading-tight text-foreground">{cat.name}</p>
                     <p className="text-xs text-muted-foreground font-mono">€{cat.monthlyBudget.toFixed(2)}/mo</p>
                   </div>
                 </button>
@@ -125,7 +138,7 @@ export function CategoryManager() {
                     <div key={sub.id} className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/30 transition-colors group/sub">
                       <div className="flex items-center gap-2">
                         <span className="text-sm" aria-hidden="true">{sub.icon}</span>
-                        <span className="text-sm">{sub.name}</span>
+                        <span className="text-sm text-foreground">{sub.name}</span>
                       </div>
                       <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover/sub:opacity-100" onClick={() => deleteSubCategory(cat.id, sub.id)} aria-label={`Delete ${sub.name}`}>
                         <Trash2 className="h-3 w-3" />
@@ -144,17 +157,16 @@ export function CategoryManager() {
         })}
       </div>
 
-      {/* Sub-category dialog */}
       <Dialog open={subOpen} onOpenChange={setSubOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Add Sub-category</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label>Icon</Label>
-              <div className="flex flex-wrap gap-2" role="radiogroup">
-                {ICONS.slice(0, 12).map(i => (
+              <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto" role="radiogroup">
+                {ICONS.slice(0, 24).map(i => (
                   <button key={i} onClick={() => setSubIcon(i)} role="radio" aria-checked={subIcon === i}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg transition-colors ${subIcon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${subIcon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
                     {i}
                   </button>
                 ))}
@@ -162,7 +174,7 @@ export function CategoryManager() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="sub-name">Name</Label>
-              <Input id="sub-name" value={subName} onChange={e => setSubName(e.target.value)} placeholder="e.g., Rent, Utilities" />
+              <Input id="sub-name" value={subName} onChange={e => setSubName(e.target.value)} onKeyDown={handleSubKeyDown} placeholder="e.g., Rent, Utilities" />
             </div>
             <Button onClick={handleAddSub} className="w-full">Add Sub-category</Button>
           </div>
