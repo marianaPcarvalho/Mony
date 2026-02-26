@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, History, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, History, ChevronDown, ChevronRight, Settings2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const ICONS = ["🏠", "🚗", "✈️", "🎓", "💍", "🏖️", "📱", "💰", "🎯"];
+const ICONS = [
+  "🏠", "🚗", "✈️", "🎓", "💍", "🏖️", "📱", "💰", "🎯",
+  "🏦", "🧳", "🛋️", "👶", "💻", "🎮", "🏋️", "🐕", "🎁",
+];
 
 export function SavingsGoals() {
   const { data, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal } = useStore();
@@ -34,7 +37,7 @@ export function SavingsGoals() {
       icon,
       targetAmount: parseFloat(target),
       currentAmount: parseFloat(current || "0"),
-      color: "hsl(var(--accent))",
+      color: "hsl(var(--savings))",
       targetDate: targetDate || undefined,
       monthlyContribution: parseFloat(monthlyContrib) || undefined,
       fundHistory: [] as any[],
@@ -47,6 +50,10 @@ export function SavingsGoals() {
     }
     setOpen(false);
     resetForm();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSave();
   };
 
   const handleEdit = (goal: typeof data.savingsGoals[0]) => {
@@ -68,12 +75,16 @@ export function SavingsGoals() {
     setAddFundNote("");
   };
 
+  const handleFundKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleAddFunds();
+  };
+
   const daysUntil = (dateStr: string) => {
     const diff = new Date(dateStr).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  const totalMonthlySavings = data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
+  const totalPlannedMonthly = data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
   const totalSaved = data.savingsGoals.reduce((s, g) => s + g.currentAmount, 0);
   const totalTarget = data.savingsGoals.reduce((s, g) => s + g.targetAmount, 0);
 
@@ -84,11 +95,11 @@ export function SavingsGoals() {
           <h3 className="section-title">Savings Goals</h3>
           <div className="flex gap-4 mt-1">
             <p className="text-xs text-muted-foreground font-mono">
-              Total saved: <span className="font-semibold text-accent">€{totalSaved.toLocaleString("en", { minimumFractionDigits: 2 })}</span> / €{totalTarget.toLocaleString("en", { minimumFractionDigits: 2 })}
+              Saved: <span className="font-semibold text-[hsl(var(--savings))]">€{totalSaved.toLocaleString("en", { minimumFractionDigits: 2 })}</span> / €{totalTarget.toLocaleString("en", { minimumFractionDigits: 2 })}
             </p>
-            {totalMonthlySavings > 0 && (
+            {totalPlannedMonthly > 0 && (
               <p className="text-xs text-muted-foreground font-mono">
-                Monthly: <span className="font-semibold">€{totalMonthlySavings.toFixed(2)}</span>
+                Planned: <span className="font-semibold text-foreground">€{totalPlannedMonthly.toFixed(2)}</span>/mo
               </p>
             )}
           </div>
@@ -104,10 +115,10 @@ export function SavingsGoals() {
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label>Icon</Label>
-                <div className="flex flex-wrap gap-2" role="radiogroup">
+                <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto" role="radiogroup">
                   {ICONS.map(i => (
                     <button key={i} onClick={() => setIcon(i)} role="radio" aria-checked={icon === i}
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg transition-colors ${icon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${icon === i ? "bg-[hsl(var(--savings))]/15 ring-2 ring-[hsl(var(--savings))]" : "bg-muted hover:bg-muted/80"}`}>
                       {i}
                     </button>
                   ))}
@@ -115,26 +126,27 @@ export function SavingsGoals() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="goal-name">Name</Label>
-                <Input id="goal-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., House Down Payment" />
+                <Input id="goal-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., House Down Payment" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="goal-target">Target Amount (€)</Label>
-                  <Input id="goal-target" type="number" min="0" step="0.01" inputMode="decimal" value={target} onChange={e => setTarget(e.target.value)} placeholder="0.00" />
+                  <Input id="goal-target" type="number" min="0" step="0.01" inputMode="decimal" value={target} onChange={e => setTarget(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="goal-current">Current Savings (€)</Label>
-                  <Input id="goal-current" type="number" min="0" step="0.01" inputMode="decimal" value={current} onChange={e => setCurrent(e.target.value)} placeholder="0.00" />
+                  <Input id="goal-current" type="number" min="0" step="0.01" inputMode="decimal" value={current} onChange={e => setCurrent(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="goal-date">Target Date</Label>
-                  <Input id="goal-date" type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} />
+                  <Input id="goal-date" type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} onKeyDown={handleKeyDown} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="goal-monthly">Monthly Contribution (€)</Label>
-                  <Input id="goal-monthly" type="number" min="0" step="0.01" inputMode="decimal" value={monthlyContrib} onChange={e => setMonthlyContrib(e.target.value)} placeholder="0.00" />
+                  <Label htmlFor="goal-monthly">Planned Monthly (€)</Label>
+                  <Input id="goal-monthly" type="number" min="0" step="0.01" inputMode="decimal" value={monthlyContrib} onChange={e => setMonthlyContrib(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
+                  <p className="text-[10px] text-muted-foreground">Target only — add funds manually each month.</p>
                 </div>
               </div>
               <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Create"} Goal</Button>
@@ -155,29 +167,29 @@ export function SavingsGoals() {
                   <div className="flex items-center gap-2.5">
                     <span className="text-2xl" aria-hidden="true">{goal.icon}</span>
                     <div>
-                      <p className="font-medium text-sm">{goal.name}</p>
+                      <p className="font-medium text-sm text-foreground">{goal.name}</p>
                       <p className="text-xs text-muted-foreground font-mono">
                         €{goal.currentAmount.toLocaleString("en", { minimumFractionDigits: 2 })} / €{goal.targetAmount.toLocaleString("en", { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-bold font-mono text-accent">{pct.toFixed(0)}%</span>
+                    <span className="text-sm font-bold font-mono text-[hsl(var(--savings))]">{pct.toFixed(0)}%</span>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(goal)} aria-label="Edit goal">
-                      <Settings2Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteSavingsGoal(goal.id)} aria-label="Delete goal">
                       <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                   </div>
                 </div>
-                <Progress value={pct} className="h-2.5" />
+                <Progress value={pct} className="h-2.5" style={{ ["--progress-color" as string]: "hsl(var(--savings))" }} />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex gap-3">
                     {goal.targetDate && (
-                      <span>{daysUntil(goal.targetDate)} days left · {new Date(goal.targetDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                      <span className="text-foreground">{daysUntil(goal.targetDate)} days left · {new Date(goal.targetDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     )}
-                    {goal.monthlyContribution && <span>€{goal.monthlyContribution.toFixed(2)}/mo</span>}
+                    {goal.monthlyContribution && <span>Planned: €{goal.monthlyContribution.toFixed(2)}/mo</span>}
                   </div>
                   <div className="flex gap-1.5">
                     <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => setFundDialogGoalId(goal.id)}>
@@ -197,15 +209,15 @@ export function SavingsGoals() {
                       {history.slice().reverse().map(entry => (
                         <div key={entry.id} className="flex items-center justify-between text-xs py-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-accent font-mono font-semibold">+€{entry.amount.toFixed(2)}</span>
-                            {entry.note && <span className="text-muted-foreground">{entry.note}</span>}
+                            <span className="text-[hsl(var(--savings))] font-mono font-semibold">+€{entry.amount.toFixed(2)}</span>
+                            {entry.note && <span className="text-foreground">{entry.note}</span>}
                           </div>
                           <span className="text-muted-foreground">{new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground text-center py-2">No fund history yet.</p>
+                    <p className="text-xs text-muted-foreground text-center py-2">No fund entries yet. Add funds to start tracking!</p>
                   )}
                 </div>
               )}
@@ -217,31 +229,22 @@ export function SavingsGoals() {
         )}
       </div>
 
-      {/* Add Funds Dialog */}
       <Dialog open={!!fundDialogGoalId} onOpenChange={(v) => { if (!v) setFundDialogGoalId(null); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Add Funds</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label htmlFor="fund-amount">Amount (€)</Label>
-              <Input id="fund-amount" type="number" min="0" step="0.01" inputMode="decimal" value={addFundAmt} onChange={e => setAddFundAmt(e.target.value)} placeholder="0.00" />
+              <Input id="fund-amount" type="number" min="0" step="0.01" inputMode="decimal" value={addFundAmt} onChange={e => setAddFundAmt(e.target.value)} onKeyDown={handleFundKeyDown} placeholder="0.00" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fund-note">Note (optional)</Label>
-              <Input id="fund-note" value={addFundNote} onChange={e => setAddFundNote(e.target.value)} placeholder="e.g., Bonus from work" />
+              <Input id="fund-note" value={addFundNote} onChange={e => setAddFundNote(e.target.value)} onKeyDown={handleFundKeyDown} placeholder="e.g., Bonus from work" />
             </div>
             <Button onClick={handleAddFunds} className="w-full">Add Funds</Button>
           </div>
         </DialogContent>
       </Dialog>
     </Card>
-  );
-}
-
-function Settings2Icon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
-    </svg>
   );
 }

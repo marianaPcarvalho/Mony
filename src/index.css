@@ -22,25 +22,34 @@
     --secondary-foreground: 220 30% 15%;
 
     --muted: 220 14% 92%;
-    --muted-foreground: 220 10% 40%;
+    --muted-foreground: 220 12% 35%;
 
-    --accent: 168 55% 38%;
+    --accent: 168 55% 32%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 68% 50%;
+    --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 38 92% 12%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 38 95% 10%;
 
-    --success: 152 55% 36%;
+    --success: 152 60% 30%;
     --success-foreground: 0 0% 100%;
 
-    --info: 210 70% 50%;
+    --info: 210 70% 45%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 14% 86%;
-    --input: 220 14% 86%;
+    --savings: 265 50% 48%;
+    --savings-foreground: 0 0% 100%;
+
+    --housing: 24 80% 48%;
+    --housing-foreground: 0 0% 100%;
+
+    --budget-bar: 220 55% 65%;
+    --spent-bar: 0 65% 52%;
+
+    --border: 220 14% 82%;
+    --input: 220 14% 82%;
     --ring: 220 55% 28%;
 
     --radius: 0.625rem;
@@ -54,12 +63,12 @@
     --sidebar-border: 220 20% 22%;
     --sidebar-ring: 168 55% 45%;
 
-    --chart-1: 168 55% 38%;
+    --chart-1: 168 55% 32%;
     --chart-2: 220 55% 50%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 340 60% 50%;
-    --chart-5: 270 45% 50%;
-    --chart-6: 16 75% 50%;
+    --chart-3: 38 92% 45%;
+    --chart-4: 340 60% 45%;
+    --chart-5: 270 50% 48%;
+    --chart-6: 16 75% 48%;
   }
 }
 

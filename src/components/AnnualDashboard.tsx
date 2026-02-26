@@ -6,34 +6,35 @@ import {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const COLORS = [
-  "hsl(168, 55%, 38%)",
+  "hsl(24, 80%, 48%)",
   "hsl(220, 55%, 50%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(340, 60%, 50%)",
-  "hsl(270, 45%, 50%)",
-  "hsl(16, 75%, 50%)",
+  "hsl(38, 92%, 45%)",
+  "hsl(340, 60%, 45%)",
+  "hsl(270, 50%, 48%)",
+  "hsl(16, 75%, 48%)",
 ];
 
 export function AnnualDashboard() {
-  const { data, getCategorySpent, getSalary, getBudget, getTotalSpent, getTotalSavingsMonthly } = useStore();
+  const { data, getCategorySpent, getSalary, getBudget, getTotalSpent, getPlannedMonthlySavings, getActualSavedInMonth } = useStore();
   const year = new Date().getFullYear();
-  const monthlySavings = getTotalSavingsMonthly();
+  const plannedMonthlySavings = getPlannedMonthlySavings();
 
-  // Monthly overview data
   const monthlyData = MONTHS.map((name, idx) => {
     const month = `${year}-${String(idx + 1).padStart(2, "0")}`;
     const salary = getSalary(month);
+    const budget = getBudget(month);
     const spent = getTotalSpent(month);
-    const planned = data.yearlyPlans.filter(p => p.month === idx).reduce((s, p) => s + p.amount, 0);
-    return { name, salary, spent, planned, savings: monthlySavings, remaining: salary - spent - monthlySavings };
+    const budgeted = data.yearlyPlans.filter(p => p.month === idx).reduce((s, p) => s + p.amount, 0);
+    const actualSaved = getActualSavedInMonth(month);
+    return { name, salary, budget, spent, budgeted, savings: actualSaved, remaining: (budget || salary) - spent };
   });
 
   const totalSpentYear = monthlyData.reduce((s, m) => s + m.spent, 0);
   const totalSalaryYear = monthlyData.reduce((s, m) => s + m.salary, 0);
-  const totalPlannedYear = monthlyData.reduce((s, m) => s + m.planned, 0);
-  const totalSavingsYear = monthlySavings * 12;
+  const totalBudgetedYear = monthlyData.reduce((s, m) => s + m.budgeted, 0);
+  const totalActualSaved = monthlyData.reduce((s, m) => s + m.savings, 0);
+  const totalPlannedSavings = plannedMonthlySavings * 12;
 
-  // Category breakdown for full year
   const categoryYearData = data.categories.map((c, i) => {
     const total = MONTHS.reduce((s, _, idx) => {
       const month = `${year}-${String(idx + 1).padStart(2, "0")}`;
@@ -46,8 +47,7 @@ export function AnnualDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card className="glass-card p-4 space-y-1">
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Total Income</p>
           <p className="text-lg font-bold font-mono text-foreground">{fmt(totalSalaryYear)}</p>
@@ -57,37 +57,39 @@ export function AnnualDashboard() {
           <p className="text-lg font-bold font-mono text-destructive">{fmt(totalSpentYear)}</p>
         </Card>
         <Card className="glass-card p-4 space-y-1">
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Total Savings</p>
-          <p className="text-lg font-bold font-mono text-accent">{fmt(totalSavingsYear)}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Actual Savings</p>
+          <p className="text-lg font-bold font-mono text-[hsl(var(--savings))]">{fmt(totalActualSaved)}</p>
         </Card>
         <Card className="glass-card p-4 space-y-1">
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Planned Expenses</p>
-          <p className="text-lg font-bold font-mono text-foreground">{fmt(totalPlannedYear)}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Planned Savings</p>
+          <p className="text-lg font-bold font-mono text-muted-foreground">{fmt(totalPlannedSavings)}</p>
+        </Card>
+        <Card className="glass-card p-4 space-y-1">
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Budgeted Expenses</p>
+          <p className="text-lg font-bold font-mono text-foreground">{fmt(totalBudgetedYear)}</p>
         </Card>
       </div>
 
-      {/* Monthly bar chart */}
       <Card className="glass-card p-5">
-        <h4 className="text-sm font-medium text-muted-foreground mb-4">Monthly Overview — {year}</h4>
+        <h4 className="text-sm font-medium text-foreground mb-4">Monthly Overview — {year}</h4>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={monthlyData} margin={{ left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 86%)" opacity={0.5} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(220, 10%, 40%)" }} />
-            <YAxis tick={{ fontSize: 11, fill: "hsl(220, 10%, 40%)" }} tickFormatter={(v) => `€${v}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 82%)" opacity={0.5} />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(220, 12%, 35%)" }} />
+            <YAxis tick={{ fontSize: 11, fill: "hsl(220, 12%, 35%)" }} tickFormatter={(v) => `€${v}`} />
             <Tooltip formatter={(value: number, name: string) => [`€${value.toFixed(2)}`, name]} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar dataKey="salary" fill="hsl(220, 55%, 50%)" radius={[4, 4, 0, 0]} barSize={16} name="Income" />
-            <Bar dataKey="spent" fill="hsl(0, 68%, 50%)" radius={[4, 4, 0, 0]} barSize={16} name="Spent" />
-            <Bar dataKey="savings" fill="hsl(168, 55%, 38%)" radius={[4, 4, 0, 0]} barSize={16} name="Savings" />
-            <Bar dataKey="planned" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} barSize={16} name="Planned" />
+            <Bar dataKey="salary" fill="hsl(220, 55%, 50%)" radius={[4, 4, 0, 0]} barSize={14} name="Income" />
+            <Bar dataKey="spent" fill="hsl(0, 65%, 52%)" radius={[4, 4, 0, 0]} barSize={14} name="Spent" />
+            <Bar dataKey="savings" fill="hsl(265, 50%, 48%)" radius={[4, 4, 0, 0]} barSize={14} name="Savings" />
+            <Bar dataKey="budgeted" fill="hsl(38, 92%, 45%)" radius={[4, 4, 0, 0]} barSize={14} name="Budgeted" />
           </BarChart>
         </ResponsiveContainer>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Category pie for the year */}
         <Card className="glass-card p-5">
-          <h4 className="text-sm font-medium text-muted-foreground mb-4">Annual Spending by Category</h4>
+          <h4 className="text-sm font-medium text-foreground mb-4">Annual Spending by Category</h4>
           {categoryYearData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={220}>
@@ -104,7 +106,7 @@ export function AnnualDashboard() {
                 {categoryYearData.map((d, i) => (
                   <div key={i} className="flex items-center gap-1.5 text-xs">
                     <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} aria-hidden="true" />
-                    <span className="text-foreground">{d.name}</span>
+                    <span className="text-foreground font-medium">{d.name}</span>
                     <span className="text-muted-foreground font-mono">€{d.value.toFixed(0)}</span>
                   </div>
                 ))}
@@ -115,9 +117,8 @@ export function AnnualDashboard() {
           )}
         </Card>
 
-        {/* Category yearly budget usage */}
         <Card className="glass-card p-5">
-          <h4 className="text-sm font-medium text-muted-foreground mb-4">Annual Budget Usage</h4>
+          <h4 className="text-sm font-medium text-foreground mb-4">Annual Budget Usage</h4>
           <div className="space-y-3">
             {data.categories.map((cat, i) => {
               const yearSpent = MONTHS.reduce((s, _, idx) => {
@@ -135,12 +136,12 @@ export function AnnualDashboard() {
                       <span className="font-medium text-foreground">{cat.name}</span>
                     </span>
                     <span className="font-mono">
-                      <span className={over ? "text-destructive font-bold" : "text-foreground"}>{fmt(yearSpent)}</span>
+                      <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>{fmt(yearSpent)}</span>
                       <span className="text-muted-foreground"> / {fmt(yearBudget)}</span>
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: over ? "hsl(0, 68%, 50%)" : COLORS[i % COLORS.length] }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: over ? "hsl(0, 65%, 52%)" : COLORS[i % COLORS.length] }} />
                   </div>
                 </div>
               );

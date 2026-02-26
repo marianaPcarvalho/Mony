@@ -1,6 +1,4 @@
 import { StoreProvider } from "@/lib/store";
-import { MonthSelector } from "@/components/MonthSelector";
-import { SalaryInput } from "@/components/SalaryInput";
 import { OverviewCards } from "@/components/OverviewCards";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { BudgetCharts } from "@/components/BudgetCharts";
@@ -9,6 +7,7 @@ import { CategoryManager } from "@/components/CategoryManager";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { YearlyPlanner } from "@/components/YearlyPlanner";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
+import { MonthSelector } from "@/components/MonthSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutDashboard, Calendar, PiggyBank, Settings2, BarChart3 } from "lucide-react";
 
@@ -16,7 +15,7 @@ const Index = () => {
   return (
     <StoreProvider>
       <div className="min-h-screen bg-background">
-        {/* Header */}
+        {/* Header - simplified */}
         <header className="border-b border-border bg-card sticky top-0 z-10">
           <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -24,10 +23,6 @@ const Index = () => {
                 <span className="text-sm">💰</span>
               </div>
               <h1 className="text-lg font-bold tracking-tight text-foreground">BudgetFlow</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <SalaryInput />
-              <MonthSelector />
             </div>
           </div>
         </header>
@@ -54,12 +49,11 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="dashboard" className="space-y-6">
+              <MonthSelector />
               <OverviewCards />
+              <ExpenseList />
               <BudgetCharts />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <ExpenseList />
-                <CategoryBudgets />
-              </div>
+              <CategoryBudgets />
             </TabsContent>
 
             <TabsContent value="annual">

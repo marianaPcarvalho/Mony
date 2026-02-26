@@ -4,7 +4,7 @@ import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, Sub
 const STORAGE_KEY = "budget-app-data";
 
 const defaultCategories: Category[] = [
-  { id: "1", name: "Housing", icon: "🏠", color: "hsl(var(--chart-1))", monthlyBudget: 800, subCategories: [] },
+  { id: "1", name: "Housing", icon: "🏠", color: "hsl(24, 80%, 48%)", monthlyBudget: 800, subCategories: [] },
   { id: "2", name: "Food", icon: "🍕", color: "hsl(var(--chart-2))", monthlyBudget: 400, subCategories: [] },
   { id: "3", name: "Transport", icon: "🚗", color: "hsl(var(--chart-3))", monthlyBudget: 200, subCategories: [] },
   { id: "4", name: "Entertainment", icon: "🎬", color: "hsl(var(--chart-4))", monthlyBudget: 150, subCategories: [] },
@@ -30,7 +30,6 @@ function loadData(): AppData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      // Migration: ensure new fields exist
       if (parsed.monthlyConfigs) {
         parsed.monthlyConfigs = parsed.monthlyConfigs.map((mc: any) => ({
           ...mc,
@@ -65,37 +64,33 @@ interface StoreContextType {
   data: AppData;
   selectedMonth: string;
   setSelectedMonth: (m: string) => void;
-  // Categories
   addCategory: (c: Omit<Category, "id">) => void;
   updateCategory: (c: Category) => void;
   deleteCategory: (id: string) => void;
   addSubCategory: (categoryId: string, sub: Omit<SubCategory, "id">) => void;
   deleteSubCategory: (categoryId: string, subId: string) => void;
-  // Expenses
   addExpense: (e: Omit<Expense, "id">) => void;
   updateExpense: (e: Expense) => void;
   deleteExpense: (id: string) => void;
-  // Monthly config
   setSalary: (month: string, salary: number) => void;
   getSalary: (month: string) => number;
   setBudget: (month: string, budget: number) => void;
   getBudget: (month: string) => number;
   getMonthConfig: (month: string) => MonthlyConfig;
-  // Yearly plans
   addYearlyPlan: (p: Omit<YearlyPlan, "id">) => void;
   updateYearlyPlan: (p: YearlyPlan) => void;
   deleteYearlyPlan: (id: string) => void;
-  // Savings
   addSavingsGoal: (g: Omit<SavingsGoal, "id">) => void;
   updateSavingsGoal: (g: SavingsGoal) => void;
   deleteSavingsGoal: (id: string) => void;
   addFundsToGoal: (goalId: string, amount: number, note?: string) => void;
-  // Computed
   getMonthExpenses: (month: string) => Expense[];
   getCategorySpent: (categoryId: string, month: string) => number;
   getTotalSpent: (month: string) => number;
   getTotalBudget: () => number;
-  getTotalSavingsMonthly: () => number;
+  getPlannedMonthlySavings: () => number;
+  getActualSavedTotal: () => number;
+  getActualSavedInMonth: (month: string) => number;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -112,7 +107,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const uid = () => crypto.randomUUID();
 
-  // Categories
   const addCategory = (c: Omit<Category, "id">) =>
     update(d => ({ ...d, categories: [...d.categories, { ...c, id: uid(), subCategories: c.subCategories ?? [] }] }));
   const updateCategory = (c: Category) =>
@@ -138,7 +132,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ),
     }));
 
-  // Expenses
   const addExpense = (e: Omit<Expense, "id">) =>
     update(d => ({ ...d, expenses: [...d.expenses, { ...e, id: uid() }] }));
   const updateExpense = (e: Expense) =>
@@ -146,7 +139,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteExpense = (id: string) =>
     update(d => ({ ...d, expenses: d.expenses.filter(x => x.id !== id) }));
 
-  // Monthly config
   const getMonthConfig = (month: string): MonthlyConfig =>
     data.monthlyConfigs.find(m => m.month === month) ?? { month, salary: 0, budget: 0 };
   const setSalary = (month: string, salary: number) =>
@@ -164,7 +156,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   const getBudget = (month: string) => getMonthConfig(month).budget;
 
-  // Yearly plans
   const addYearlyPlan = (p: Omit<YearlyPlan, "id">) =>
     update(d => ({ ...d, yearlyPlans: [...d.yearlyPlans, { ...p, id: uid() }] }));
   const updateYearlyPlan = (p: YearlyPlan) =>
@@ -172,7 +163,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteYearlyPlan = (id: string) =>
     update(d => ({ ...d, yearlyPlans: d.yearlyPlans.filter(x => x.id !== id) }));
 
-  // Savings
   const addSavingsGoal = (g: Omit<SavingsGoal, "id">) =>
     update(d => ({ ...d, savingsGoals: [...d.savingsGoals, { ...g, id: uid(), fundHistory: g.fundHistory ?? [] }] }));
   const updateSavingsGoal = (g: SavingsGoal) =>
@@ -193,7 +183,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ),
     }));
 
-  // Computed
   const getMonthExpenses = (month: string) =>
     data.expenses.filter(e => e.date.startsWith(month));
   const getCategorySpent = (categoryId: string, month: string) =>
@@ -202,8 +191,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     getMonthExpenses(month).reduce((s, e) => s + e.amount, 0);
   const getTotalBudget = () =>
     data.categories.reduce((s, c) => s + c.monthlyBudget, 0);
-  const getTotalSavingsMonthly = () =>
+  
+  // Planned monthly savings = sum of monthlyContribution across goals (just a target, not auto-applied)
+  const getPlannedMonthlySavings = () =>
     data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
+  
+  // Actual total saved across all goals (from fund entries only)
+  const getActualSavedTotal = () =>
+    data.savingsGoals.reduce((s, g) => s + g.currentAmount, 0);
+  
+  // Actual saved in a specific month (from fund entries dated in that month)
+  const getActualSavedInMonth = (month: string) =>
+    data.savingsGoals.reduce((s, g) => {
+      const monthFunds = (g.fundHistory ?? []).filter(f => f.date.startsWith(month));
+      return s + monthFunds.reduce((fs, f) => fs + f.amount, 0);
+    }, 0);
 
   return (
     <StoreContext.Provider value={{
@@ -213,7 +215,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setSalary, getSalary, setBudget, getBudget, getMonthConfig,
       addYearlyPlan, updateYearlyPlan, deleteYearlyPlan,
       addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
-      getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget, getTotalSavingsMonthly,
+      getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
+      getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
     }}>
       {children}
     </StoreContext.Provider>
