@@ -106,10 +106,10 @@ export function ExpenseList() {
             {subCategories.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="exp-subcategory">Sub-category</Label>
-                <Select value={subCatId} onValueChange={setSubCatId}>
+                <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
                   <SelectTrigger id="exp-subcategory"><SelectValue placeholder="(optional)" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {subCategories.map(s => (
                       <SelectItem key={s.id} value={s.id}>{s.icon} {s.name}</SelectItem>
                     ))}
