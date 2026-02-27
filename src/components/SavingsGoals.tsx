@@ -8,11 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Plus, Trash2, History, ChevronDown, ChevronRight, Settings2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const ICONS = [
-  "🏠", "🚗", "✈️", "🎓", "💍", "🏖️", "📱", "💰", "🎯",
-  "🏦", "🧳", "🛋️", "👶", "💻", "🎮", "🏋️", "🐕", "🎁",
-];
-
 export function SavingsGoals() {
   const { data, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal } = useStore();
   const [open, setOpen] = useState(false);
@@ -115,14 +110,16 @@ export function SavingsGoals() {
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label>Icon</Label>
-                <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto" role="radiogroup">
-                  {ICONS.map(i => (
-                    <button key={i} onClick={() => setIcon(i)} role="radio" aria-checked={icon === i}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${icon === i ? "bg-[hsl(var(--savings))]/15 ring-2 ring-[hsl(var(--savings))]" : "bg-muted hover:bg-muted/80"}`}>
-                      {i}
-                    </button>
-                  ))}
-                </div>
+                <Input
+                  value={icon}
+                  onChange={e => setIcon(e.target.value)}
+                  placeholder="Type or paste an emoji"
+                  className="text-2xl text-center h-12"
+                  maxLength={2}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Use your system emoji picker (⌘+⌃+Space on Mac, Win+. on Windows)
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="goal-name">Name</Label>

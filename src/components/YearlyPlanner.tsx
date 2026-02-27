@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Pencil } from "lucide-react";
 
@@ -12,7 +12,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const MONTH_FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export function YearlyPlanner() {
-  const { data, addYearlyPlan, updateYearlyPlan, deleteYearlyPlan, getPlannedMonthlySavings } = useStore();
+  const { data, addYearlyPlan, updateYearlyPlan, deleteYearlyPlan } = useStore();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -46,7 +46,11 @@ export function YearlyPlanner() {
     setOpen(true);
   };
 
-  const plannedSavings = getPlannedMonthlySavings();
+  const openAddForMonth = (monthIdx: number) => {
+    resetForm();
+    setMonth(String(monthIdx));
+    setOpen(true);
+  };
 
   const byMonth = MONTHS.map((mName, idx) => ({
     name: mName,
@@ -69,59 +73,19 @@ export function YearlyPlanner() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="section-title">Yearly Planner</h3>
-          <div className="flex gap-4 mt-1">
-            <p className="text-xs text-muted-foreground font-mono">
-              Budgeted expenses: <span className="font-semibold text-foreground">€{yearTotal.toLocaleString("en", { minimumFractionDigits: 2 })}</span>
-            </p>
-            {plannedSavings > 0 && (
-              <p className="text-xs text-muted-foreground font-mono">
-                Planned savings: <span className="font-semibold text-[hsl(var(--savings))]">€{(plannedSavings * 12).toLocaleString("en", { minimumFractionDigits: 2 })}</span>/yr
-              </p>
-            )}
-          </div>
+          <p className="text-xs text-muted-foreground font-mono mt-1">
+            Budgeted expenses: <span className="font-semibold text-foreground">€{yearTotal.toLocaleString("en", { minimumFractionDigits: 2 })}</span>
+          </p>
         </div>
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1.5 text-xs" aria-label="Add budgeted expense">
-              <Plus className="h-3.5 w-3.5" /> Plan
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Budgeted Expense</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="plan-desc">Description</Label>
-                <Input id="plan-desc" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., Car Insurance" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="plan-month">Month</Label>
-                <Select value={month} onValueChange={setMonth}>
-                  <SelectTrigger id="plan-month"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {MONTHS.map((m, i) => (
-                      <SelectItem key={i} value={String(i)}>{m}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="plan-amount">Amount (€)</Label>
-                <Input id="plan-amount" type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
-              </div>
-              <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Add"} Plan</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      {/* Month grid with events visible */}
+      {/* Month grid with +Plan inside each card */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
         {byMonth.map(m => {
           const isSelected = filterMonth === String(m.idx);
           return (
-            <button
+            <div
               key={m.idx}
-              onClick={() => setFilterMonth(isSelected ? "all" : String(m.idx))}
               className={`p-3 rounded-xl text-left space-y-1 transition-all border ${
                 isSelected
                   ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20"
@@ -130,27 +94,37 @@ export function YearlyPlanner() {
                     : "bg-muted/30 border-transparent hover:bg-muted/50"
               }`}
             >
-              <p className="text-xs font-semibold text-muted-foreground">{m.name}</p>
-              <p className="font-mono text-sm font-bold text-foreground">{m.total > 0 ? `€${m.total.toLocaleString()}` : "—"}</p>
-              {m.plans.length > 0 && (
-                <div className="space-y-0.5">
-                  {m.plans.slice(0, 2).map(p => (
-                    <p key={p.id} className="text-[10px] text-muted-foreground truncate">{p.name}</p>
-                  ))}
-                  {m.plans.length > 2 && (
-                    <p className="text-[10px] text-muted-foreground">+{m.plans.length - 2} more</p>
-                  )}
-                </div>
-              )}
-              {plannedSavings > 0 && (
-                <p className="font-mono text-[10px] text-[hsl(var(--savings))]">+€{plannedSavings.toFixed(0)} savings</p>
-              )}
-            </button>
+              <button
+                className="w-full text-left"
+                onClick={() => setFilterMonth(isSelected ? "all" : String(m.idx))}
+              >
+                <p className="text-xs font-semibold text-muted-foreground">{m.name}</p>
+                <p className="font-mono text-sm font-bold text-foreground">{m.total > 0 ? `€${m.total.toLocaleString()}` : "—"}</p>
+                {m.plans.length > 0 && (
+                  <div className="space-y-0.5">
+                    {m.plans.slice(0, 2).map(p => (
+                      <p key={p.id} className="text-[10px] text-muted-foreground truncate">{p.name}</p>
+                    ))}
+                    {m.plans.length > 2 && (
+                      <p className="text-[10px] text-muted-foreground">+{m.plans.length - 2} more</p>
+                    )}
+                  </div>
+                )}
+              </button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full h-6 text-[10px] gap-1 mt-1 text-muted-foreground hover:text-foreground"
+                onClick={(e) => { e.stopPropagation(); openAddForMonth(m.idx); }}
+              >
+                <Plus className="h-3 w-3" /> Plan
+              </Button>
+            </div>
           );
         })}
       </div>
 
-      {/* Selected month detail or all plans */}
+      {/* Plan list */}
       <div className="space-y-1.5 pt-2">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -182,10 +156,39 @@ export function YearlyPlanner() {
           ))
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
-            {selectedMonthData ? `No budgeted expenses for ${selectedMonthData.fullName}.` : "No budgeted expenses yet."}
+            {selectedMonthData ? `No budgeted expenses for ${selectedMonthData.fullName}.` : "No budgeted expenses yet. Click +Plan on any month to start!"}
           </p>
         )}
       </div>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Budgeted Expense</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="plan-desc">Description</Label>
+              <Input id="plan-desc" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., Car Insurance" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="plan-month">Month</Label>
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger id="plan-month"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map((m, i) => (
+                    <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="plan-amount">Amount (€)</Label>
+              <Input id="plan-amount" type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
+            </div>
+            <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Add"} Plan</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

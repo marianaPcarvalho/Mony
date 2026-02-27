@@ -7,13 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Settings2, ChevronDown, ChevronRight } from "lucide-react";
 
-const ICONS = [
-  "🏠", "🍕", "🚗", "🎬", "💊", "🛍️", "📱", "✈️", "📚", "💡", "🏋️", "🎮",
-  "👶", "🐕", "💰", "🎵", "🔧", "🧾", "☕", "🎨", "🏥", "🎁", "💇", "🧹",
-  "📮", "🎓", "🍺", "🏊", "⛽", "🅿️", "🛒", "🏦", "💳", "🎯", "🏖️", "💍",
-  "🧳", "🎤", "🖥️", "📷", "🧴", "🪴", "🐈", "🦷", "👕", "🎂",
-];
-
 export function CategoryManager() {
   const { data, addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory } = useStore();
   const [open, setOpen] = useState(false);
@@ -82,14 +75,16 @@ export function CategoryManager() {
             <div className="space-y-4 pt-2">
               <div className="space-y-2">
                 <Label>Icon</Label>
-                <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto" role="radiogroup" aria-label="Select icon">
-                  {ICONS.map(i => (
-                    <button key={i} onClick={() => setIcon(i)} role="radio" aria-checked={icon === i} aria-label={`Icon ${i}`}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${icon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
-                      {i}
-                    </button>
-                  ))}
-                </div>
+                <Input
+                  value={icon}
+                  onChange={e => setIcon(e.target.value)}
+                  placeholder="Type or paste an emoji"
+                  className="text-2xl text-center h-12"
+                  maxLength={2}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Press <kbd className="px-1 py-0.5 rounded bg-muted text-foreground text-[10px]">⌘</kbd> + <kbd className="px-1 py-0.5 rounded bg-muted text-foreground text-[10px]">⌃</kbd> + <kbd className="px-1 py-0.5 rounded bg-muted text-foreground text-[10px]">Space</kbd> (Mac) or <kbd className="px-1 py-0.5 rounded bg-muted text-foreground text-[10px]">Win</kbd> + <kbd className="px-1 py-0.5 rounded bg-muted text-foreground text-[10px]">.</kbd> (Windows) to open emoji picker
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cat-name">Name</Label>
@@ -163,14 +158,16 @@ export function CategoryManager() {
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
               <Label>Icon</Label>
-              <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto" role="radiogroup">
-                {ICONS.slice(0, 24).map(i => (
-                  <button key={i} onClick={() => setSubIcon(i)} role="radio" aria-checked={subIcon === i}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${subIcon === i ? "bg-accent/15 ring-2 ring-accent" : "bg-muted hover:bg-muted/80"}`}>
-                    {i}
-                  </button>
-                ))}
-              </div>
+              <Input
+                value={subIcon}
+                onChange={e => setSubIcon(e.target.value)}
+                placeholder="Type or paste an emoji"
+                className="text-2xl text-center h-12"
+                maxLength={2}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Use your system emoji picker to choose an icon
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="sub-name">Name</Label>

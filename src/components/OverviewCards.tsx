@@ -6,18 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TrendingUp, TrendingDown, Wallet, PiggyBank, Target, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function OverviewCards() {
-  const { selectedMonth, getSalary, setSalary, getBudget, setBudget, getTotalSpent, getTotalBudget, getPlannedMonthlySavings, getActualSavedInMonth } = useStore();
+  const { selectedMonth, getSalary, setSalary, getBudget, setBudget, getTotalSpent, getTotalBudget, getActualSavedTotal, data } = useStore();
   const salary = getSalary(selectedMonth);
   const monthlyBudget = getBudget(selectedMonth);
   const spent = getTotalSpent(selectedMonth);
-  const plannedSavings = getPlannedMonthlySavings();
-  const actualSaved = getActualSavedInMonth(selectedMonth);
+  const totalSaved = getActualSavedTotal();
   const categoryBudgets = getTotalBudget();
   const effectiveBudget = monthlyBudget || categoryBudgets;
   const remaining = effectiveBudget - spent;
-  const budgetUsed = effectiveBudget > 0 ? (spent / effectiveBudget) * 100 : 0;
 
   const [editOpen, setEditOpen] = useState(false);
   const [salaryVal, setSalaryVal] = useState("");
@@ -41,33 +40,38 @@ export function OverviewCards() {
 
   const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  // Find the active tab setter from parent - we'll use a workaround
+  const openSavingsTab = () => {
+    const savingsTab = document.querySelector('[data-value="savings"]') as HTMLButtonElement | null;
+    if (savingsTab) savingsTab.click();
+  };
+
   const cards = [
-    { label: "Salary", value: fmt(salary), icon: Wallet, accent: false, editable: true },
-    { label: "Monthly Budget", value: fmt(effectiveBudget), icon: Target, accent: false, editable: true },
+    { label: "Salary", value: fmt(salary), icon: Wallet, editable: true },
+    { label: "Monthly Budget", value: fmt(effectiveBudget), icon: Target, editable: true },
     { label: "Total Spent", value: fmt(spent), icon: TrendingDown, destructive: spent > effectiveBudget },
-    { label: "Planned Savings", value: fmt(plannedSavings), icon: PiggyBank, isSavings: true },
     { label: "Remaining", value: fmt(remaining), icon: TrendingUp, destructive: remaining < 0, success: remaining > 0 },
-    { label: "Budget Used", value: `${budgetUsed.toFixed(0)}%`, icon: Target, warning: budgetUsed > 70, destructive: budgetUsed > 90 },
+    { label: "Current Savings", value: fmt(totalSaved), icon: PiggyBank, isSavings: true, clickable: true },
   ];
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {cards.map((c) => (
           <Card
             key={c.label}
-            className={`glass-card p-4 space-y-1 ${c.editable ? "cursor-pointer hover:border-primary/30 transition-colors" : ""}`}
-            onClick={c.editable ? openEdit : undefined}
+            className={`glass-card p-4 space-y-1 ${c.editable || c.clickable ? "cursor-pointer hover:border-primary/30 transition-colors" : ""}`}
+            onClick={c.editable ? openEdit : c.clickable ? openSavingsTab : undefined}
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{c.label}</span>
               {c.editable ? (
                 <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               ) : (
-                <c.icon className={`h-4 w-4 ${c.destructive ? "text-destructive" : (c as any).warning ? "text-warning" : c.isSavings ? "text-[hsl(var(--savings))]" : c.accent ? "text-accent" : c.success ? "text-success" : "text-muted-foreground"}`} />
+                <c.icon className={`h-4 w-4 ${c.destructive ? "text-destructive" : c.isSavings ? "text-[hsl(var(--savings))]" : c.success ? "text-success" : "text-muted-foreground"}`} />
               )}
             </div>
-            <p className={`text-lg font-bold font-mono tracking-tight ${c.destructive ? "text-destructive" : c.isSavings ? "text-[hsl(var(--savings))]" : c.accent ? "text-accent" : c.success ? "text-success" : "text-foreground"}`}>
+            <p className={`text-lg font-bold font-mono tracking-tight ${c.destructive ? "text-destructive" : c.isSavings ? "text-[hsl(var(--savings))]" : c.success ? "text-success" : "text-foreground"}`}>
               {c.value}
             </p>
           </Card>
@@ -81,12 +85,10 @@ export function OverviewCards() {
             <div className="space-y-2">
               <Label htmlFor="ov-salary">Monthly Salary (€)</Label>
               <Input id="ov-salary" type="number" min="0" step="0.01" inputMode="decimal" value={salaryVal} onChange={e => setSalaryVal(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
-              <p className="text-xs text-muted-foreground">Your total income for this month.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="ov-budget">Monthly Budget (€)</Label>
               <Input id="ov-budget" type="number" min="0" step="0.01" inputMode="decimal" value={budgetVal} onChange={e => setBudgetVal(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
-              <p className="text-xs text-muted-foreground">Maximum you plan to spend this month.</p>
             </div>
             <Button onClick={handleSave} className="w-full">Save</Button>
           </div>
