@@ -8,7 +8,7 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank, Target, Pencil, Settings2 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function OverviewCards() {
+export function OverviewCards({ onOpenSavings }: { onOpenSavings?: () => void }) {
   const { selectedMonth, getSalary, setSalary, getBudget, setBudget, getTotalSpent, getTotalBudget, getActualSavedTotal, data, setMonthStartDay } = useStore();
   const salary = getSalary(selectedMonth);
   const monthlyBudget = getBudget(selectedMonth);
@@ -54,17 +54,12 @@ export function OverviewCards() {
 
   const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const openSavingsTab = () => {
-    const savingsTab = document.querySelector('[data-value="savings"]') as HTMLButtonElement | null;
-    if (savingsTab) savingsTab.click();
-  };
-
   const cards = [
     { label: "Salary", value: fmt(salary), icon: Wallet, onClick: openSalaryEdit, editable: true },
     { label: "Monthly Budget", value: fmt(effectiveBudget), icon: Target, onClick: openBudgetEdit, editable: true },
     { label: "Total Spent", value: fmt(spent), icon: TrendingDown, destructive: spent > effectiveBudget },
     { label: "Remaining", value: fmt(remaining), icon: TrendingUp, destructive: remaining < 0, success: remaining > 0 },
-    { label: "Current Savings", value: fmt(totalSaved), icon: PiggyBank, isSavings: true, onClick: openSavingsTab, clickable: true },
+    { label: "Current Savings", value: fmt(totalSaved), icon: PiggyBank, isSavings: true, onClick: onOpenSavings, clickable: true },
   ];
 
   const monthStartDay = data.monthStartDay ?? 1;

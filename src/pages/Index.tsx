@@ -9,10 +9,11 @@ import { YearlyPlanner } from "@/components/YearlyPlanner";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { MonthSelector } from "@/components/MonthSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, PiggyBank } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 const Index = () => {
   const [dashView, setDashView] = useState<"month" | "year">("month");
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <StoreProvider>
@@ -29,7 +30,7 @@ const Index = () => {
         </header>
 
         <main className="container max-w-6xl mx-auto px-4 py-6">
-          <Tabs defaultValue="dashboard" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-muted p-1">
               <TabsTrigger value="dashboard" className="gap-1.5 text-xs">
                 Dashboard
@@ -37,13 +38,9 @@ const Index = () => {
               <TabsTrigger value="yearly" className="gap-1.5 text-xs">
                 <Calendar className="h-3.5 w-3.5" /> Yearly Plan
               </TabsTrigger>
-              <TabsTrigger value="savings" className="gap-1.5 text-xs" data-value="savings">
-                <PiggyBank className="h-3.5 w-3.5" /> Savings
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard" className="space-y-6">
-              {/* View toggle + month selector row */}
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <div className="flex rounded-lg border border-border overflow-hidden">
@@ -66,7 +63,7 @@ const Index = () => {
 
               {dashView === "month" ? (
                 <>
-                  <OverviewCards />
+                  <OverviewCards onOpenSavings={() => setActiveTab("savings")} />
                   <ExpenseList />
                   <BudgetCharts />
                   <CategoryBudgets />
