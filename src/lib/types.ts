@@ -61,4 +61,5 @@ export interface AppData {
   monthlyConfigs: MonthlyConfig[];
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
+  monthStartDay?: number; // 1-28, day of month when budget cycle starts
 }
