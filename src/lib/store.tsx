@@ -91,6 +91,7 @@ interface StoreContextType {
   getPlannedMonthlySavings: () => number;
   getActualSavedTotal: () => number;
   getActualSavedInMonth: (month: string) => number;
+  setMonthStartDay: (day: number) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -183,8 +184,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ),
     }));
 
-  const getMonthExpenses = (month: string) =>
-    data.expenses.filter(e => e.date.startsWith(month));
+  const setMonthStartDay = (day: number) =>
+    update(d => ({ ...d, monthStartDay: day }));
+
+  const monthStartDay = data.monthStartDay ?? 1;
+
+  const getMonthExpenses = (month: string) => {
+    if (monthStartDay === 1) {
+      return data.expenses.filter(e => e.date.startsWith(month));
+    }
+    // Custom start day: month "2026-03" with startDay 25 means 2026-02-25 to 2026-03-24
+    const [year, mon] = month.split("-").map(Number);
+    const startDate = new Date(year, mon - 2, monthStartDay); // previous month's startDay
+    const endDate = new Date(year, mon - 1, monthStartDay - 1, 23, 59, 59); // current month's startDay - 1
+    return data.expenses.filter(e => {
+      const d = new Date(e.date);
+      return d >= startDate && d <= endDate;
+    });
+  };
+
   const getCategorySpent = (categoryId: string, month: string) =>
     getMonthExpenses(month).filter(e => e.categoryId === categoryId).reduce((s, e) => s + e.amount, 0);
   const getTotalSpent = (month: string) =>
@@ -192,15 +210,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const getTotalBudget = () =>
     data.categories.reduce((s, c) => s + c.monthlyBudget, 0);
   
-  // Planned monthly savings = sum of monthlyContribution across goals (just a target, not auto-applied)
   const getPlannedMonthlySavings = () =>
     data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
   
-  // Actual total saved across all goals (from fund entries only)
   const getActualSavedTotal = () =>
     data.savingsGoals.reduce((s, g) => s + g.currentAmount, 0);
   
-  // Actual saved in a specific month (from fund entries dated in that month)
   const getActualSavedInMonth = (month: string) =>
     data.savingsGoals.reduce((s, g) => {
       const monthFunds = (g.fundHistory ?? []).filter(f => f.date.startsWith(month));
@@ -217,6 +232,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
+      setMonthStartDay,
     }}>
       {children}
     </StoreContext.Provider>
