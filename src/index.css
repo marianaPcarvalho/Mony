@@ -6,69 +6,70 @@
 
 @layer base {
   :root {
-    --background: 220 16% 96%;
-    --foreground: 220 30% 10%;
+    /* Palette: f2e9dc cream, cfd11a lime, 648767 green, 79addc blue, 791e94 purple */
+    --background: 35 45% 91%;       /* f2e9dc cream */
+    --foreground: 285 67% 12%;      /* deep purple-near-black for contrast */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 30% 10%;
+    --card: 35 50% 97%;
+    --card-foreground: 285 67% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 10%;
+    --popover: 35 50% 97%;
+    --popover-foreground: 285 67% 12%;
 
-    --primary: 220 55% 28%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 285 67% 35%;         /* 791e94 purple */
+    --primary-foreground: 35 45% 96%;
 
-    --secondary: 220 14% 90%;
-    --secondary-foreground: 220 30% 15%;
+    --secondary: 35 35% 85%;
+    --secondary-foreground: 285 67% 18%;
 
-    --muted: 220 14% 92%;
-    --muted-foreground: 220 12% 35%;
+    --muted: 35 30% 87%;
+    --muted-foreground: 130 12% 30%;
 
-    --accent: 168 55% 32%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 130 16% 46%;          /* 648767 green */
+    --accent-foreground: 35 45% 96%;
 
-    --destructive: 0 72% 45%;
+    --destructive: 0 70% 42%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 45%;
-    --warning-foreground: 38 95% 10%;
+    --warning: 62 78% 40%;          /* derived from cfd11a */
+    --warning-foreground: 285 67% 12%;
 
-    --success: 152 60% 30%;
+    --success: 130 16% 38%;         /* darker green for AA contrast */
     --success-foreground: 0 0% 100%;
 
-    --info: 210 70% 45%;
+    --info: 205 57% 48%;            /* darker 79addc for contrast */
     --info-foreground: 0 0% 100%;
 
-    --savings: 265 50% 48%;
+    --savings: 285 67% 35%;         /* purple */
     --savings-foreground: 0 0% 100%;
 
-    --housing: 24 80% 48%;
-    --housing-foreground: 0 0% 100%;
+    --housing: 62 78% 32%;          /* lime, darkened */
+    --housing-foreground: 35 45% 96%;
 
-    --budget-bar: 220 55% 65%;
-    --spent-bar: 0 65% 52%;
+    --budget-bar: 205 57% 67%;      /* 79addc blue */
+    --spent-bar: 285 67% 42%;       /* purple */
 
-    --border: 220 14% 82%;
-    --input: 220 14% 82%;
-    --ring: 220 55% 28%;
+    --border: 35 25% 78%;
+    --input: 35 25% 78%;
+    --ring: 285 67% 35%;
 
     --radius: 0.625rem;
 
-    --sidebar-background: 220 25% 14%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 168 55% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 20%;
-    --sidebar-accent-foreground: 220 15% 85%;
-    --sidebar-border: 220 20% 22%;
-    --sidebar-ring: 168 55% 45%;
+    --sidebar-background: 285 67% 18%;
+    --sidebar-foreground: 35 45% 91%;
+    --sidebar-primary: 62 78% 46%;
+    --sidebar-primary-foreground: 285 67% 12%;
+    --sidebar-accent: 285 50% 26%;
+    --sidebar-accent-foreground: 35 45% 91%;
+    --sidebar-border: 285 50% 26%;
+    --sidebar-ring: 62 78% 46%;
 
-    --chart-1: 168 55% 32%;
-    --chart-2: 220 55% 50%;
-    --chart-3: 38 92% 45%;
-    --chart-4: 340 60% 45%;
-    --chart-5: 270 50% 48%;
-    --chart-6: 16 75% 48%;
+    --chart-1: 130 16% 46%;         /* green */
+    --chart-2: 205 57% 67%;         /* blue */
+    --chart-3: 62 78% 46%;          /* lime */
+    --chart-4: 285 67% 45%;         /* purple */
+    --chart-5: 130 25% 32%;         /* deep green */
+    --chart-6: 205 57% 40%;         /* deep blue */
   }
 }
 
