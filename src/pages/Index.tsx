@@ -1,88 +1,56 @@
 import { useState } from "react";
 import { StoreProvider } from "@/lib/store";
-import { OverviewCards } from "@/components/OverviewCards";
+import { HomeHero } from "@/components/HomeHero";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { BudgetCharts } from "@/components/BudgetCharts";
 import { ExpenseList } from "@/components/ExpenseList";
 import { SavingsGoals } from "@/components/SavingsGoals";
-import { YearlyPlanner } from "@/components/YearlyPlanner";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { MonthSelector } from "@/components/MonthSelector";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "lucide-react";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar, ViewKey } from "@/components/AppSidebar";
+import { Card } from "@/components/ui/card";
 
 const Index = () => {
-  const [dashView, setDashView] = useState<"month" | "year">("month");
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [view, setView] = useState<ViewKey>("home");
 
   return (
     <StoreProvider>
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card sticky top-0 z-10">
-          <div className="container max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg budget-gradient flex items-center justify-center" aria-hidden="true">
-                <span className="text-sm">💰</span>
-              </div>
-              <h1 className="text-lg font-bold tracking-tight text-foreground">BudgetFlow</h1>
-            </div>
-          </div>
-        </header>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar active={view} onSelect={setView} />
+          <SidebarInset>
+            <header className="h-14 flex items-center gap-3 border-b border-border bg-card sticky top-0 z-10 px-4">
+              <SidebarTrigger />
+              <div className="flex-1" />
+              {view === "home" && <MonthSelector />}
+            </header>
 
-        <main className="container max-w-6xl mx-auto px-4 py-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-muted p-1">
-              <TabsTrigger value="dashboard" className="gap-1.5 text-xs">
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger value="yearly" className="gap-1.5 text-xs">
-                <Calendar className="h-3.5 w-3.5" /> Yearly Plan
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="dashboard" className="space-y-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex rounded-lg border border-border overflow-hidden">
-                    <button
-                      onClick={() => setDashView("month")}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${dashView === "month" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      onClick={() => setDashView("year")}
-                      className={`px-3 py-1.5 text-xs font-medium transition-colors ${dashView === "year" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"}`}
-                    >
-                      Annual
-                    </button>
-                  </div>
-                </div>
-                {dashView === "month" && <MonthSelector />}
-              </div>
-
-              {dashView === "month" ? (
+            <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+              {view === "home" && (
                 <>
-                  <OverviewCards onOpenSavings={() => setActiveTab("savings")} />
+                  <HomeHero />
                   <ExpenseList />
                   <BudgetCharts />
-                  <CategoryBudgets />
                 </>
-              ) : (
-                <AnnualDashboard />
               )}
-            </TabsContent>
 
-            <TabsContent value="yearly">
-              <YearlyPlanner />
-            </TabsContent>
+              {view === "categories" && <CategoryBudgets />}
 
-            <TabsContent value="savings">
-              <SavingsGoals />
-            </TabsContent>
-          </Tabs>
-        </main>
-      </div>
+              {view === "savings" && <SavingsGoals />}
+
+              {view === "investments" && (
+                <Card className="glass-card p-10 text-center space-y-2">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Investments</h2>
+                  <p className="text-sm text-muted-foreground">Coming soon — track your investment portfolio here.</p>
+                </Card>
+              )}
+
+              {view === "annual" && <AnnualDashboard />}
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </StoreProvider>
   );
 };
