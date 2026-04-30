@@ -79,6 +79,37 @@ export function SavingsGoals() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
+  const monthsUntil = (dateStr: string) => {
+    const target = new Date(dateStr);
+    const now = new Date();
+    const months =
+      (target.getFullYear() - now.getFullYear()) * 12 +
+      (target.getMonth() - now.getMonth());
+    return Math.max(0, months);
+  };
+
+  const getProjection = (goal: typeof data.savingsGoals[0]) => {
+    const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+    if (remaining === 0) return { remaining: 0, requiredPerMonth: 0, projectedMonths: null as number | null, onTrack: true as boolean | null };
+
+    let requiredPerMonth = 0;
+    if (goal.targetDate) {
+      const m = monthsUntil(goal.targetDate);
+      requiredPerMonth = m > 0 ? remaining / m : remaining;
+    }
+
+    let projectedMonths: number | null = null;
+    let onTrack: boolean | null = null;
+    if (goal.monthlyContribution && goal.monthlyContribution > 0) {
+      projectedMonths = Math.ceil(remaining / goal.monthlyContribution);
+      if (goal.targetDate) {
+        onTrack = goal.monthlyContribution >= requiredPerMonth;
+      }
+    }
+
+    return { remaining, requiredPerMonth, projectedMonths, onTrack };
+  };
+
   const totalPlannedMonthly = data.savingsGoals.reduce((s, g) => s + (g.monthlyContribution ?? 0), 0);
   const totalSaved = data.savingsGoals.reduce((s, g) => s + g.currentAmount, 0);
   const totalTarget = data.savingsGoals.reduce((s, g) => s + g.targetAmount, 0);
