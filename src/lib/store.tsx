@@ -68,6 +68,7 @@ interface StoreContextType {
   updateCategory: (c: Category) => void;
   deleteCategory: (id: string) => void;
   addSubCategory: (categoryId: string, sub: Omit<SubCategory, "id">) => void;
+  updateSubCategory: (categoryId: string, sub: SubCategory) => void;
   deleteSubCategory: (categoryId: string, subId: string) => void;
   addExpense: (e: Omit<Expense, "id">) => void;
   updateExpense: (e: Expense) => void;
@@ -120,6 +121,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       categories: d.categories.map(c =>
         c.id === categoryId
           ? { ...c, subCategories: [...(c.subCategories ?? []), { ...sub, id: uid() }] }
+          : c
+      ),
+    }));
+  const updateSubCategory = (categoryId: string, sub: SubCategory) =>
+    update(d => ({
+      ...d,
+      categories: d.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, subCategories: (c.subCategories ?? []).map(s => s.id === sub.id ? sub : s) }
           : c
       ),
     }));
@@ -225,7 +235,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   return (
     <StoreContext.Provider value={{
       data, selectedMonth, setSelectedMonth,
-      addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory,
+      addCategory, updateCategory, deleteCategory, addSubCategory, updateSubCategory, deleteSubCategory,
       addExpense, updateExpense, deleteExpense,
       setSalary, getSalary, setBudget, getBudget, getMonthConfig,
       addYearlyPlan, updateYearlyPlan, deleteYearlyPlan,
