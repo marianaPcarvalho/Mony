@@ -188,6 +188,7 @@ export function SavingsGoals() {
           const pct = goal.targetAmount > 0 ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100) : 0;
           const isExpanded = expandedGoal === goal.id;
           const history = goal.fundHistory ?? [];
+          const proj = getProjection(goal);
           return (
             <div key={goal.id} className="rounded-xl border border-border/50 overflow-hidden">
               <div className="p-4 space-y-3">
@@ -213,7 +214,7 @@ export function SavingsGoals() {
                 </div>
                 <Progress value={pct} className="h-2.5" style={{ ["--progress-color" as string]: "hsl(var(--savings))" }} />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 flex-wrap">
                     {goal.targetDate && (
                       <span className="text-foreground">{daysUntil(goal.targetDate)} days left · {new Date(goal.targetDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     )}
@@ -229,6 +230,30 @@ export function SavingsGoals() {
                     </Button>
                   </div>
                 </div>
+                {proj.remaining > 0 && (goal.targetDate || (goal.monthlyContribution && goal.monthlyContribution > 0)) && (
+                  <div className="rounded-lg bg-muted/30 border border-border/40 px-3 py-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Remaining</p>
+                      <p className="font-mono font-semibold text-foreground">€{proj.remaining.toFixed(2)}</p>
+                    </div>
+                    {goal.targetDate && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Required / month</p>
+                        <p className="font-mono font-semibold text-foreground">€{proj.requiredPerMonth.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {proj.projectedMonths !== null && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">At planned pace</p>
+                        <p className={`font-mono font-semibold ${proj.onTrack === false ? "text-[hsl(var(--destructive))]" : proj.onTrack === true ? "text-[hsl(var(--success))]" : "text-foreground"}`}>
+                          {proj.projectedMonths} {proj.projectedMonths === 1 ? "month" : "months"}
+                          {proj.onTrack === false && " · behind"}
+                          {proj.onTrack === true && " · on track"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               {isExpanded && (
                 <div className="border-t border-border/50 px-4 py-3 bg-muted/20 max-h-[200px] overflow-y-auto">
