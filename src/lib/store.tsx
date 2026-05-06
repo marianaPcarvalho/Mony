@@ -274,7 +274,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
-      setMonthStartDay,
+      setMonthStartDay, updateProfile, getProfile,
     }}>
       {children}
     </StoreContext.Provider>
