@@ -217,7 +217,7 @@ export function ExpenseList() {
                 <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Edit expense">
                   <Pencil className="h-3 w-3 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteExpense(e.id)} aria-label="Delete expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Delete expense">
                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
