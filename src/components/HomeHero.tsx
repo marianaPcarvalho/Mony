@@ -52,9 +52,9 @@ export function HomeHero() {
         </h2>
       </div>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          {/* Donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left: donut + breakdown list */}
+        <div className="space-y-4">
           <div className="relative">
             {pieData.length > 0 ? (
               <>
@@ -93,7 +93,6 @@ export function HomeHero() {
             )}
           </div>
 
-          {/* Legend list on the right */}
           {pieData.length > 0 ? (
             <ul className="space-y-1.5" aria-label="Spending breakdown">
               {pieData
@@ -103,7 +102,7 @@ export function HomeHero() {
                   const total = pieData.reduce((s, p) => s + p.value, 0);
                   const pct = total > 0 ? (d.value / total) * 100 : 0;
                   return (
-                    <li key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <li key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} aria-hidden="true" />
                         <span className="text-sm font-medium text-foreground truncate">{d.icon} {d.name}</span>
@@ -117,12 +116,12 @@ export function HomeHero() {
                 })}
             </ul>
           ) : (
-            <div className="text-sm text-muted-foreground">Add an expense to see your breakdown.</div>
+            <div className="text-sm text-muted-foreground text-center">Add an expense to see your breakdown.</div>
           )}
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Right: stats column */}
+        <div className="space-y-3">
           {stats.map(s => (
             <div key={s.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
               <div className="flex items-center gap-3">
@@ -131,7 +130,7 @@ export function HomeHero() {
                 </div>
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{s.label}</span>
               </div>
-              <span className={`font-mono font-bold text-base ${s.tone === "success" ? "text-success" : "text-destructive"}`}>
+              <span className={`font-mono font-bold text-lg ${s.tone === "success" ? "text-success" : "text-destructive"}`}>
                 {s.value}
               </span>
             </div>
