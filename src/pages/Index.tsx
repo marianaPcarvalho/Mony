@@ -48,6 +48,8 @@ const Index = () => {
               )}
 
               {view === "annual" && <AnnualDashboard />}
+
+              {view === "profile" && <ProfilePage />}
             </main>
           </SidebarInset>
         </div>
