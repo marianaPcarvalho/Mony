@@ -320,6 +320,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
       setMonthStartDay, updateProfile, getProfile,
+      addInvestment, updateInvestment, deleteInvestment, addInvestmentTransaction, deleteInvestmentTransaction,
     }}>
       {children}
     </StoreContext.Provider>
