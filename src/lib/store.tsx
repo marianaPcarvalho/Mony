@@ -109,6 +109,8 @@ interface StoreContextType {
   getActualSavedTotal: () => number;
   getActualSavedInMonth: (month: string) => number;
   setMonthStartDay: (day: number) => void;
+  updateProfile: (p: Partial<UserProfile>) => void;
+  getProfile: () => UserProfile;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
