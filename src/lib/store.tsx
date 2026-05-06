@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction } from "./types";
+import { useCloudSync } from "./cloudSync";
 
 const STORAGE_KEY = "budget-app-data";
 
@@ -130,6 +131,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth());
 
   useEffect(() => { saveData(data); }, [data]);
+  useCloudSync(data);
 
   const update = useCallback((fn: (d: AppData) => AppData) => {
     setData(prev => fn(prev));
