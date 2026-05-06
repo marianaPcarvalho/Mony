@@ -1,32 +1,79 @@
 import { useStore } from "@/lib/store";
 import { Card } from "@/components/ui/card";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-} from "recharts";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp } from "lucide-react";
+
+const COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--chart-6))",
+];
 
 export function BudgetVsSpent() {
   const { data, selectedMonth, getCategorySpent } = useStore();
 
-  const barData = data.categories.map(c => ({
-    name: c.name,
-    spent: getCategorySpent(c.id, selectedMonth),
-    budget: c.monthlyBudget,
-  }));
+  const fmt = (v: number) =>
+    `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const rows = data.categories.map((c, i) => {
+    const spent = getCategorySpent(c.id, selectedMonth);
+    const budget = c.monthlyBudget || 0;
+    const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+    const over = budget > 0 && spent > budget;
+    return {
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+      spent,
+      budget,
+      pct,
+      over,
+      color: COLORS[i % COLORS.length],
+    };
+  });
 
   return (
-    <Card className="glass-card p-5">
-      <h4 className="text-sm font-medium text-foreground mb-4">Budget vs Spent</h4>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={barData} layout="vertical" margin={{ left: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 82%)" opacity={0.5} />
-          <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(220, 12%, 35%)" }} tickFormatter={(v) => `€${v}`} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(220, 12%, 35%)" }} width={80} />
-          <Tooltip formatter={(value: number) => `€${value.toFixed(2)}`} />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Bar dataKey="budget" fill="hsl(220, 55%, 65%)" radius={[0, 4, 4, 0]} barSize={12} name="Budget" />
-          <Bar dataKey="spent" fill="hsl(0, 65%, 52%)" radius={[0, 4, 4, 0]} barSize={12} name="Spent" />
-        </BarChart>
-      </ResponsiveContainer>
+    <Card className="glass-card p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="section-title flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-muted-foreground" /> Budget vs Spent
+        </h3>
+      </div>
+
+      <ul className="space-y-3" aria-label="Budget vs spent by category">
+        {rows.map((r) => (
+          <li key={r.id} className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <span aria-hidden="true">{r.icon}</span>
+                <span className="font-medium text-foreground truncate">{r.name}</span>
+              </div>
+              <div className="font-mono text-xs flex-shrink-0">
+                <span className={r.over ? "text-destructive font-bold" : "text-foreground font-semibold"}>
+                  {fmt(r.spent)}
+                </span>
+                <span className="text-muted-foreground"> / {fmt(r.budget)}</span>
+              </div>
+            </div>
+            <Progress
+              value={r.pct}
+              className="h-2"
+              style={{ ["--progress-color" as any]: r.over ? "hsl(var(--destructive))" : r.color }}
+              aria-label={`${r.name}: spent ${fmt(r.spent)} of ${fmt(r.budget)} budget`}
+            />
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>{r.budget > 0 ? `${Math.round((r.spent / r.budget) * 100)}% used` : "No budget set"}</span>
+              {r.over && <span className="text-destructive font-semibold">Over by {fmt(r.spent - r.budget)}</span>}
+            </div>
+          </li>
+        ))}
+        {rows.length === 0 && (
+          <li className="text-sm text-muted-foreground text-center py-6">No categories yet.</li>
+        )}
+      </ul>
     </Card>
   );
 }

@@ -10,15 +10,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export function ExpenseList() {
   const { data, selectedMonth, getMonthExpenses, addExpense, updateExpense, deleteExpense } = useStore();
   const [filterCat, setFilterCat] = useState<string>("all");
   const [expanded, setExpanded] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allExpenses = getMonthExpenses(selectedMonth).sort((a, b) => b.date.localeCompare(a.date));
   const expenses = filterCat === "all" ? allExpenses : allExpenses.filter(e => e.categoryId === filterCat);
+  const pendingDelete = deleteId ? data.expenses.find(e => e.id === deleteId) : null;
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -211,7 +217,7 @@ export function ExpenseList() {
                 <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Edit expense">
                   <Pencil className="h-3 w-3 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteExpense(e.id)} aria-label="Delete expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Delete expense">
                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
@@ -230,6 +236,28 @@ export function ExpenseList() {
           {expanded ? <><ChevronUp className="h-3 w-3" /> Show less</> : <><ChevronDown className="h-3 w-3" /> Show all {expenses.length} expenses</>}
         </Button>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete ? (
+                <>This will permanently remove <strong>{pendingDelete.description || "this expense"}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
+              ) : "This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => { if (deleteId) deleteExpense(deleteId); setDeleteId(null); }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
