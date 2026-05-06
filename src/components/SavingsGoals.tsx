@@ -10,11 +10,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, Trash2, History, ChevronDown, ChevronRight, Pencil,
-  PiggyBank, Target, CalendarClock,
+  Plus, Trash2, History, ChevronDown, ChevronRight, Pencil, X,
+  PiggyBank, Target, CalendarClock, CheckCircle2, AlertTriangle, Clock,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { EmojiPickerButton } from "./EmojiPickerButton";
+import { SavingsTrendChart } from "./SavingsTrendChart";
 
 const fmt = (v: number) =>
   `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
