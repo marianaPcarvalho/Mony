@@ -6,6 +6,7 @@ import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { ExpenseList } from "@/components/ExpenseList";
 import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
+import { InvestmentsTracker } from "@/components/InvestmentsTracker";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { ProfilePage } from "@/components/ProfilePage";
 import { MonthSelector } from "@/components/MonthSelector";
@@ -47,12 +48,7 @@ const Index = () => {
 
               {view === "savings" && <SavingsGoals />}
 
-              {view === "investments" && (
-                <Card className="glass-card p-10 text-center space-y-2">
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">Investments</h2>
-                  <p className="text-sm text-muted-foreground">Coming soon — track your investment portfolio here.</p>
-                </Card>
-              )}
+              {view === "investments" && <InvestmentsTracker />}
 
               {view === "annual" && <AnnualDashboard />}
 
