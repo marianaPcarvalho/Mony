@@ -189,7 +189,15 @@ export function ExpenseList() {
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                     <span>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     {sub && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-medium text-foreground">
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-medium"
+                        style={{
+                          background: `${sub.color ?? "hsl(220, 70%, 55%)"}1A`,
+                          borderColor: `${sub.color ?? "hsl(220, 70%, 55%)"}66`,
+                          color: sub.color ?? "hsl(220, 70%, 55%)",
+                        }}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: sub.color ?? "hsl(220, 70%, 55%)" }} aria-hidden="true" />
                         {sub.name}
                       </span>
                     )}

@@ -2,10 +2,57 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Plus, ChevronDown, ChevronRight, Trash2, Search, Check, X, Pencil } from "lucide-react";
 import { EmojiPickerButton } from "./EmojiPickerButton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Category, SubCategory } from "@/lib/types";
+
+const TAG_COLORS: { name: string; value: string }[] = [
+  { name: "Blue",   value: "hsl(220, 70%, 55%)" },
+  { name: "Teal",   value: "hsl(178, 60%, 40%)" },
+  { name: "Green",  value: "hsl(142, 55%, 42%)" },
+  { name: "Lime",   value: "hsl(82, 55%, 45%)" },
+  { name: "Amber",  value: "hsl(38, 92%, 50%)" },
+  { name: "Orange", value: "hsl(24, 85%, 55%)" },
+  { name: "Red",    value: "hsl(0, 70%, 55%)" },
+  { name: "Pink",   value: "hsl(330, 70%, 58%)" },
+  { name: "Purple", value: "hsl(270, 55%, 55%)" },
+  { name: "Slate",  value: "hsl(220, 14%, 50%)" },
+];
+const DEFAULT_TAG_COLOR = TAG_COLORS[0].value;
+
+function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="h-5 w-5 rounded-full border border-border shrink-0 shadow-sm"
+          style={{ background: value }}
+          aria-label="Pick color"
+        />
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-2" align="start">
+        <div className="grid grid-cols-5 gap-1.5">
+          {TAG_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => onChange(c.value)}
+              className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${value === c.value ? "ring-2 ring-foreground ring-offset-1" : "border-border"}`}
+              style={{ background: c.value }}
+              aria-label={c.name}
+            />
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function ProgressRing({ pct, over, size = 56 }: { pct: number; over: boolean; size?: number }) {
   const stroke = 6;
@@ -21,24 +68,11 @@ function ProgressRing({ pct, over, size = 56 }: { pct: number; over: boolean; si
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="hsl(var(--muted))" strokeWidth={stroke} fill="transparent" />
         <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke="hsl(var(--muted))"
-          strokeWidth={stroke}
-          fill="transparent"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke={color}
-          strokeWidth={stroke}
-          fill="transparent"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
+          cx={size / 2} cy={size / 2} r={r}
+          stroke={color} strokeWidth={stroke} fill="transparent"
+          strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
           style={{ transition: "stroke-dashoffset 400ms ease" }}
         />
       </svg>
@@ -62,31 +96,13 @@ function NewCategoryRow({ onCreate, onCancel }: { onCreate: (c: { name: string; 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
       <EmojiPickerButton value={icon} onChange={setIcon} size="md" />
-      <Input
-        autoFocus
-        placeholder="Category name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="flex-1"
-      />
-      <Input
-        type="number"
-        min="0"
-        step="0.01"
-        inputMode="decimal"
-        placeholder="Budget €"
-        value={budget}
-        onChange={(e) => setBudget(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="w-32"
-      />
-      <Button size="icon" onClick={submit} aria-label="Save">
-        <Check className="h-4 w-4" />
-      </Button>
-      <Button size="icon" variant="ghost" onClick={onCancel} aria-label="Cancel">
-        <X className="h-4 w-4" />
-      </Button>
+      <Input autoFocus placeholder="Category name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="flex-1" />
+      <div className="relative w-36">
+        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
+        <Input type="number" min="0" step="0.01" inputMode="decimal" placeholder="Monthly budget" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="pl-6" />
+      </div>
+      <Button size="icon" onClick={submit} aria-label="Save"><Check className="h-4 w-4" /></Button>
+      <Button size="icon" variant="ghost" onClick={onCancel} aria-label="Cancel"><X className="h-4 w-4" /></Button>
     </div>
   );
 }
@@ -94,150 +110,200 @@ function NewCategoryRow({ onCreate, onCancel }: { onCreate: (c: { name: string; 
 function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
   const { updateCategory, deleteCategory, addSubCategory, updateSubCategory, deleteSubCategory } = useStore();
   const [editing, setEditing] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState(cat.name);
   const [icon, setIcon] = useState(cat.icon);
   const [budget, setBudget] = useState(String(cat.monthlyBudget));
+  const [editingBudget, setEditingBudget] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const [addingSub, setAddingSub] = useState(false);
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
+  const [addingSub, setAddingSub] = useState(false);
 
   const subs = cat.subCategories ?? [];
   const pct = cat.monthlyBudget > 0 ? (spent / cat.monthlyBudget) * 100 : 0;
   const over = spent > cat.monthlyBudget && cat.monthlyBudget > 0;
 
-  const startEdit = () => {
-    setName(cat.name); setIcon(cat.icon); setBudget(String(cat.monthlyBudget));
-    setEditing(true);
-  };
+  const startEdit = () => { setName(cat.name); setIcon(cat.icon); setBudget(String(cat.monthlyBudget)); setEditing(true); };
   const saveEdit = () => {
     if (!name.trim()) return;
     updateCategory({ ...cat, name: name.trim(), icon, monthlyBudget: parseFloat(budget) || 0 });
     setEditing(false);
   };
+  const saveBudget = () => {
+    updateCategory({ ...cat, monthlyBudget: parseFloat(budget) || 0 });
+    setEditingBudget(false);
+  };
 
   return (
     <div className="rounded-xl border border-border/60 bg-card/40 hover:bg-card/70 transition-colors overflow-hidden">
       {!editing ? (
-        <div className="flex items-center gap-3 p-3 group">
-          <button
-            onClick={() => subs.length > 0 && setExpanded(!expanded)}
-            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={expanded ? "Collapse" : "Expand"}
-          >
-            {subs.length > 0 ? (
-              expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
-            ) : (
-              <span className="block w-4" />
-            )}
-          </button>
-          <div className="text-2xl shrink-0" aria-hidden="true">{cat.icon}</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-semibold text-foreground truncate">{cat.name}</p>
-              <span className="font-mono text-xs whitespace-nowrap">
-                <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{spent.toFixed(2)}</span>
-                <span className="text-muted-foreground"> / €{cat.monthlyBudget.toFixed(2)}</span>
-              </span>
+        <div className="p-3 space-y-3">
+          {/* Top row */}
+          <div className="flex items-center gap-3">
+            <div className="text-2xl shrink-0" aria-hidden="true">{cat.icon}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <p className="font-semibold text-foreground truncate">{cat.name}</p>
+                {!editingBudget ? (
+                  <button
+                    onClick={() => { setBudget(String(cat.monthlyBudget)); setEditingBudget(true); }}
+                    className="group/budget inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted border border-border/60 transition-colors"
+                    aria-label="Edit monthly budget"
+                  >
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Budget</span>
+                    <span className="font-mono text-xs font-bold text-foreground">€{cat.monthlyBudget.toFixed(2)}</span>
+                    <Pencil className="h-3 w-3 text-muted-foreground group-hover/budget:text-foreground" />
+                  </button>
+                ) : (
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-primary/40 bg-primary/5">
+                    <span className="text-xs text-muted-foreground">€</span>
+                    <Input
+                      autoFocus
+                      type="number" min="0" step="0.01" inputMode="decimal"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") saveBudget(); if (e.key === "Escape") setEditingBudget(false); }}
+                      onBlur={saveBudget}
+                      className="h-6 w-20 px-1 text-xs font-mono border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
+                <span className="font-mono">
+                  <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{spent.toFixed(2)}</span>
+                  <span className="text-muted-foreground"> spent</span>
+                </span>
+                {over && <span className="text-[10px] uppercase tracking-wider text-destructive font-bold">Over budget</span>}
+              </div>
+              <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(pct, 100)}%`,
+                    background: over ? "hsl(var(--destructive))" : pct > 85 ? "hsl(var(--warning))" : "hsl(var(--primary))",
+                  }}
+                />
+              </div>
             </div>
-            <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(pct, 100)}%`,
-                  background: over
-                    ? "hsl(var(--destructive))"
-                    : pct > 85
-                    ? "hsl(var(--warning))"
-                    : "hsl(var(--primary))",
-                }}
-              />
+            <ProgressRing pct={pct} over={over} />
+            <div className="flex gap-0.5">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={startEdit} aria-label="Edit category">
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setConfirmDelete(true)} aria-label="Delete category">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Sub-categories — always visible */}
+          <div className="border-t border-border/40 pt-2.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                Sub-categories {subs.length > 0 && <span className="ml-1 text-foreground/70">({subs.length})</span>}
+              </p>
             </div>
             {subs.length > 0 && (
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {subs.length} sub-categor{subs.length === 1 ? "y" : "ies"}
-              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {subs.map((sub) =>
+                  editingSubId === sub.id ? (
+                    <SubEditRow
+                      key={sub.id}
+                      sub={sub}
+                      onSave={(s) => { updateSubCategory(cat.id, s); setEditingSubId(null); }}
+                      onCancel={() => setEditingSubId(null)}
+                    />
+                  ) : (
+                    <div
+                      key={sub.id}
+                      className="group/sub inline-flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border text-xs font-medium"
+                      style={{
+                        background: `${sub.color ?? DEFAULT_TAG_COLOR}1A`,
+                        borderColor: `${sub.color ?? DEFAULT_TAG_COLOR}66`,
+                        color: sub.color ?? DEFAULT_TAG_COLOR,
+                      }}
+                    >
+                      <span className="h-2 w-2 rounded-full" style={{ background: sub.color ?? DEFAULT_TAG_COLOR }} aria-hidden="true" />
+                      <button onClick={() => setEditingSubId(sub.id)} className="hover:underline" aria-label={`Edit ${sub.name}`}>
+                        {sub.name}
+                      </button>
+                      <button onClick={() => deleteSubCategory(cat.id, sub.id)} className="rounded-full p-0.5 opacity-60 hover:opacity-100" aria-label={`Delete ${sub.name}`}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
             )}
-          </div>
-          <ProgressRing pct={pct} over={over} />
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setExpanded(true); setAddingSub(true); }} aria-label="Add sub-category">
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={startEdit} aria-label="Edit">
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteCategory(cat.id)} aria-label="Delete">
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            {addingSub ? (
+              <SubEditRow
+                onSave={(s) => { addSubCategory(cat.id, { name: s.name, icon: "", color: s.color }); setAddingSub(false); }}
+                onCancel={() => setAddingSub(false)}
+              />
+            ) : (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-dashed" onClick={() => setAddingSub(true)}>
+                <Plus className="h-3 w-3" /> Add sub-category
+              </Button>
+            )}
           </div>
         </div>
       ) : (
         <div className="flex items-center gap-3 p-3 bg-primary/5">
           <EmojiPickerButton value={icon} onChange={setIcon} size="md" />
           <Input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveEdit()} autoFocus className="flex-1" />
-          <Input type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveEdit()} className="w-32" />
+          <div className="relative w-36">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
+            <Input type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveEdit()} className="pl-6" />
+          </div>
           <Button size="icon" onClick={saveEdit} aria-label="Save"><Check className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={() => setEditing(false)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
         </div>
       )}
 
-      {(expanded || addingSub) && (
-        <div className="border-t border-border/50 bg-muted/20 px-3 py-2 space-y-2">
-          {subs.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {subs.map((sub) =>
-                editingSubId === sub.id ? (
-                  <SubEditRow
-                    key={sub.id}
-                    sub={sub}
-                    onSave={(s) => { updateSubCategory(cat.id, s); setEditingSubId(null); }}
-                    onCancel={() => setEditingSubId(null)}
-                  />
-                ) : (
-                  <div key={sub.id} className="group/sub inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-foreground">
-                    <button onClick={() => setEditingSubId(sub.id)} className="font-medium hover:text-primary" aria-label={`Edit ${sub.name}`}>
-                      {sub.name}
-                    </button>
-                    <button onClick={() => deleteSubCategory(cat.id, sub.id)} className="rounded-full p-0.5 text-muted-foreground hover:bg-destructive/15 hover:text-destructive" aria-label={`Delete ${sub.name}`}>
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-          {addingSub ? (
-            <SubEditRow
-              onSave={(s) => { addSubCategory(cat.id, { name: s.name, icon: "" }); setAddingSub(false); }}
-              onCancel={() => setAddingSub(false)}
-            />
-          ) : (
-            <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-7 gap-1.5 text-muted-foreground" onClick={() => setAddingSub(true)}>
-              <Plus className="h-3 w-3" /> Add sub-category
-            </Button>
-          )}
-        </div>
-      )}
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{cat.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the category and all its sub-categories. Existing expenses in this category will remain but become uncategorized. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteCategory(cat.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
 function SubEditRow({ sub, onSave, onCancel }: { sub?: SubCategory; onSave: (s: SubCategory) => void; onCancel: () => void }) {
   const [name, setName] = useState(sub?.name ?? "");
+  const [color, setColor] = useState(sub?.color ?? DEFAULT_TAG_COLOR);
   const submit = () => {
     if (!name.trim()) return;
-    onSave({ id: sub?.id ?? "", name: name.trim(), icon: sub?.icon ?? "" });
+    onSave({ id: sub?.id ?? "", name: name.trim(), icon: sub?.icon ?? "", color });
   };
   return (
-    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/5 border border-primary/30">
+    <div
+      className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full border"
+      style={{ background: `${color}14`, borderColor: `${color}66` }}
+    >
+      <ColorPicker value={color} onChange={setColor} />
       <Input
         autoFocus
-        placeholder="Sub-category name"
+        placeholder="Tag name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="h-6 text-xs flex-1 border-0 bg-transparent px-1 focus-visible:ring-0 focus-visible:ring-offset-0 w-40"
+        onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onCancel(); }}
+        className="h-6 text-xs flex-1 border-0 bg-transparent px-1 focus-visible:ring-0 focus-visible:ring-offset-0 w-36"
       />
       <Button size="icon" className="h-6 w-6 rounded-full" onClick={submit} aria-label="Save"><Check className="h-3 w-3" /></Button>
       <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={onCancel} aria-label="Cancel"><X className="h-3 w-3" /></Button>
@@ -300,8 +366,7 @@ export function CategoryBudgets() {
           <NewCategoryRow
             onCreate={({ name, icon, budget }) => {
               addCategory({
-                name,
-                icon,
+                name, icon,
                 color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`,
                 monthlyBudget: budget,
                 subCategories: [],
