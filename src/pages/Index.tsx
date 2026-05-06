@@ -30,15 +30,17 @@ const Index = () => {
 
             <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
               {view === "home" && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-                  <div className="lg:col-span-2 space-y-6">
-                    <HomeHero />
-                    <BudgetVsSpent />
+                <>
+                  <HomeHero />
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+                    <div className="lg:col-span-2">
+                      <BudgetVsSpent />
+                    </div>
+                    <div className="lg:col-span-3">
+                      <ExpenseList />
+                    </div>
                   </div>
-                  <div className="lg:col-span-3">
-                    <ExpenseList />
-                  </div>
-                </div>
+                </>
               )}
 
               {view === "categories" && <CategoryBudgets />}
