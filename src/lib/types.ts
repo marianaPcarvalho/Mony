@@ -66,12 +66,36 @@ export interface UserProfile {
   };
 }
 
+export interface InvestmentTransaction {
+  id: string;
+  type: "buy" | "sell" | "dividend";
+  date: string; // ISO
+  units?: number;
+  pricePerUnit?: number;
+  amount: number; // total cash flow (positive)
+  note?: string;
+}
+
+export interface Investment {
+  id: string;
+  name: string;
+  symbol?: string;
+  type: "stock" | "etf" | "crypto" | "fund" | "bond" | "other";
+  icon: string;
+  units: number;
+  avgCost: number; // average cost per unit
+  currentPrice: number;
+  currency?: string;
+  transactions: InvestmentTransaction[];
+}
+
 export interface AppData {
   categories: Category[];
   expenses: Expense[];
   monthlyConfigs: MonthlyConfig[];
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
+  investments?: Investment[];
   monthStartDay?: number; // 1-28, day of month when budget cycle starts
   profile?: UserProfile;
 }

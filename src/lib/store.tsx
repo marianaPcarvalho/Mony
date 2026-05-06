@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction } from "./types";
 
 const STORAGE_KEY = "budget-app-data";
 
@@ -33,6 +33,7 @@ const defaultData: AppData = {
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
+  investments: [],
   profile: defaultProfile,
 };
 
@@ -61,6 +62,10 @@ function loadData(): AppData {
           subCategories: c.subCategories ?? [],
         }));
       }
+      parsed.investments = (parsed.investments ?? []).map((i: any) => ({
+        ...i,
+        transactions: i.transactions ?? [],
+      }));
       parsed.profile = {
         ...defaultProfile,
         ...(parsed.profile ?? {}),
