@@ -93,61 +93,66 @@ export function ExpenseList() {
             <Plus className="h-4 w-4" /> Add Expense
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editingId ? "Edit" : "Add"} Expense</DialogTitle></DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="exp-category">Category</Label>
-              <Select value={catId} onValueChange={(v) => { setCatId(v); setSubCatId(""); }}>
-                <SelectTrigger id="exp-category"><SelectValue placeholder="Select category" /></SelectTrigger>
-                <SelectContent>
-                  {data.categories.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {subCategories.length > 0 && (
-              <div className="space-y-2">
-                <Label htmlFor="exp-subcategory">Sub-category</Label>
-                <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
-                  <SelectTrigger id="exp-subcategory"><SelectValue placeholder="(optional)" /></SelectTrigger>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            {/* Left: category, description, amount */}
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="exp-category">Category</Label>
+                <Select value={catId} onValueChange={(v) => { setCatId(v); setSubCatId(""); }}>
+                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {subCategories.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.icon} {s.name}</SelectItem>
+                    {data.categories.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="exp-amount">Amount</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
-                <Input
-                  id="exp-amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  onBlur={() => {
-                    const n = parseFloat(amount);
-                    if (!isNaN(n)) setAmount(n.toFixed(2));
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="0.00"
-                  className="pl-7 font-mono"
-                />
+              {subCategories.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="exp-subcategory">Sub-category</Label>
+                  <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
+                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="(optional)" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {subCategories.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.icon} {s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="exp-desc">Description</Label>
+                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="What was this for?" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="exp-amount">Amount</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
+                  <Input
+                    id="exp-amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    onBlur={() => {
+                      const n = parseFloat(amount);
+                      if (!isNaN(n)) setAmount(n.toFixed(2));
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="0.00"
+                    className="pl-7 h-9 font-mono"
+                  />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="exp-desc">Description</Label>
-              <Input id="exp-desc" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="What was this for?" />
-            </div>
-            <div className="space-y-2">
+
+            {/* Right: calendar */}
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label>Date</Label>
                 <span className="text-xs text-muted-foreground">
@@ -159,12 +164,12 @@ export function ExpenseList() {
                   mode="single"
                   selected={date ? parseISO(date) : undefined}
                   onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
-                  className={cn("p-3 pointer-events-auto")}
+                  className={cn("p-2 pointer-events-auto")}
                 />
               </div>
             </div>
-            <Button onClick={handleSave} className="w-full">{editingId ? "Update" : "Add"} Expense</Button>
           </div>
+          <Button onClick={handleSave} className="w-full mt-2">{editingId ? "Update" : "Add"} Expense</Button>
         </DialogContent>
       </Dialog>
 
