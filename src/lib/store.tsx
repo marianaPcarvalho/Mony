@@ -61,6 +61,11 @@ function loadData(): AppData {
           subCategories: c.subCategories ?? [],
         }));
       }
+      parsed.profile = {
+        ...defaultProfile,
+        ...(parsed.profile ?? {}),
+        notifications: { ...defaultProfile.notifications, ...((parsed.profile?.notifications) ?? {}) },
+      };
       return parsed;
     }
   } catch {}
