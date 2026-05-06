@@ -30,9 +30,12 @@ export function ExpenseList() {
 
   const resetForm = () => { setCatId(""); setSubCatId(""); setAmount(""); setDesc(""); setDate(new Date().toISOString().slice(0, 10)); setEditingId(null); };
 
+  const amountNum = parseFloat(amount);
+  const isValid = !!catId && !!date && !isNaN(amountNum) && amountNum > 0;
+
   const handleSave = () => {
-    if (!catId || !amount) return;
-    const expenseData = { categoryId: catId, subCategoryId: subCatId || undefined, amount: parseFloat(amount), description: desc, date };
+    if (!isValid) return;
+    const expenseData = { categoryId: catId, subCategoryId: subCatId || undefined, amount: amountNum, description: desc, date };
     if (editingId) {
       updateExpense({ ...expenseData, id: editingId });
     } else {
