@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { format, parseISO } from "date-fns";
 import { useStore } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, ChevronDown, ChevronUp, Receipt } from "lucide-react";
+import { Plus, Trash2, Pencil, ChevronDown, ChevronUp, Receipt, CalendarIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export function ExpenseList() {
   const { data, selectedMonth, getMonthExpenses, addExpense, updateExpense, deleteExpense } = useStore();
@@ -118,8 +122,26 @@ export function ExpenseList() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="exp-amount">Amount (€)</Label>
-              <Input id="exp-amount" type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
+              <Label htmlFor="exp-amount">Amount</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
+                <Input
+                  id="exp-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={e => setAmount(e.target.value)}
+                  onBlur={() => {
+                    const n = parseFloat(amount);
+                    if (!isNaN(n)) setAmount(n.toFixed(2));
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="0.00"
+                  className="pl-7 font-mono"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="exp-desc">Description</Label>
@@ -127,7 +149,27 @@ export function ExpenseList() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="exp-date">Date</Label>
-              <Input id="exp-date" type="date" value={date} onChange={e => setDate(e.target.value)} onKeyDown={handleKeyDown} />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="exp-date"
+                    variant="outline"
+                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(parseISO(date), "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date ? parseISO(date) : undefined}
+                    onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <Button onClick={handleSave} className="w-full">{editingId ? "Update" : "Add"} Expense</Button>
           </div>
