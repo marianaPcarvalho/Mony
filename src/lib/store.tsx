@@ -17,12 +17,23 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const defaultProfile: UserProfile = {
+  name: "Mariana",
+  defaultSalary: 3000,
+  notifications: {
+    budgetAlerts: true,
+    monthlySummary: true,
+    savingsReminders: false,
+  },
+};
+
 const defaultData: AppData = {
   categories: defaultCategories,
   expenses: [],
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
+  profile: defaultProfile,
 };
 
 function loadData(): AppData {
