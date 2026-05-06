@@ -176,7 +176,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (existing) return { ...d, monthlyConfigs: d.monthlyConfigs.map(m => m.month === month ? { ...m, salary } : m) };
       return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary, budget: 0 }] };
     });
-  const getSalary = (month: string) => getMonthConfig(month).salary;
+  const getProfile = (): UserProfile => data.profile ?? defaultProfile;
+  const getSalary = (month: string) => {
+    const cfg = data.monthlyConfigs.find(m => m.month === month);
+    if (cfg) return cfg.salary;
+    return getProfile().defaultSalary;
+  };
+  const updateProfile = (p: Partial<UserProfile>) =>
+    update(d => ({
+      ...d,
+      profile: {
+        ...(d.profile ?? defaultProfile),
+        ...p,
+        notifications: { ...(d.profile?.notifications ?? defaultProfile.notifications), ...(p.notifications ?? {}) },
+      },
+    }));
   const setBudget = (month: string, budget: number) =>
     update(d => {
       const existing = d.monthlyConfigs.find(m => m.month === month);
