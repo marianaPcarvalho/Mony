@@ -1,7 +1,7 @@
 import { useStore } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { TrendingDown, PiggyBank, Wallet } from "lucide-react";
 
 const PT_MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
@@ -15,7 +15,7 @@ const COLORS = [
 ];
 
 export function HomeHero() {
-  const { data, selectedMonth, getCategorySpent, getSalary, getTotalSpent } = useStore();
+  const { data, selectedMonth, getCategorySpent, getSalary, getTotalSpent, getActualSavedTotal } = useStore();
 
   // Always display the current month in Portugal (Europe/Lisbon)
   const now = new Date();
@@ -37,10 +37,11 @@ export function HomeHero() {
 
   const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const savings = getActualSavedTotal();
   const stats = [
-    { label: "Current", value: fmt(current), icon: Wallet, tone: current >= 0 ? "success" : "destructive" },
+    { label: "Current", value: fmt(current), icon: Wallet, tone: current >= 0 ? "success" : "destructive" as const },
     { label: "Total spent", value: fmt(spent), icon: TrendingDown, tone: "destructive" as const },
-    { label: "Total received", value: fmt(salary), icon: TrendingUp, tone: "success" as const },
+    { label: "Current savings", value: fmt(savings), icon: PiggyBank, tone: "success" as const },
   ];
 
   return (
