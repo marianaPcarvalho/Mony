@@ -120,7 +120,7 @@ export function ExpenseList() {
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {subCategories.map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.icon} {s.name}</SelectItem>
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -186,9 +186,13 @@ export function ExpenseList() {
                 <span className="text-lg flex-shrink-0" aria-hidden="true">{cat?.icon ?? "📦"}</span>
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate text-foreground">{e.description || cat?.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    {sub && <span className="ml-1.5">· {sub.icon} {sub.name}</span>}
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                    <span>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    {sub && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-medium text-foreground">
+                        {sub.name}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>

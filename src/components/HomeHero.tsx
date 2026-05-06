@@ -62,11 +62,21 @@ export function HomeHero() {
                     data={pieData}
                     cx="50%" cy="50%"
                     innerRadius={75} outerRadius={115}
-                    dataKey="value" paddingAngle={3} strokeWidth={0}
+                    dataKey="value" paddingAngle={0} strokeWidth={0}
+                    isAnimationActive={false}
+                    style={{ pointerEvents: "none", outline: "none" }}
                   >
-                    {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    {pieData.map((entry, i) => <Cell key={i} fill={entry.color} style={{ outline: "none" }} />)}
                   </Pie>
-                  <Tooltip formatter={(v: number) => `€${v.toFixed(2)}`} />
+                  <Tooltip
+                    wrapperStyle={{ outline: "none", fontSize: 11 }}
+                    contentStyle={{ padding: "4px 8px", borderRadius: 6, fontSize: 11 }}
+                    formatter={(value: number, _name, item: any) => {
+                      const total = pieData.reduce((s, p) => s + p.value, 0);
+                      const pct = total > 0 ? (value / total) * 100 : 0;
+                      return [`€${value.toFixed(2)} (${pct.toFixed(1)}%)`, item?.payload?.name];
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

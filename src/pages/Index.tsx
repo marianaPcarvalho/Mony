@@ -2,8 +2,9 @@ import { useState } from "react";
 import { StoreProvider } from "@/lib/store";
 import { HomeHero } from "@/components/HomeHero";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
-import { BudgetCharts } from "@/components/BudgetCharts";
+
 import { ExpenseList } from "@/components/ExpenseList";
+import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { ProfilePage } from "@/components/ProfilePage";
@@ -31,8 +32,10 @@ const Index = () => {
               {view === "home" && (
                 <>
                   <HomeHero />
-                  <ExpenseList />
-                  <BudgetCharts />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <ExpenseList />
+                    <BudgetVsSpent />
+                  </div>
                 </>
               )}
 
