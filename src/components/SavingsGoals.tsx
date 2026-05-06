@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { EmojiPickerButton } from "./EmojiPickerButton";
-import { SavingsTrendChart } from "./SavingsTrendChart";
+
 
 const fmt = (v: number) =>
   `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -268,9 +268,6 @@ export function SavingsGoals() {
           </div>
         </div>
       </Card>
-
-      {/* Trend over time */}
-      <SavingsTrendChart />
 
       {/* Goals list */}
       <Card className="glass-card p-5 space-y-3">
