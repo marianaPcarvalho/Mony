@@ -10,15 +10,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export function ExpenseList() {
   const { data, selectedMonth, getMonthExpenses, addExpense, updateExpense, deleteExpense } = useStore();
   const [filterCat, setFilterCat] = useState<string>("all");
   const [expanded, setExpanded] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allExpenses = getMonthExpenses(selectedMonth).sort((a, b) => b.date.localeCompare(a.date));
   const expenses = filterCat === "all" ? allExpenses : allExpenses.filter(e => e.categoryId === filterCat);
+  const pendingDelete = deleteId ? data.expenses.find(e => e.id === deleteId) : null;
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
