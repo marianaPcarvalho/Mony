@@ -116,6 +116,11 @@ interface StoreContextType {
   setMonthStartDay: (day: number) => void;
   updateProfile: (p: Partial<UserProfile>) => void;
   getProfile: () => UserProfile;
+  addInvestment: (i: Omit<Investment, "id">) => void;
+  updateInvestment: (i: Investment) => void;
+  deleteInvestment: (id: string) => void;
+  addInvestmentTransaction: (investmentId: string, tx: Omit<InvestmentTransaction, "id">) => void;
+  deleteInvestmentTransaction: (investmentId: string, txId: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -233,6 +238,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const setMonthStartDay = (day: number) =>
     update(d => ({ ...d, monthStartDay: day }));
+
+  const addInvestment = (i: Omit<Investment, "id">) =>
+    update(d => ({ ...d, investments: [...(d.investments ?? []), { ...i, id: uid(), transactions: i.transactions ?? [] }] }));
+  const updateInvestment = (i: Investment) =>
+    update(d => ({ ...d, investments: (d.investments ?? []).map(x => x.id === i.id ? i : x) }));
+  const deleteInvestment = (id: string) =>
+    update(d => ({ ...d, investments: (d.investments ?? []).filter(x => x.id !== id) }));
+  const addInvestmentTransaction = (investmentId: string, tx: Omit<InvestmentTransaction, "id">) =>
+    update(d => ({
+      ...d,
+      investments: (d.investments ?? []).map(inv => {
+        if (inv.id !== investmentId) return inv;
+        const newTx = { ...tx, id: uid() };
+        let units = inv.units;
+        let avgCost = inv.avgCost;
+        if (tx.type === "buy" && tx.units && tx.pricePerUnit) {
+          const newUnits = units + tx.units;
+          avgCost = newUnits > 0 ? (units * avgCost + tx.units * tx.pricePerUnit) / newUnits : 0;
+          units = newUnits;
+        } else if (tx.type === "sell" && tx.units) {
+          units = Math.max(0, units - tx.units);
+          if (units === 0) avgCost = 0;
+        }
+        return { ...inv, units, avgCost, transactions: [...(inv.transactions ?? []), newTx] };
+      }),
+    }));
+  const deleteInvestmentTransaction = (investmentId: string, txId: string) =>
+    update(d => ({
+      ...d,
+      investments: (d.investments ?? []).map(inv =>
+        inv.id === investmentId
+          ? { ...inv, transactions: (inv.transactions ?? []).filter(t => t.id !== txId) }
+          : inv
+      ),
+    }));
 
   const monthStartDay = data.monthStartDay ?? 1;
 
