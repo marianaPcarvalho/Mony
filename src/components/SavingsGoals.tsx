@@ -237,35 +237,14 @@ export function SavingsGoals() {
           </Dialog>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-          {/* Left: overall progress */}
-          <div className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Overall progress</span>
-              <span className="font-mono text-sm font-bold text-[hsl(var(--savings))]">{overallPct.toFixed(0)}%</span>
+        <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-muted/50 border border-border">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-success/15 text-success">
+              <PiggyBank className="h-5 w-5" />
             </div>
-            <Progress value={overallPct} className="h-3" style={{ ["--progress-color" as any]: "hsl(var(--savings))" }}
-              aria-label={`Saved ${fmt(totalSaved)} of ${fmt(totalTarget)} target`} />
-            <div className="flex items-baseline justify-between font-mono text-sm">
-              <span className="font-semibold text-[hsl(var(--savings))]">{fmt(totalSaved)}</span>
-              <span className="text-muted-foreground">of {fmt(totalTarget)}</span>
-            </div>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total saved</span>
           </div>
-
-          {/* Right: stats column */}
-          <div className="space-y-3">
-            {stats.map(s => (
-              <div key={s.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
-                <div className="flex items-center gap-3">
-                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${s.tone === "success" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
-                    <s.icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{s.label}</span>
-                </div>
-                <span className={`font-mono font-bold text-base ${s.tone === "success" ? "text-success" : "text-foreground"}`}>{s.value}</span>
-              </div>
-            ))}
-          </div>
+          <span className="font-mono font-bold text-xl text-success">{fmt(totalSaved)}</span>
         </div>
       </Card>
 
