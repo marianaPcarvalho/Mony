@@ -6,6 +6,7 @@ import { BudgetCharts } from "@/components/BudgetCharts";
 import { ExpenseList } from "@/components/ExpenseList";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
+import { ProfilePage } from "@/components/ProfilePage";
 import { MonthSelector } from "@/components/MonthSelector";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar, ViewKey } from "@/components/AppSidebar";
