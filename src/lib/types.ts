@@ -55,6 +55,16 @@ export interface SavingsGoal {
   monthlyContribution?: number;
 }
 
+export interface UserProfile {
+  name: string;
+  defaultSalary: number;
+  notifications: {
+    budgetAlerts: boolean;
+    monthlySummary: boolean;
+    savingsReminders: boolean;
+  };
+}
+
 export interface AppData {
   categories: Category[];
   expenses: Expense[];
@@ -62,4 +72,5 @@ export interface AppData {
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
   monthStartDay?: number; // 1-28, day of month when budget cycle starts
+  profile?: UserProfile;
 }
