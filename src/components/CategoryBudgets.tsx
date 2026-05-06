@@ -183,33 +183,33 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
       )}
 
       {(expanded || addingSub) && (
-        <div className="border-t border-border/50 bg-muted/20 px-3 py-2 space-y-1.5">
-          {subs.map((sub) =>
-            editingSubId === sub.id ? (
-              <SubEditRow
-                key={sub.id}
-                sub={sub}
-                onSave={(s) => { updateSubCategory(cat.id, s); setEditingSubId(null); }}
-                onCancel={() => setEditingSubId(null)}
-              />
-            ) : (
-              <div key={sub.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/40 group/sub">
-                <span className="text-base" aria-hidden="true">{sub.icon}</span>
-                <span className="text-sm text-foreground flex-1">{sub.name}</span>
-                <div className="flex gap-0.5 opacity-0 group-hover/sub:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingSubId(sub.id)} aria-label="Edit sub">
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => deleteSubCategory(cat.id, sub.id)} aria-label="Delete sub">
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            )
+        <div className="border-t border-border/50 bg-muted/20 px-3 py-2 space-y-2">
+          {subs.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {subs.map((sub) =>
+                editingSubId === sub.id ? (
+                  <SubEditRow
+                    key={sub.id}
+                    sub={sub}
+                    onSave={(s) => { updateSubCategory(cat.id, s); setEditingSubId(null); }}
+                    onCancel={() => setEditingSubId(null)}
+                  />
+                ) : (
+                  <div key={sub.id} className="group/sub inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-foreground">
+                    <button onClick={() => setEditingSubId(sub.id)} className="font-medium hover:text-primary" aria-label={`Edit ${sub.name}`}>
+                      {sub.name}
+                    </button>
+                    <button onClick={() => deleteSubCategory(cat.id, sub.id)} className="rounded-full p-0.5 text-muted-foreground hover:bg-destructive/15 hover:text-destructive" aria-label={`Delete ${sub.name}`}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
           )}
           {addingSub ? (
             <SubEditRow
-              onSave={(s) => { addSubCategory(cat.id, { name: s.name, icon: s.icon }); setAddingSub(false); }}
+              onSave={(s) => { addSubCategory(cat.id, { name: s.name, icon: "" }); setAddingSub(false); }}
               onCancel={() => setAddingSub(false)}
             />
           ) : (
@@ -225,24 +225,22 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
 
 function SubEditRow({ sub, onSave, onCancel }: { sub?: SubCategory; onSave: (s: SubCategory) => void; onCancel: () => void }) {
   const [name, setName] = useState(sub?.name ?? "");
-  const [icon, setIcon] = useState(sub?.icon ?? "📦");
   const submit = () => {
     if (!name.trim()) return;
-    onSave({ id: sub?.id ?? "", name: name.trim(), icon });
+    onSave({ id: sub?.id ?? "", name: name.trim(), icon: sub?.icon ?? "" });
   };
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-primary/5 border border-primary/20">
-      <EmojiPickerButton value={icon} onChange={setIcon} size="sm" />
+    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/5 border border-primary/30">
       <Input
         autoFocus
         placeholder="Sub-category name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
-        className="h-8 text-sm flex-1"
+        className="h-6 text-xs flex-1 border-0 bg-transparent px-1 focus-visible:ring-0 focus-visible:ring-offset-0 w-40"
       />
-      <Button size="icon" className="h-7 w-7" onClick={submit} aria-label="Save"><Check className="h-3.5 w-3.5" /></Button>
-      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={onCancel} aria-label="Cancel"><X className="h-3.5 w-3.5" /></Button>
+      <Button size="icon" className="h-6 w-6 rounded-full" onClick={submit} aria-label="Save"><Check className="h-3 w-3" /></Button>
+      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={onCancel} aria-label="Cancel"><X className="h-3 w-3" /></Button>
     </div>
   );
 }
