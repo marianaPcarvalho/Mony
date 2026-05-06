@@ -36,6 +36,42 @@ export function SavingsGoals() {
   const [addFundNote, setAddFundNote] = useState("");
   const [fundDialogGoalId, setFundDialogGoalId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [inlineFundGoalId, setInlineFundGoalId] = useState<string | null>(null);
+  const [inlineFundAmt, setInlineFundAmt] = useState("");
+
+  const inlineAmtNum = parseFloat(inlineFundAmt);
+  const inlineValid = !isNaN(inlineAmtNum) && inlineAmtNum > 0;
+  const submitInlineFund = (goalId: string) => {
+    if (!inlineValid) return;
+    addFundsToGoal(goalId, inlineAmtNum);
+    setInlineFundAmt("");
+    setInlineFundGoalId(null);
+  };
+
+  const getStatus = (goal: { currentAmount: number; targetAmount: number; targetDate?: string; monthlyContribution?: number }) => {
+    if (goal.targetAmount > 0 && goal.currentAmount >= goal.targetAmount) {
+      return { label: "Complete", tone: "success" as const, Icon: CheckCircle2 };
+    }
+    if (!goal.targetDate && !goal.monthlyContribution) {
+      return { label: "No plan", tone: "neutral" as const, Icon: Clock };
+    }
+    if (goal.targetDate) {
+      const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+      const t = new Date(goal.targetDate);
+      const now = new Date();
+      const months = Math.max(0, (t.getFullYear() - now.getFullYear()) * 12 + (t.getMonth() - now.getMonth()));
+      const required = months > 0 ? remaining / months : remaining;
+      if (goal.monthlyContribution && goal.monthlyContribution > 0) {
+        return goal.monthlyContribution >= required
+          ? { label: "On track", tone: "success" as const, Icon: CheckCircle2 }
+          : { label: "Off track", tone: "destructive" as const, Icon: AlertTriangle };
+      }
+      // Has date but no monthly plan
+      return { label: "Needs plan", tone: "warning" as const, Icon: AlertTriangle };
+    }
+    // Monthly only, no date — informational
+    return { label: "Saving", tone: "neutral" as const, Icon: Clock };
+  };
 
   const resetForm = () => {
     setName(""); setIcon("🏠"); setTarget(""); setCurrent("");
