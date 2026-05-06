@@ -44,6 +44,59 @@ export function ProfilePage() {
     updateProfile({ notifications: { ...profile.notifications, [key]: v } });
   };
 
+  const saveRecap = async () => {
+    const e = recapEmail.trim().toLowerCase();
+    if (!EMAIL_RE.test(e)) { toast.error("Enter a valid email"); return; }
+    setRecapBusy(true);
+    try {
+      // Push current snapshot first so the cloud has data
+      await pushSnapshot(data);
+      const { error } = await updateSubscription({ email: e, enabled: recapEnabled });
+      if (error) throw error;
+      setLocalSubscriber({ email: e, enabled: recapEnabled });
+      toast.success("Subscribed — you'll get a recap on the 1st of each month");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Could not subscribe");
+    } finally {
+      setRecapBusy(false);
+    }
+  };
+
+  const toggleRecapEnabled = async (v: boolean) => {
+    setRecapEnabled(v);
+    const sub = getLocalSubscriber();
+    if (!sub) return;
+    await updateSubscription({ enabled: v });
+    setLocalSubscriber({ ...sub, enabled: v });
+    toast.success(v ? "Monthly recaps resumed" : "Monthly recaps paused");
+  };
+
+  const unsubscribe = async () => {
+    setRecapBusy(true);
+    try {
+      await updateSubscription({ email: "" });
+      setLocalSubscriber(null);
+      setRecapEmail("");
+      toast.success("Unsubscribed");
+    } finally { setRecapBusy(false); }
+  };
+
+  const sendPreview = async () => {
+    setPreviewBusy(true);
+    try {
+      await pushSnapshot(data);
+      const { error } = await sendRecapPreview();
+      if (error) throw error;
+      toast.success("Preview sent — check your inbox");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Could not send preview");
+    } finally {
+      setPreviewBusy(false);
+    }
+  };
+
+  const isSubscribed = !!getLocalSubscriber();
+
   return (
     <div className="space-y-6">
       <div>
@@ -123,6 +176,55 @@ export function ProfilePage() {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card className="glass-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold tracking-tight text-foreground">Monthly email recap</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Get a summary delivered on the 1st of each month with your category breakdown, top expenses, and savings progress. Your data is securely synced so we can build the recap.
+        </p>
+        <div className="space-y-2">
+          <Label htmlFor="recap-email">Email address</Label>
+          <div className="flex gap-2">
+            <Input
+              id="recap-email"
+              type="email"
+              inputMode="email"
+              value={recapEmail}
+              onChange={e => setRecapEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && saveRecap()}
+              placeholder="you@example.com"
+              disabled={recapBusy}
+            />
+            <Button onClick={saveRecap} disabled={recapBusy || !recapEmail.trim()}>
+              {isSubscribed ? "Update" : "Subscribe"}
+            </Button>
+          </div>
+        </div>
+
+        {isSubscribed && (
+          <>
+            <div className="flex items-start justify-between gap-4 p-3 rounded-lg border border-border bg-muted/40">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium text-foreground">Send monthly recap</p>
+                <p className="text-xs text-muted-foreground">Pause if you don't want any emails.</p>
+              </div>
+              <Switch checked={recapEnabled} onCheckedChange={toggleRecapEnabled} aria-label="Enable recap" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={sendPreview} disabled={previewBusy} className="gap-2">
+                <Send className="h-4 w-4" />
+                {previewBusy ? "Sending..." : "Send preview now"}
+              </Button>
+              <Button variant="ghost" onClick={unsubscribe} disabled={recapBusy} className="text-destructive">
+                Unsubscribe
+              </Button>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );
