@@ -26,9 +26,9 @@ export function ExpenseList() {
   const [subCatId, setSubCatId] = useState("");
   const [amount, setAmount] = useState("");
   const [desc, setDesc] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string>("");
 
-  const resetForm = () => { setCatId(""); setSubCatId(""); setAmount(""); setDesc(""); setDate(new Date().toISOString().slice(0, 10)); setEditingId(null); };
+  const resetForm = () => { setCatId(""); setSubCatId(""); setAmount(""); setDesc(""); setDate(""); setEditingId(null); };
 
   const amountNum = parseFloat(amount);
   const isValid = !!catId && !!date && !isNaN(amountNum) && amountNum > 0;
