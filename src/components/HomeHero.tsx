@@ -52,58 +52,77 @@ export function HomeHero() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-        {/* Donut */}
-        <div className="relative">
-          {pieData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%" cy="50%"
-                    innerRadius={75} outerRadius={115}
-                    dataKey="value" paddingAngle={0} strokeWidth={0}
-                    isAnimationActive={false}
-                    style={{ pointerEvents: "none", outline: "none" }}
-                  >
-                    {pieData.map((entry, i) => <Cell key={i} fill={entry.color} style={{ outline: "none" }} />)}
-                  </Pie>
-                  <Tooltip
-                    wrapperStyle={{ outline: "none", fontSize: 11 }}
-                    contentStyle={{ padding: "4px 8px", borderRadius: 6, fontSize: 11 }}
-                    formatter={(value: number, _name, item: any) => {
-                      const total = pieData.reduce((s, p) => s + p.value, 0);
-                      const pct = total > 0 ? (value / total) * 100 : 0;
-                      return [`€${value.toFixed(2)} (${pct.toFixed(1)}%)`, item?.payload?.name];
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Spent</span>
-                <span className="font-mono font-bold text-xl text-foreground">{fmt(spent)}</span>
-              </div>
-            </>
-          ) : (
-            <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
-              No expenses yet this month
-            </div>
-          )}
-          {pieData.length > 0 && (
-            <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-2">
-              {pieData.map((d, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} aria-hidden="true" />
-                  <span className="text-foreground font-medium">{d.icon} {d.name}</span>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          {/* Donut */}
+          <div className="relative">
+            {pieData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%" cy="50%"
+                      innerRadius={75} outerRadius={115}
+                      dataKey="value" paddingAngle={0} strokeWidth={0}
+                      isAnimationActive={false}
+                      style={{ pointerEvents: "none", outline: "none" }}
+                    >
+                      {pieData.map((entry, i) => <Cell key={i} fill={entry.color} style={{ outline: "none" }} />)}
+                    </Pie>
+                    <Tooltip
+                      wrapperStyle={{ outline: "none", fontSize: 11 }}
+                      contentStyle={{ padding: "4px 8px", borderRadius: 6, fontSize: 11 }}
+                      formatter={(value: number, _name, item: any) => {
+                        const total = pieData.reduce((s, p) => s + p.value, 0);
+                        const pct = total > 0 ? (value / total) * 100 : 0;
+                        return [`€${value.toFixed(2)} (${pct.toFixed(1)}%)`, item?.payload?.name];
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ height: 260 }}>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Spent</span>
+                  <span className="font-mono font-bold text-xl text-foreground">{fmt(spent)}</span>
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
+                No expenses yet this month
+              </div>
+            )}
+          </div>
+
+          {/* Legend list on the right */}
+          {pieData.length > 0 ? (
+            <ul className="space-y-1.5" aria-label="Spending breakdown">
+              {pieData
+                .slice()
+                .sort((a, b) => b.value - a.value)
+                .map((d, i) => {
+                  const total = pieData.reduce((s, p) => s + p.value, 0);
+                  const pct = total > 0 ? (d.value / total) * 100 : 0;
+                  return (
+                    <li key={i} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} aria-hidden="true" />
+                        <span className="text-sm font-medium text-foreground truncate">{d.icon} {d.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="font-mono text-sm font-semibold text-foreground">{fmt(d.value)}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">{pct.toFixed(1)}%</span>
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          ) : (
+            <div className="text-sm text-muted-foreground">Add an expense to see your breakdown.</div>
           )}
         </div>
 
-        {/* Stats column */}
-        <div className="space-y-3">
+        {/* Stats row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {stats.map(s => (
             <div key={s.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
               <div className="flex items-center gap-3">
@@ -112,7 +131,7 @@ export function HomeHero() {
                 </div>
                 <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{s.label}</span>
               </div>
-              <span className={`font-mono font-bold text-lg ${s.tone === "success" ? "text-success" : "text-destructive"}`}>
+              <span className={`font-mono font-bold text-base ${s.tone === "success" ? "text-success" : "text-destructive"}`}>
                 {s.value}
               </span>
             </div>
