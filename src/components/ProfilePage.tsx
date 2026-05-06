@@ -5,10 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { User, Wallet, Bell, Check } from "lucide-react";
+import { User, Wallet, Bell, Check, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
+import {
+  getLocalSubscriber, setLocalSubscriber,
+  updateSubscription, sendRecapPreview, pushSnapshot,
+} from "@/lib/cloudSync";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ProfilePage() {
+  const { getProfile, updateProfile, data } = useStore();
+  const profile = getProfile();
+
+  const initialSub = getLocalSubscriber();
+  const [recapEmail, setRecapEmail] = useState(initialSub?.email ?? "");
+  const [recapEnabled, setRecapEnabled] = useState(initialSub?.enabled ?? true);
+  const [recapBusy, setRecapBusy] = useState(false);
+  const [previewBusy, setPreviewBusy] = useState(false);
   const { getProfile, updateProfile } = useStore();
   const profile = getProfile();
 
