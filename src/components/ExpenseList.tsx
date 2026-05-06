@@ -148,28 +148,20 @@ export function ExpenseList() {
               <Input id="exp-desc" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="What was this for?" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="exp-date">Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="exp-date"
-                    variant="outline"
-                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(parseISO(date), "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date ? parseISO(date) : undefined}
-                    onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex items-center justify-between">
+                <Label>Date</Label>
+                <span className="text-xs text-muted-foreground">
+                  {date ? format(parseISO(date), "PPP") : "Pick a day"}
+                </span>
+              </div>
+              <div className="rounded-md border border-border flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={date ? parseISO(date) : undefined}
+                  onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </div>
             </div>
             <Button onClick={handleSave} className="w-full">{editingId ? "Update" : "Add"} Expense</Button>
           </div>
