@@ -23,9 +23,6 @@ export function ProfilePage() {
   const [recapEnabled, setRecapEnabled] = useState(initialSub?.enabled ?? true);
   const [recapBusy, setRecapBusy] = useState(false);
   const [previewBusy, setPreviewBusy] = useState(false);
-  const { getProfile, updateProfile } = useStore();
-  const profile = getProfile();
-
   const [name, setName] = useState(profile.name);
   const [salary, setSalary] = useState(String(profile.defaultSalary));
 
