@@ -102,9 +102,9 @@ export function ExpenseList() {
             {/* Left: category, description, amount */}
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="exp-category">Category</Label>
+                <Label htmlFor="exp-category">Category <span className="text-destructive">*</span></Label>
                 <Select value={catId} onValueChange={(v) => { setCatId(v); setSubCatId(""); }}>
-                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Choose a category" /></SelectTrigger>
                   <SelectContent>
                     {data.categories.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
@@ -116,7 +116,7 @@ export function ExpenseList() {
                 <div className="space-y-1.5">
                   <Label htmlFor="exp-subcategory">Sub-category</Label>
                   <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
-                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="(optional)" /></SelectTrigger>
+                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="Optional" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
                       {subCategories.map(s => (
@@ -128,10 +128,10 @@ export function ExpenseList() {
               )}
               <div className="space-y-1.5">
                 <Label htmlFor="exp-desc">Description</Label>
-                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="What was this for?" />
+                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g. Groceries at Continente" maxLength={120} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="exp-amount">Amount</Label>
+                <Label htmlFor="exp-amount">Amount <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                   <Input
@@ -157,7 +157,7 @@ export function ExpenseList() {
             {/* Right: calendar */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Date</Label>
+                <Label>Date <span className="text-destructive">*</span></Label>
                 <span className="text-xs text-muted-foreground">
                   {date ? format(parseISO(date), "PPP") : "Pick a day"}
                 </span>
@@ -172,7 +172,7 @@ export function ExpenseList() {
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} className="w-full mt-2">{editingId ? "Update" : "Add"} Expense</Button>
+          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Update" : "Add"} Expense</Button>
         </DialogContent>
       </Dialog>
 
