@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile } from "./types";
 
 const STORAGE_KEY = "budget-app-data";
 
@@ -17,12 +17,23 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const defaultProfile: UserProfile = {
+  name: "Mariana",
+  defaultSalary: 3000,
+  notifications: {
+    budgetAlerts: true,
+    monthlySummary: true,
+    savingsReminders: false,
+  },
+};
+
 const defaultData: AppData = {
   categories: defaultCategories,
   expenses: [],
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
+  profile: defaultProfile,
 };
 
 function loadData(): AppData {
@@ -50,6 +61,11 @@ function loadData(): AppData {
           subCategories: c.subCategories ?? [],
         }));
       }
+      parsed.profile = {
+        ...defaultProfile,
+        ...(parsed.profile ?? {}),
+        notifications: { ...defaultProfile.notifications, ...((parsed.profile?.notifications) ?? {}) },
+      };
       return parsed;
     }
   } catch {}
@@ -93,6 +109,8 @@ interface StoreContextType {
   getActualSavedTotal: () => number;
   getActualSavedInMonth: (month: string) => number;
   setMonthStartDay: (day: number) => void;
+  updateProfile: (p: Partial<UserProfile>) => void;
+  getProfile: () => UserProfile;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -158,7 +176,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (existing) return { ...d, monthlyConfigs: d.monthlyConfigs.map(m => m.month === month ? { ...m, salary } : m) };
       return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary, budget: 0 }] };
     });
-  const getSalary = (month: string) => getMonthConfig(month).salary;
+  const getProfile = (): UserProfile => data.profile ?? defaultProfile;
+  const getSalary = (month: string) => {
+    const cfg = data.monthlyConfigs.find(m => m.month === month);
+    if (cfg) return cfg.salary;
+    return getProfile().defaultSalary;
+  };
+  const updateProfile = (p: Partial<UserProfile>) =>
+    update(d => ({
+      ...d,
+      profile: {
+        ...(d.profile ?? defaultProfile),
+        ...p,
+        notifications: { ...(d.profile?.notifications ?? defaultProfile.notifications), ...(p.notifications ?? {}) },
+      },
+    }));
   const setBudget = (month: string, budget: number) =>
     update(d => {
       const existing = d.monthlyConfigs.find(m => m.month === month);
@@ -242,7 +274,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
-      setMonthStartDay,
+      setMonthStartDay, updateProfile, getProfile,
     }}>
       {children}
     </StoreContext.Provider>
