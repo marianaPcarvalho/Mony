@@ -10,11 +10,12 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Plus, Trash2, History, ChevronDown, ChevronRight, Pencil,
-  PiggyBank, Target, CalendarClock,
+  Plus, Trash2, History, ChevronDown, ChevronRight, Pencil, X,
+  PiggyBank, Target, CalendarClock, CheckCircle2, AlertTriangle, Clock,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { EmojiPickerButton } from "./EmojiPickerButton";
+import { SavingsTrendChart } from "./SavingsTrendChart";
 
 const fmt = (v: number) =>
   `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -35,6 +36,42 @@ export function SavingsGoals() {
   const [addFundNote, setAddFundNote] = useState("");
   const [fundDialogGoalId, setFundDialogGoalId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [inlineFundGoalId, setInlineFundGoalId] = useState<string | null>(null);
+  const [inlineFundAmt, setInlineFundAmt] = useState("");
+
+  const inlineAmtNum = parseFloat(inlineFundAmt);
+  const inlineValid = !isNaN(inlineAmtNum) && inlineAmtNum > 0;
+  const submitInlineFund = (goalId: string) => {
+    if (!inlineValid) return;
+    addFundsToGoal(goalId, inlineAmtNum);
+    setInlineFundAmt("");
+    setInlineFundGoalId(null);
+  };
+
+  const getStatus = (goal: { currentAmount: number; targetAmount: number; targetDate?: string; monthlyContribution?: number }) => {
+    if (goal.targetAmount > 0 && goal.currentAmount >= goal.targetAmount) {
+      return { label: "Complete", tone: "success" as const, Icon: CheckCircle2 };
+    }
+    if (!goal.targetDate && !goal.monthlyContribution) {
+      return { label: "No plan", tone: "neutral" as const, Icon: Clock };
+    }
+    if (goal.targetDate) {
+      const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+      const t = new Date(goal.targetDate);
+      const now = new Date();
+      const months = Math.max(0, (t.getFullYear() - now.getFullYear()) * 12 + (t.getMonth() - now.getMonth()));
+      const required = months > 0 ? remaining / months : remaining;
+      if (goal.monthlyContribution && goal.monthlyContribution > 0) {
+        return goal.monthlyContribution >= required
+          ? { label: "On track", tone: "success" as const, Icon: CheckCircle2 }
+          : { label: "Off track", tone: "destructive" as const, Icon: AlertTriangle };
+      }
+      // Has date but no monthly plan
+      return { label: "Needs plan", tone: "warning" as const, Icon: AlertTriangle };
+    }
+    // Monthly only, no date — informational
+    return { label: "Saving", tone: "neutral" as const, Icon: Clock };
+  };
 
   const resetForm = () => {
     setName(""); setIcon("🏠"); setTarget(""); setCurrent("");
@@ -232,6 +269,9 @@ export function SavingsGoals() {
         </div>
       </Card>
 
+      {/* Trend over time */}
+      <SavingsTrendChart />
+
       {/* Goals list */}
       <Card className="glass-card p-5 space-y-3">
         <h3 className="section-title flex items-center gap-2">
@@ -251,16 +291,32 @@ export function SavingsGoals() {
             const history = goal.fundHistory ?? [];
             const proj = getProjection(goal);
             const isComplete = goal.currentAmount >= goal.targetAmount && goal.targetAmount > 0;
+            const status = getStatus(goal);
+            const isInlineOpen = inlineFundGoalId === goal.id;
+            const statusToneCls =
+              status.tone === "success" ? "bg-success/15 text-success border-success/30" :
+              status.tone === "destructive" ? "bg-destructive/15 text-destructive border-destructive/30" :
+              status.tone === "warning" ? "bg-warning/15 text-warning border-warning/30" :
+              "bg-muted text-muted-foreground border-border";
 
             return (
               <div key={goal.id} className="rounded-xl border border-border/60 bg-card overflow-hidden">
                 <div className="p-4 space-y-3 group">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="text-2xl flex-shrink-0" aria-hidden="true">{goal.icon}</span>
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm text-foreground truncate">{goal.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-sm text-foreground truncate">{goal.name}</p>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${statusToneCls}`}
+                            aria-label={`Status: ${status.label}`}
+                          >
+                            <status.Icon className="h-3 w-3" />
+                            {status.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
                           <span className="font-semibold text-[hsl(var(--savings))]">{fmt(goal.currentAmount)}</span>
                           <span className="text-muted-foreground"> / {fmt(goal.targetAmount)}</span>
                         </p>
@@ -293,8 +349,17 @@ export function SavingsGoals() {
                       {goal.monthlyContribution && <span>Planned: {fmt(goal.monthlyContribution)}/mo</span>}
                     </div>
                     <div className="flex gap-1.5">
-                      <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => setFundDialogGoalId(goal.id)}>
-                        <Plus className="h-3 w-3" /> Add Funds
+                      <Button
+                        variant={isInlineOpen ? "secondary" : "outline"}
+                        size="sm"
+                        className="text-xs h-7 gap-1"
+                        onClick={() => {
+                          if (isInlineOpen) { setInlineFundGoalId(null); setInlineFundAmt(""); }
+                          else { setInlineFundGoalId(goal.id); setInlineFundAmt(""); }
+                        }}
+                        aria-expanded={isInlineOpen}
+                      >
+                        {isInlineOpen ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />} Add Funds
                       </Button>
                       <Button variant="ghost" size="sm" className="text-xs h-7 gap-1" onClick={() => setExpandedGoal(isExpanded ? null : goal.id)} aria-expanded={isExpanded}>
                         <History className="h-3 w-3" /> History
@@ -302,6 +367,28 @@ export function SavingsGoals() {
                       </Button>
                     </div>
                   </div>
+
+                  {isInlineOpen && (
+                    <form
+                      className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 p-2"
+                      onSubmit={(e) => { e.preventDefault(); submitInlineFund(goal.id); }}
+                    >
+                      <Label htmlFor={`inline-fund-${goal.id}`} className="sr-only">Amount to add</Label>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
+                        <Input
+                          id={`inline-fund-${goal.id}`}
+                          type="number" min="0" step="0.01" inputMode="decimal"
+                          value={inlineFundAmt}
+                          onChange={(e) => setInlineFundAmt(e.target.value)}
+                          placeholder="0.00"
+                          className="pl-7 h-8 font-mono text-sm"
+                          autoFocus
+                        />
+                      </div>
+                      <Button type="submit" size="sm" className="h-8 text-xs" disabled={!inlineValid}>Add</Button>
+                    </form>
+                  )}
 
                   {proj.remaining > 0 && (goal.targetDate || (goal.monthlyContribution && goal.monthlyContribution > 0)) && (
                     <div className="rounded-lg bg-muted/40 border border-border/60 px-3 py-2 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
