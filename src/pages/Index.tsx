@@ -2,7 +2,7 @@ import { useState } from "react";
 import { StoreProvider } from "@/lib/store";
 import { HomeHero } from "@/components/HomeHero";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
-import { BudgetCharts } from "@/components/BudgetCharts";
+
 import { ExpenseList } from "@/components/ExpenseList";
 import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
