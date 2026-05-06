@@ -269,6 +269,9 @@ export function SavingsGoals() {
         </div>
       </Card>
 
+      {/* Trend over time */}
+      <SavingsTrendChart />
+
       {/* Goals list */}
       <Card className="glass-card p-5 space-y-3">
         <h3 className="section-title flex items-center gap-2">
