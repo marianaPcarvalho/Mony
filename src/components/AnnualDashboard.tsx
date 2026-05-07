@@ -8,7 +8,7 @@ import {
 import { Wallet, TrendingDown, PiggyBank, Target, ClipboardList } from "lucide-react";
 import { YearlyPlanner } from "@/components/YearlyPlanner";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const COLORS = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
@@ -58,11 +58,11 @@ export function AnnualDashboard() {
     .filter(c => c.value > 0);
 
   const stats = [
-    { label: "Total income", value: fmt(totalSalaryYear), icon: Wallet, tone: "success" as const },
-    { label: "Total spent", value: fmt(totalSpentYear), icon: TrendingDown, tone: "destructive" as const },
-    { label: "Actual savings", value: fmt(totalActualSaved), icon: PiggyBank, tone: "success" as const },
-    { label: "Planned savings", value: fmt(totalPlannedSavings), icon: Target, tone: "neutral" as const },
-    { label: "Budgeted expenses", value: fmt(totalBudgetedYear), icon: ClipboardList, tone: "neutral" as const },
+    { label: "Receita total", value: fmt(totalSalaryYear), icon: Wallet, tone: "success" as const },
+    { label: "Total gasto", value: fmt(totalSpentYear), icon: TrendingDown, tone: "destructive" as const },
+    { label: "Poupança real", value: fmt(totalActualSaved), icon: PiggyBank, tone: "success" as const },
+    { label: "Poupança planeada", value: fmt(totalPlannedSavings), icon: Target, tone: "neutral" as const },
+    { label: "Despesas planeadas", value: fmt(totalBudgetedYear), icon: ClipboardList, tone: "neutral" as const },
   ];
 
   return (
@@ -81,7 +81,7 @@ export function AnnualDashboard() {
             <div
               className="relative"
               role="img"
-              aria-label={`Yearly spending donut for ${year}. Total ${fmt(totalSpentYear)} across ${categoryYearData.length} categories.`}
+              aria-label={`Distribuição anual para ${year}. Total ${fmt(totalSpentYear)} em ${categoryYearData.length} categorias.`}
             >
               {categoryYearData.length > 0 ? (
                 <>
@@ -116,19 +116,19 @@ export function AnnualDashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ height: 260 }}>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Spent in {year}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Gasto em {year}</span>
                     <span className="font-mono font-bold text-xl text-foreground">{fmt(totalSpentYear)}</span>
                   </div>
                 </>
               ) : (
                 <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
-                  No spending data for {year}
+                  Sem despesas em {year}
                 </div>
               )}
             </div>
 
             {categoryYearData.length > 0 ? (
-              <ul className="space-y-1.5" aria-label="Yearly spending breakdown">
+              <ul className="space-y-1.5" aria-label="Distribuição anual de despesas">
                 {categoryYearData
                   .slice()
                   .sort((a, b) => b.value - a.value)
@@ -150,7 +150,7 @@ export function AnnualDashboard() {
                   })}
               </ul>
             ) : (
-              <div className="text-sm text-muted-foreground text-center">Add expenses to see your breakdown.</div>
+              <div className="text-sm text-muted-foreground text-center">Adiciona despesas para veres a distribuição.</div>
             )}
           </div>
 
@@ -183,7 +183,7 @@ export function AnnualDashboard() {
         <h3 className="section-title flex items-center gap-2">
           <ClipboardList className="h-4 w-4 text-muted-foreground" /> Monthly overview
         </h3>
-        <div role="img" aria-label="Monthly overview bar chart showing income, spent, savings and budgeted per month.">
+        <div role="img" aria-label="Gráfico mensal de receitas, gastos, poupança e orçamento.">
           <ResponsiveContainer width="100%" height={300} minWidth={0}>
             <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
@@ -203,10 +203,10 @@ export function AnnualDashboard() {
                 formatter={(value: number, name: string) => [fmt(Number(value)), name]}
               />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 6 }} iconType="circle" />
-              <Bar dataKey="salary" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} barSize={14} name="Income" isAnimationActive={false} />
-              <Bar dataKey="spent" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} barSize={14} name="Spent" isAnimationActive={false} />
-              <Bar dataKey="savings" fill="hsl(var(--savings))" radius={[4, 4, 0, 0]} barSize={14} name="Savings" isAnimationActive={false} />
-              <Bar dataKey="budgeted" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} barSize={14} name="Budgeted" isAnimationActive={false} />
+              <Bar dataKey="salary" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} barSize={14} name="Receita" isAnimationActive={false} />
+              <Bar dataKey="spent" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} barSize={14} name="Gasto" isAnimationActive={false} />
+              <Bar dataKey="savings" fill="hsl(var(--savings))" radius={[4, 4, 0, 0]} barSize={14} name="Poupança" isAnimationActive={false} />
+              <Bar dataKey="budgeted" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} barSize={14} name="Planeado" isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -247,7 +247,7 @@ export function AnnualDashboard() {
                   value={pct}
                   className="h-2"
                   style={{ ["--progress-color" as any]: color }}
-                  aria-label={`${cat.name}: ${pct.toFixed(0)} percent of yearly budget used`}
+                  aria-label={`${cat.name}: ${pct.toFixed(0)} percento do orçamento anual usado`}
                 />
               </div>
             );

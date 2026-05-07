@@ -8,9 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, BellOff, BellRing, Check, X } from "lucide-react";
+import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { toast as sonnerToast } from "sonner";
 import { EmojiPickerButton } from "./EmojiPickerButton";
 
 interface ParsedExpense {
@@ -39,8 +38,6 @@ interface Parsed {
 
 const MEMORY_KEY = "bank-import-memory-v1";
 const META_KEY = "bank-import-meta-v2"; // v2: per-month tracking
-const REMINDER_KEY = "bank-import-reminder-v1";
-const REMINDER_SETTINGS_KEY = "bank-import-reminder-settings-v1";
 
 interface MemoryEntry {
   categoryId: string;
@@ -54,15 +51,6 @@ interface ImportMeta {
   lastImportedAt?: string;
   byMonth?: Record<string, { fileName: string; importedAt: string }>;
 }
-
-interface ReminderSettings {
-  enabled: boolean;
-  snoozedUntil?: string; // ISO date; suppress reminders before this
-}
-const loadReminderSettings = (): ReminderSettings => {
-  try { return JSON.parse(localStorage.getItem(REMINDER_SETTINGS_KEY) ?? "") || { enabled: true }; } catch { return { enabled: true }; }
-};
-const saveReminderSettings = (s: ReminderSettings) => localStorage.setItem(REMINDER_SETTINGS_KEY, JSON.stringify(s));
 
 const normalizeDesc = (s: string) =>
   (s ?? "")
@@ -143,60 +131,11 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(loadReminderSettings);
-
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevMonthKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
-  const prevMonthLabel = prev.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-  const prevMonthImport = meta.byMonth?.[prevMonthKey];
-  const prevMonthHasImport = !!prevMonthImport;
-
-  // Reminder: if previous calendar month has no imported statement, nudge once per browser session.
-  useEffect(() => {
-    try {
-      const SESSION_KEY = "bank-import-reminder-session";
-      if (sessionStorage.getItem(SESSION_KEY)) return;
-      if (!reminderSettings.enabled) return;
-      if (reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date()) return;
-      if (prevMonthHasImport) return;
-
-      sonnerToast("Time to import last month's statement 📅", {
-        description: `You haven't uploaded a bank statement for ${prevMonthLabel} yet.`,
-        duration: 8000,
-        action: {
-          label: "Snooze 7d",
-          onClick: () => {
-            const until = new Date(); until.setDate(until.getDate() + 7);
-            const next = { ...reminderSettings, snoozedUntil: until.toISOString() };
-            setReminderSettings(next); saveReminderSettings(next);
-          },
-        },
-      });
-      sessionStorage.setItem(SESSION_KEY, "1");
-      const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      localStorage.setItem(REMINDER_KEY, cur);
-    } catch { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const snoozedActive = !!reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date();
-
-  const toggleRemindersEnabled = () => {
-    const next = { ...reminderSettings, enabled: !reminderSettings.enabled, snoozedUntil: undefined };
-    setReminderSettings(next); saveReminderSettings(next);
-    toast({ title: next.enabled ? "Reminders enabled" : "Reminders disabled" });
-  };
-  const snoozeReminders = (days: number) => {
-    const until = new Date(); until.setDate(until.getDate() + days);
-    const next = { ...reminderSettings, enabled: true, snoozedUntil: until.toISOString() };
-    setReminderSettings(next); saveReminderSettings(next);
-    toast({ title: `Reminders snoozed for ${days} day${days === 1 ? "" : "s"}` });
-  };
-  const clearSnooze = () => {
-    const next = { ...reminderSettings, snoozedUntil: undefined };
-    setReminderSettings(next); saveReminderSettings(next);
-  };
+  const curMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const curMonthLabel = now.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
+  const curMonthImport = meta.byMonth?.[curMonthKey];
+  const curMonthHasImport = !!curMonthImport;
 
   useEffect(() => {
     if (!pendingAssign || !parsed) return;
@@ -224,27 +163,27 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const handleFile = async (file: File) => {
     if (!file) {
-      toast({ title: "No file selected", variant: "destructive" });
+      toast({ title: "Nenhum ficheiro selecionado", variant: "destructive" });
       return;
     }
     if (file.type !== "application/pdf") {
-      toast({ title: "PDF only", description: "Please upload a PDF bank statement.", variant: "destructive" });
+      toast({ title: "Apenas PDF", description: "Carrega um extrato bancário em PDF.", variant: "destructive" });
       return;
     }
     if (file.size === 0) {
-      toast({ title: "Empty file", description: "The selected PDF appears to be empty.", variant: "destructive" });
+      toast({ title: "Ficheiro vazio", description: "O PDF selecionado parece estar vazio.", variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Maximum size is 10MB.", variant: "destructive" });
+      toast({ title: "Ficheiro demasiado grande", description: "Tamanho máximo: 10MB.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
       const pdfBase64 = await fileToBase64(file).catch(() => {
-        throw new Error("Could not read the file. Try saving the PDF again and re-uploading.");
+        throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
       });
-      if (!pdfBase64) throw new Error("File appears to be empty.");
+      if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
 
       const { data: result, error } = await supabase.functions.invoke("parse-bank-statement", {
         body: {
@@ -254,14 +193,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
       });
       if (error) {
         const msg = (error as any)?.message ?? "";
-        if (msg.includes("429")) throw new Error("Too many requests right now. Please wait a moment and try again.");
-        if (msg.includes("402")) throw new Error("AI credits exhausted. Please add credits to continue.");
-        throw new Error(msg || "Server error while reading the statement.");
+        if (msg.includes("429")) throw new Error("Demasiados pedidos. Aguarda um momento e tenta novamente.");
+        if (msg.includes("402")) throw new Error("Créditos de IA esgotados. Adiciona créditos para continuar.");
+        throw new Error(msg || "Erro do servidor ao ler o extrato.");
       }
       if ((result as any)?.error) throw new Error((result as any).error);
       const p = result as Parsed;
       if (!p || (!p.expenses?.length && !p.incomes?.length)) {
-        throw new Error("No transactions found in this PDF. Make sure it's a bank statement with a transaction list.");
+        throw new Error("Sem transações neste PDF. Confirma que é um extrato com lista de movimentos.");
       }
 
       const memory = loadMemory();
@@ -283,12 +222,12 @@ export function BankStatementImport({ variant = "full" }: Props) {
       setBulkSub("");
       setBulkIncType("");
 
-      toast({ title: "Statement analyzed", description: `Found ${p.expenses.length} expenses and ${p.incomes.length} incomes.` });
+      toast({ title: "Extrato analisado", description: `Encontradas ${p.expenses.length} despesas e ${p.incomes.length} receitas.` });
     } catch (e: any) {
       console.error("Bank statement upload failed:", e);
       toast({
-        title: "Could not read statement",
-        description: e?.message ?? "Something went wrong. Please try again.",
+        title: "Não foi possível ler o extrato",
+        description: e?.message ?? "Algo correu mal. Tenta novamente.",
         variant: "destructive",
       });
     } finally {
@@ -365,7 +304,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
     saveMeta(newMeta);
 
     if (effectiveMonth) setSelectedMonth(effectiveMonth);
-    toast({ title: "Imported!", description: `${added} entries added${effectiveMonth ? ` to ${effectiveMonth}` : ""}.` });
+    toast({ title: "Importado!", description: `${added} entradas adicionadas${effectiveMonth ? ` a ${effectiveMonth}` : ""}.` });
     setParsed(null);
   };
 
@@ -407,7 +346,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
       n.expenses[i]._subCategoryId = bulkSub || "";
     });
     setParsed({ ...n });
-    toast({ title: `Applied to ${bulkSel.size} expense(s)` });
+    toast({ title: `Aplicado a ${bulkSel.size} despesa(s)` });
   };
 
   const applyBulkIncome = () => {
@@ -415,7 +354,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
     const n = { ...parsed };
     bulkIncSel.forEach(i => { n.incomes[i].type = bulkIncType; });
     setParsed({ ...n });
-    toast({ title: `Applied to ${bulkIncSel.size} income(s)` });
+    toast({ title: `Aplicado a ${bulkIncSel.size} receita(s)` });
   };
 
   const toggleAllExpenses = (checked: boolean) => {
@@ -437,7 +376,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
   const triggerButton = (
     <Button onClick={() => fileRef.current?.click()} disabled={loading} size={variant === "compact" ? "sm" : "default"} className="gap-2">
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : meta.lastFileName ? <RefreshCw className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-      {loading ? "Analyzing…" : meta.lastFileName ? "Re-import PDF" : "Upload PDF"}
+      {loading ? "A analisar…" : meta.lastFileName ? "Reimportar PDF" : "Carregar PDF"}
     </Button>
   );
 
@@ -451,45 +390,20 @@ export function BankStatementImport({ variant = "full" }: Props) {
     />
   );
 
-  const lastMonthStatusBadge = (
+  const currentMonthStatusBadge = !curMonthHasImport ? (
     <div
-      className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
-        prevMonthHasImport
-          ? "border-success/40 bg-success/10 text-success"
-          : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-      }`}
-      title={prevMonthHasImport && prevMonthImport?.fileName ? `File: ${prevMonthImport.fileName}` : undefined}
+      className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
     >
-      {prevMonthHasImport ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-      {prevMonthLabel}: {prevMonthHasImport ? "imported" : "missing"}
+      <AlertTriangle className="h-3 w-3" />
+      <span className="capitalize">{curMonthLabel}</span>: extrato em falta
     </div>
-  );
-
-  const reminderControls = (
-    <div className="flex items-center gap-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-8 px-2 text-xs gap-1"
-        onClick={toggleRemindersEnabled}
-        title={reminderSettings.enabled ? "Disable monthly reminders" : "Enable monthly reminders"}
-      >
-        {reminderSettings.enabled ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
-        {reminderSettings.enabled ? "On" : "Off"}
-      </Button>
-      {reminderSettings.enabled && (
-        snoozedActive ? (
-          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" onClick={clearSnooze} title="Cancel snooze">
-            <X className="h-3.5 w-3.5" />
-            Snoozed to {new Date(reminderSettings.snoozedUntil!).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-          </Button>
-        ) : (
-          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => snoozeReminders(7)}>
-            Snooze 7d
-          </Button>
-        )
-      )}
+  ) : (
+    <div
+      className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-success/40 bg-success/10 text-success"
+      title={curMonthImport?.fileName ? `Ficheiro: ${curMonthImport.fileName}` : undefined}
+    >
+      <Check className="h-3 w-3" />
+      <span className="capitalize">{curMonthLabel}</span>: importado
     </div>
   );
 
@@ -501,19 +415,19 @@ export function BankStatementImport({ variant = "full" }: Props) {
             <div className="min-w-0">
               {meta.lastFileName ? (
                 <p className="text-xs text-muted-foreground truncate">
-                  Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
-                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
+                  Último: <span className="font-medium text-foreground">{meta.lastFileName}</span>
+                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric" })}</>}
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground">No statement imported yet.</p>
+                <p className="text-xs text-muted-foreground">Ainda sem extrato importado.</p>
               )}
             </div>
             {triggerButton}
             {fileInput}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {lastMonthStatusBadge}
-            {reminderControls}
+            {currentMonthStatusBadge}
+            
           </div>
         </div>
       ) : (
@@ -524,16 +438,16 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-foreground">Import bank statement</h3>
-                <p className="text-xs text-muted-foreground">Upload your monthly PDF — Mony will read and sort it for you.</p>
+                <h3 className="font-semibold text-foreground">Importar extrato bancário</h3>
+                <p className="text-xs text-muted-foreground">Carrega o PDF mensal — a MONY lê e organiza por ti.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
             {fileInput}
           </div>
           <div className="mt-3 flex items-center gap-2 flex-wrap">
-            {lastMonthStatusBadge}
-            {reminderControls}
+            {currentMonthStatusBadge}
+            
           </div>
         </Card>
       )}
@@ -542,23 +456,23 @@ export function BankStatementImport({ variant = "full" }: Props) {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" /> Review extracted entries
+              <FileText className="h-5 w-5" /> Rever entradas extraídas
             </DialogTitle>
           </DialogHeader>
 
           {parsed && (
             <div className="space-y-5">
               <div className="text-xs text-muted-foreground">
-                Statement month: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "unknown"}</span>
+                Mês do extrato: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "desconhecido"}</span>
               </div>
 
               {monthAlreadyImported && (
                 <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div className="text-xs">
-                    A statement for <strong>{effectiveMonth}</strong> was already imported
+                    Já existe um extrato para <strong>{effectiveMonth}</strong> importado
                     {meta.byMonth?.[effectiveMonth!]?.fileName && <> ({meta.byMonth![effectiveMonth!].fileName})</>}.
-                    Confirming will replace duplicate entries with the new ones.
+                    Ao confirmar, as entradas duplicadas serão substituídas.
                   </div>
                 </div>
               )}
@@ -567,7 +481,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40">
                   <label className="flex items-center gap-2 text-sm">
                     <Checkbox checked={importSalary} onCheckedChange={v => setImportSalary(!!v)} />
-                    Set salary for {effectiveMonth ?? selectedMonth} to
+                    Definir salário para {effectiveMonth ?? selectedMonth} to
                     <span className="font-mono font-semibold">€{parsed.detectedSalary.toFixed(2)}</span>
                   </label>
                 </div>
@@ -577,27 +491,27 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div>
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <h4 className="font-semibold text-sm text-success">
-                      Incomes ({parsed.incomes.filter(i => i._include).length})
+                      Receitas ({parsed.incomes.filter(i => i._include).length})
                     </h4>
                     <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Checkbox
                         checked={bulkIncSel.size === parsed.incomes.length && parsed.incomes.length > 0}
                         onCheckedChange={v => toggleAllIncomes(!!v)}
                       />
-                      Select all
+                      Selecionar tudo
                     </label>
                   </div>
 
                   {bulkIncSel.size > 0 && (
                     <div className="flex items-center gap-2 mb-2 p-2 rounded-md bg-muted/40 border border-border flex-wrap">
-                      <span className="text-xs text-muted-foreground">{bulkIncSel.size} selected →</span>
+                      <span className="text-xs text-muted-foreground">{bulkIncSel.size} selecionadas →</span>
                       <Input
                         value={bulkIncType}
                         onChange={e => setBulkIncType(e.target.value)}
-                        placeholder="Type (salary, refund, …)"
+                        placeholder="Tipo (salário, reembolso…)"
                         className="h-8 text-xs w-44"
                       />
-                      <Button size="sm" className="h-8" onClick={applyBulkIncome} disabled={!bulkIncType}>Apply</Button>
+                      <Button size="sm" className="h-8" onClick={applyBulkIncome} disabled={!bulkIncType}>Aplicar</Button>
                     </div>
                   )}
 
@@ -637,20 +551,20 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div>
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <h4 className="font-semibold text-sm text-destructive">
-                      Expenses ({parsed.expenses.filter(e => e._include).length})
+                      Despesas ({parsed.expenses.filter(e => e._include).length})
                     </h4>
                     <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Checkbox
                         checked={bulkSel.size === parsed.expenses.length && parsed.expenses.length > 0}
                         onCheckedChange={v => toggleAllExpenses(!!v)}
                       />
-                      Select all
+                      Selecionar tudo
                     </label>
                   </div>
 
                   {bulkSel.size > 0 && (
                     <div className="flex items-center gap-2 mb-2 p-2 rounded-md bg-muted/40 border border-border flex-wrap">
-                      <span className="text-xs text-muted-foreground">{bulkSel.size} selected →</span>
+                      <span className="text-xs text-muted-foreground">{bulkSel.size} selecionadas →</span>
                       <Select
                         value={bulkCat}
                         onValueChange={v => {
@@ -664,22 +578,22 @@ export function BankStatementImport({ variant = "full" }: Props) {
                             <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                           ))}
                           <SelectItem value="__new__">
-                            <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> New category…</span>
+                            <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Nova categoria…</span>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       {bulkSubs.length > 0 && (
                         <Select value={bulkSub || "none"} onValueChange={v => setBulkSub(v === "none" ? "" : v)}>
-                          <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Sub-category" /></SelectTrigger>
+                          <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Subcategoria" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="none">Nenhuma</SelectItem>
                             {bulkSubs.map(s => (
                               <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       )}
-                      <Button size="sm" className="h-8" onClick={applyBulkExpense} disabled={!bulkCat}>Apply</Button>
+                      <Button size="sm" className="h-8" onClick={applyBulkExpense} disabled={!bulkCat}>Aplicar</Button>
                     </div>
                   )}
 
@@ -709,7 +623,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate">{e.description}</div>
-                            <div className="text-xs text-muted-foreground">{e.date} · suggested: {e.categoryGuess}</div>
+                            <div className="text-xs text-muted-foreground">{e.date} · sugerido: {e.categoryGuess}</div>
                           </div>
                           <Select
                             value={e._categoryId || ""}
@@ -722,14 +636,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
                             }}
                           >
                             <SelectTrigger className="w-40 h-8 text-xs">
-                              <SelectValue placeholder="Pick category" />
+                              <SelectValue placeholder="Escolher categoria" />
                             </SelectTrigger>
                             <SelectContent>
                               {data.categories.map(c => (
                                 <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                               ))}
                               <SelectItem value="__new__">
-                                <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> New category…</span>
+                                <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Nova categoria…</span>
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -746,7 +660,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                                 <SelectValue placeholder="Sub" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="none">Nenhuma</SelectItem>
                                 {subs.map(s => (
                                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                                 ))}
@@ -760,7 +674,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                   </div>
                   {skipped > 0 && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      {skipped} expense(s) have no category and will be skipped.
+                      {skipped} despesa(s) sem categoria serão ignoradas.
                     </p>
                   )}
                 </div>
@@ -769,8 +683,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
           )}
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setParsed(null)}>Cancel</Button>
-            <Button onClick={handleConfirm}>Import selected</Button>
+            <Button variant="ghost" onClick={() => setParsed(null)}>Cancelar</Button>
+            <Button onClick={handleConfirm}>Importar selecionados</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -778,12 +692,12 @@ export function BankStatementImport({ variant = "full" }: Props) {
       <Dialog open={newCatOpen} onOpenChange={setNewCatOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>New category</DialogTitle>
+            <DialogTitle>Nova categoria</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Name</Label>
-              <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
+              <Label>Nome</Label>
+              <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="ex.: Subscrições" />
             </div>
             <div>
               <Label>Ícone</Label>
@@ -791,8 +705,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setNewCatOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()}>Create & assign</Button>
+            <Button variant="ghost" onClick={() => setNewCatOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()}>Criar e atribuir</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
