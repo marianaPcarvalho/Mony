@@ -107,12 +107,13 @@ export interface Investment {
 
 export interface AppData {
   categories: Category[];
+  incomeCategories?: IncomeCategory[];
   expenses: Expense[];
   monthlyConfigs: MonthlyConfig[];
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
   investments?: Investment[];
   incomes?: Income[];
-  monthStartDay?: number; // 1-28, day of month when budget cycle starts
+  monthStartDay?: number;
   profile?: UserProfile;
 }
