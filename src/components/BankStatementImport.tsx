@@ -39,6 +39,7 @@ interface Parsed {
 const MEMORY_KEY = "bank-import-memory-v1";
 const META_KEY = "bank-import-meta-v2"; // v2: per-month tracking
 const REMINDER_KEY = "bank-import-reminder-v1";
+const REMINDER_SETTINGS_KEY = "bank-import-reminder-settings-v1";
 
 interface MemoryEntry {
   categoryId: string;
@@ -52,6 +53,15 @@ interface ImportMeta {
   lastImportedAt?: string;
   byMonth?: Record<string, { fileName: string; importedAt: string }>;
 }
+
+interface ReminderSettings {
+  enabled: boolean;
+  snoozedUntil?: string; // ISO date; suppress reminders before this
+}
+const loadReminderSettings = (): ReminderSettings => {
+  try { return JSON.parse(localStorage.getItem(REMINDER_SETTINGS_KEY) ?? "") || { enabled: true }; } catch { return { enabled: true }; }
+};
+const saveReminderSettings = (s: ReminderSettings) => localStorage.setItem(REMINDER_SETTINGS_KEY, JSON.stringify(s));
 
 const normalizeDesc = (s: string) =>
   (s ?? "")
