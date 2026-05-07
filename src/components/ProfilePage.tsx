@@ -22,6 +22,7 @@ export function ProfilePage() {
   const initialSub = getLocalSubscriber();
   const [recapEmail, setRecapEmail] = useState(initialSub?.email ?? "");
   const [recapEnabled, setRecapEnabled] = useState(initialSub?.enabled ?? true);
+  const [lastSentAt, setLastSentAt] = useState<string | null>(initialSub?.lastSentAt ?? null);
   const [recapBusy, setRecapBusy] = useState(false);
   const [resendBusy, setResendBusy] = useState(false);
   const [name, setName] = useState(profile.name);
@@ -53,7 +54,13 @@ export function ProfilePage() {
       await pushSnapshot(data);
       const { error } = await updateSubscription({ email: e, enabled: recapEnabled });
       if (error) throw error;
-      setLocalSubscriber({ email: e, enabled: recapEnabled });
+      const local = getLocalSubscriber();
+      setLocalSubscriber({
+        email: e,
+        enabled: recapEnabled,
+        lastSentAt: local?.lastSentAt,
+      });
+      setLastSentAt(local?.lastSentAt ?? null);
       toast.success("Subscrito — vais receber um resumo no dia 1 de cada mês");
     } catch (err: any) {
       toast.error(err?.message ?? "Não foi possível subscrever");
@@ -92,10 +99,12 @@ export function ProfilePage() {
       if (!local || local.email !== e || local.enabled !== recapEnabled) {
         const { error: subError } = await updateSubscription({ email: e, enabled: recapEnabled });
         if (subError) throw subError;
-        setLocalSubscriber({ email: e, enabled: recapEnabled });
       }
       const { error } = await sendRecapPreview();
       if (error) throw error;
+      const now = new Date().toISOString();
+      setLocalSubscriber({ email: e, enabled: recapEnabled, lastSentAt: now });
+      setLastSentAt(now);
       toast.success("Resumo reenviado — verifica o teu email");
     } catch (err: any) {
       toast.error(err?.message ?? "Não foi possível reenviar o resumo");
@@ -246,6 +255,9 @@ export function ProfilePage() {
                 Cancelar subscrição
               </Button>
             </div>
+            {lastSentAt && (
+              <p className="text-xs text-muted-foreground">Último envio: {new Date(lastSentAt).toLocaleString("pt-PT", { dateStyle: "medium", timeStyle: "short" })}</p>
+            )}
           </>
         )}
       </Card>

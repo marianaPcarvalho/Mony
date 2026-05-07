@@ -8,6 +8,7 @@ const SUBSCRIBER_KEY = "budget-app-subscriber";
 export interface SubscriberInfo {
   email: string;
   enabled: boolean;
+  lastSentAt?: string;
 }
 
 export function getDeviceToken(): string {
