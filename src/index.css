@@ -137,6 +137,24 @@
     background: hsl(var(--primary) / 0.25);
     color: hsl(var(--foreground));
   }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    body {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Honor forced-colors mode (Windows High Contrast) */
+  @media (forced-colors: active) {
+    .glass-card, .pop-card { border: 1px solid CanvasText; }
+  }
 }
 
 @layer utilities {
