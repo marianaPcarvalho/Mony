@@ -120,7 +120,7 @@ function CategoryRow({ cat, gasto }: { cat: Category; gasto: number }) {
   const [addingSub, setAddingSub] = useState(false);
 
   const subs = cat.subCategories ?? [];
-  const pct = cat.monthlyBudget > 0 ? (spent / cat.monthlyBudget) * 100 : 0;
+  const pct = cat.monthlyBudget > 0 ? (gasto / cat.monthlyBudget) * 100 : 0;
   const over = gasto > cat.monthlyBudget && cat.monthlyBudget > 0;
 
   const startEdit = () => { setName(cat.name); setIcon(cat.icon); setBudget(String(cat.monthlyBudget)); setEditing(true); };
@@ -171,7 +171,7 @@ function CategoryRow({ cat, gasto }: { cat: Category; gasto: number }) {
               </div>
               <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
                 <span className="font-mono">
-                  <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{spent.toFixed(2)}</span>
+                  <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{gasto.toFixed(2)}</span>
                   <span className="text-muted-foreground"> gasto</span>
                 </span>
                 {over && <span className="text-[10px] uppercase tracking-wider text-destructive font-bold">Excedido</span>}
@@ -404,7 +404,7 @@ export function CategoryBudgets() {
     () =>
       data.categories
         .map((c) => ({ ...c, gasto: getCategorySpent(c.id, selectedMonth) }))
-        .sort((a, b) => b.spent - a.spent),
+        .sort((a, b) => b.gasto - a.gasto),
     [data.categories, data.expenses, selectedMonth, getCategorySpent]
   );
 
@@ -419,7 +419,7 @@ export function CategoryBudgets() {
   }, [enriched, search]);
 
   const totalBudget = enriched.reduce((s, c) => s + c.monthlyBudget, 0);
-  const totalSpent = enriched.reduce((s, c) => s + c.spent, 0);
+  const totalSpent = enriched.reduce((s, c) => s + c.gasto, 0);
 
   return (
     <div className="space-y-5">
@@ -482,7 +482,7 @@ export function CategoryBudgets() {
               />
             )}
             {filtered.map((cat) => (
-              <CategoryRow key={cat.id} cat={cat} gasto={cat.spent} />
+              <CategoryRow key={cat.id} cat={cat} gasto={cat.gasto} />
             ))}
             {filtered.length === 0 && !adding && (
               <div className="text-center py-12 text-sm text-muted-foreground">
