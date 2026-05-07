@@ -69,7 +69,20 @@ export function BankStatementImport() {
   const [newCatName, setNewCatName] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("📦");
   const [newCatTargetIdx, setNewCatTargetIdx] = useState<number | null>(null);
+  const [pendingAssign, setPendingAssign] = useState<{ name: string; idx: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // When a new category appears in the store, assign it to the pending expense
+  useEffect(() => {
+    if (!pendingAssign || !parsed) return;
+    const cat = data.categories.find(c => c.name === pendingAssign.name);
+    if (cat) {
+      const n = { ...parsed };
+      n.expenses[pendingAssign.idx]._categoryId = cat.id;
+      setParsed({ ...n });
+      setPendingAssign(null);
+    }
+  }, [data.categories, pendingAssign, parsed]);
 
   const effectiveMonth = useMemo(() => {
     if (!parsed) return null;
