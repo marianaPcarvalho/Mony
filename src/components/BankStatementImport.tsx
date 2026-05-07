@@ -163,27 +163,27 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const handleFile = async (file: File) => {
     if (!file) {
-      toast({ title: "No file selected", variant: "destructive" });
+      toast({ title: "Nenhum ficheiro selecionado", variant: "destructive" });
       return;
     }
     if (file.type !== "application/pdf") {
-      toast({ title: "PDF only", description: "Please upload a PDF bank statement.", variant: "destructive" });
+      toast({ title: "Apenas PDF", description: "Carrega um extrato bancário em PDF.", variant: "destructive" });
       return;
     }
     if (file.size === 0) {
-      toast({ title: "Empty file", description: "The selected PDF appears to be empty.", variant: "destructive" });
+      toast({ title: "Ficheiro vazio", description: "O PDF selecionado parece estar vazio.", variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Maximum size is 10MB.", variant: "destructive" });
+      toast({ title: "Ficheiro demasiado grande", description: "Tamanho máximo: 10MB.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
       const pdfBase64 = await fileToBase64(file).catch(() => {
-        throw new Error("Could not read the file. Try saving the PDF again and re-uploading.");
+        throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
       });
-      if (!pdfBase64) throw new Error("File appears to be empty.");
+      if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
 
       const { data: result, error } = await supabase.functions.invoke("parse-bank-statement", {
         body: {
@@ -193,14 +193,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
       });
       if (error) {
         const msg = (error as any)?.message ?? "";
-        if (msg.includes("429")) throw new Error("Too many requests right now. Please wait a moment and try again.");
-        if (msg.includes("402")) throw new Error("AI credits exhausted. Please add credits to continue.");
-        throw new Error(msg || "Server error while reading the statement.");
+        if (msg.includes("429")) throw new Error("Demasiados pedidos. Aguarda um momento e tenta novamente.");
+        if (msg.includes("402")) throw new Error("Créditos de IA esgotados. Adiciona créditos para continuar.");
+        throw new Error(msg || "Erro do servidor ao ler o extrato.");
       }
       if ((result as any)?.error) throw new Error((result as any).error);
       const p = result as Parsed;
       if (!p || (!p.expenses?.length && !p.incomes?.length)) {
-        throw new Error("No transactions found in this PDF. Make sure it's a bank statement with a transaction list.");
+        throw new Error("Sem transações neste PDF. Confirma que é um extrato com lista de movimentos.");
       }
 
       const memory = loadMemory();
@@ -222,12 +222,12 @@ export function BankStatementImport({ variant = "full" }: Props) {
       setBulkSub("");
       setBulkIncType("");
 
-      toast({ title: "Statement analyzed", description: `Found ${p.expenses.length} expenses and ${p.incomes.length} incomes.` });
+      toast({ title: "Extrato analisado", description: `Encontradas ${p.expenses.length} despesas e ${p.incomes.length} receitas.` });
     } catch (e: any) {
       console.error("Bank statement upload failed:", e);
       toast({
-        title: "Could not read statement",
-        description: e?.message ?? "Something went wrong. Please try again.",
+        title: "Não foi possível ler o extrato",
+        description: e?.message ?? "Algo correu mal. Tenta novamente.",
         variant: "destructive",
       });
     } finally {
@@ -304,7 +304,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
     saveMeta(newMeta);
 
     if (effectiveMonth) setSelectedMonth(effectiveMonth);
-    toast({ title: "Imported!", description: `${added} entries added${effectiveMonth ? ` to ${effectiveMonth}` : ""}.` });
+    toast({ title: "Importado!", description: `${added} entradas adicionadas${effectiveMonth ? ` a ${effectiveMonth}` : ""}.` });
     setParsed(null);
   };
 
@@ -346,7 +346,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
       n.expenses[i]._subCategoryId = bulkSub || "";
     });
     setParsed({ ...n });
-    toast({ title: `Applied to ${bulkSel.size} expense(s)` });
+    toast({ title: `Aplicado a ${bulkSel.size} despesa(s)` });
   };
 
   const applyBulkIncome = () => {
@@ -354,7 +354,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
     const n = { ...parsed };
     bulkIncSel.forEach(i => { n.incomes[i].type = bulkIncType; });
     setParsed({ ...n });
-    toast({ title: `Applied to ${bulkIncSel.size} income(s)` });
+    toast({ title: `Aplicado a ${bulkIncSel.size} receita(s)` });
   };
 
   const toggleAllExpenses = (checked: boolean) => {
