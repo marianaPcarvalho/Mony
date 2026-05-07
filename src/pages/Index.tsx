@@ -1,21 +1,51 @@
-import { useState } from "react";
-import { StoreProvider } from "@/lib/store";
+import { useState, useEffect } from "react";
+import { StoreProvider, useStore } from "@/lib/store";
 import { HomeHero } from "@/components/HomeHero";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
 
 import { ExpenseList } from "@/components/ExpenseList";
 import { IncomeList } from "@/components/IncomeList";
-import { BankStatementImport } from "@/components/BankStatementImport";
+import { BankStatementImport, hasAnyImport } from "@/components/BankStatementImport";
 import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
-import { InvestmentsTracker } from "@/components/InvestmentsTracker";
 import { Investments } from "@/components/Investments";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { ProfilePage } from "@/components/ProfilePage";
 import { MonthSelector } from "@/components/MonthSelector";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar, ViewKey } from "@/components/AppSidebar";
-import { Card } from "@/components/ui/card";
+
+const currentMonthStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+
+function HomeView() {
+  const { setSelectedMonth } = useStore();
+  // Always reset to the current calendar month when entering Home.
+  useEffect(() => {
+    setSelectedMonth(currentMonthStr());
+  }, [setSelectedMonth]);
+
+  const showImportCard = !hasAnyImport();
+
+  return (
+    <>
+      {showImportCard && <BankStatementImport />}
+      <HomeHero />
+      <section aria-labelledby="month-details-heading" className="space-y-5 pt-2">
+        <h2 id="month-details-heading" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+          Activity for this month
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <IncomeList />
+          <ExpenseList />
+        </div>
+        <BudgetVsSpent />
+      </section>
+    </>
+  );
+}
 
 const Index = () => {
   const [view, setView] = useState<ViewKey>("home");
@@ -33,26 +63,11 @@ const Index = () => {
             </header>
 
             <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
-              {view === "home" && (
-                <>
-                  <BankStatementImport />
-                  <HomeHero />
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                    <IncomeList />
-                    <ExpenseList />
-                  </div>
-                  <BudgetVsSpent />
-                </>
-              )}
-
+              {view === "home" && <HomeView />}
               {view === "categories" && <CategoryBudgets />}
-
               {view === "savings" && <SavingsGoals />}
-
               {view === "investments" && <Investments />}
-
               {view === "annual" && <AnnualDashboard />}
-
               {view === "profile" && <ProfilePage />}
             </main>
           </SidebarInset>
