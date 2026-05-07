@@ -239,6 +239,8 @@ export function AnnualDashboard() {
           })}
         </div>
       </Card>
+
+      <YearlyPlanner />
     </div>
   );
 }
