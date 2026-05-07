@@ -57,11 +57,18 @@ export interface SavingsGoal {
   monthlyContribution?: number;
 }
 
+export interface IncomeCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color?: string;
+}
+
 export interface Income {
   id: string;
   amount: number;
   description: string;
-  type: string;
+  type: string; // IncomeCategory id (legacy values like "salary","bonus" still work via seed mapping)
   date: string; // ISO string
 }
 
