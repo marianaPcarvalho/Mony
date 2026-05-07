@@ -110,22 +110,26 @@ function buildRecapPreviewEmail(data: any) {
   const categoryMap = new Map(categories.map((category: any) => [category.id, category]));
 
   const categoryTotals = expenses.reduce((totals: Record<string, number>, expense: any) => {
-    const category = categoryMap.get(expense.categoryId);
-    const label = typeof category?.name === "string" ? category.name : "Outros";
+    const category = categoryMap.get(expense.categoryId) as any;
+    const label = (category && typeof category.name === "string") ? category.name : "Outros";
     const amt = typeof expense.amount === "number" ? expense.amount : 0;
     totals[label] = (totals[label] ?? 0) + amt;
     return totals;
   }, {});
 
   const topExpenses = [...expenses]
-    .sort((a: any, b: any) => (typeof b.amount === "number" ? b.amount : 0) - (typeof a.amount === "number" ? a.amount : 0))
+    .sort((a: any, b: any) => {
+      const aAmt = typeof a.amount === "number" ? a.amount : 0;
+      const bAmt = typeof b.amount === "number" ? b.amount : 0;
+      return bAmt - aAmt;
+    })
     .slice(0, 5);
 
   const goalsHtml = savingsGoals.length
     ? savingsGoals
         .map(
           (goal: any) =>
-            `<li style="margin-bottom:10px;"><strong>${escapeHtml(goal.name ?? "-")}</strong> — ${currency.format(
+            `<li style="margin-bottom:10px;"><strong>${escapeHtml(String(goal.name ?? "-"))}</strong> — ${currency.format(
               typeof goal.currentAmount === "number" ? goal.currentAmount : 0,
             )} de ${currency.format(typeof goal.targetAmount === "number" ? goal.targetAmount : 0)}${goal.targetDate ? ` até ${new Date(goal.targetDate).toLocaleDateString("pt-PT")}` : ""}</li>`,
         )
