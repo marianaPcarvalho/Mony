@@ -109,8 +109,8 @@ export function IncomeList() {
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger id="inc-type" className="h-9"><SelectValue placeholder="Choose a type" /></SelectTrigger>
                   <SelectContent>
-                    {INCOME_TYPES.map(t => (
-                      <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>
+                    {incomeCategories.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
