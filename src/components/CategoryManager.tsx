@@ -123,7 +123,14 @@ export function CategoryManager() {
                   {subs.length > 0 ? (isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />) : <span className="w-3.5" />}
                   <span className="text-lg" aria-hidden="true">{cat.icon}</span>
                   <div>
-                    <p className="text-sm font-medium leading-tight text-foreground">{cat.name}</p>
+                    <p className="text-sm font-medium leading-tight text-foreground flex items-center gap-1.5">
+                      {cat.name}
+                      {cat.recurring && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          <Repeat className="h-2.5 w-2.5" /> Recurring
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground font-mono">€{cat.monthlyBudget.toFixed(2)}/mo</p>
                   </div>
                 </button>
