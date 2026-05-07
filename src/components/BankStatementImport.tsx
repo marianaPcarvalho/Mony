@@ -785,8 +785,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
               <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
             </div>
             <div>
-              <Label>Icon (emoji)</Label>
-              <Input value={newCatIcon} onChange={e => setNewCatIcon(e.target.value)} maxLength={4} />
+              <Label>Ícone</Label>
+              <EmojiPickerButton value={newCatIcon} onChange={setNewCatIcon} size="md" ariaLabel="Escolher ícone" />
             </div>
           </div>
           <DialogFooter>

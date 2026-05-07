@@ -173,6 +173,7 @@ export function ExpenseList() {
                   mode="single"
                   selected={date ? parseISO(date) : undefined}
                   onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                  disabled={(d) => d > new Date()}
                   className={cn("p-2 pointer-events-auto")}
                 />
               </div>
