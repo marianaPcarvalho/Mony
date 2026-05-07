@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,11 +17,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     return res.status(200).send("ok");
   }
 
@@ -35,14 +37,14 @@ export default async function handler(req: any, res: any) {
     return res.status(500).json({ error: "RESEND_FROM_EMAIL is not configured or invalid" });
   }
 
-  const body = req.body;
-  const deviceToken = typeof body === "string" ? JSON.parse(body).deviceToken : body?.deviceToken;
-
-  if (typeof deviceToken !== "string" || !UUID_RE.test(deviceToken)) {
-    return res.status(400).json({ error: "Invalid deviceToken" });
-  }
-
   try {
+    const body = req.body as any;
+    const deviceToken = body?.deviceToken;
+
+    if (typeof deviceToken !== "string" || !UUID_RE.test(deviceToken)) {
+      return res.status(400).json({ error: "Invalid deviceToken" });
+    }
+
     const { data: subscriber, error: subscriberError } = await supabase
       .from("recap_subscribers")
       .select("email")
@@ -80,6 +82,7 @@ export default async function handler(req: any, res: any) {
 
     if (!sendRes.ok) {
       const details = await sendRes.text();
+      console.error("Resend API error:", details);
       return res.status(sendRes.status).json({ error: "Failed to send preview email", details });
     }
 
@@ -89,6 +92,7 @@ export default async function handler(req: any, res: any) {
     return res.status(500).json({ error: error?.message ?? "Unknown error" });
   }
 }
+
 
 function buildRecapPreviewEmail(data: any) {
   const currency = new Intl.NumberFormat("pt-PT", {
