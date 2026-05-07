@@ -23,7 +23,7 @@ export function ProfilePage() {
   const [recapEmail, setRecapEmail] = useState(initialSub?.email ?? "");
   const [recapEnabled, setRecapEnabled] = useState(initialSub?.enabled ?? true);
   const [recapBusy, setRecapBusy] = useState(false);
-  const [previewBusy, setPreviewBusy] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
   const [name, setName] = useState(profile.name);
   const [salary, setSalary] = useState(String(profile.defaultSalary));
 
@@ -81,17 +81,26 @@ export function ProfilePage() {
     } finally { setRecapBusy(false); }
   };
 
-  const sendPreview = async () => {
-    setPreviewBusy(true);
+  const resendNow = async () => {
+    const e = recapEmail.trim().toLowerCase();
+    if (!EMAIL_RE.test(e)) { toast.error("Introduz um email válido"); return; }
+
+    setResendBusy(true);
     try {
       await pushSnapshot(data);
+      const local = getLocalSubscriber();
+      if (!local || local.email !== e || local.enabled !== recapEnabled) {
+        const { error: subError } = await updateSubscription({ email: e, enabled: recapEnabled });
+        if (subError) throw subError;
+        setLocalSubscriber({ email: e, enabled: recapEnabled });
+      }
       const { error } = await sendRecapPreview();
       if (error) throw error;
-      toast.success("Pré-visualização enviada — verifica o teu email");
+      toast.success("Resumo reenviado — verifica o teu email");
     } catch (err: any) {
-      toast.error(err?.message ?? "Não foi possível enviar a pré-visualização");
+      toast.error(err?.message ?? "Não foi possível reenviar o resumo");
     } finally {
-      setPreviewBusy(false);
+      setResendBusy(false);
     }
   };
 
@@ -229,9 +238,9 @@ export function ProfilePage() {
               <Switch checked={recapEnabled} onCheckedChange={toggleRecapEnabled} aria-label="Ativar resumo" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={sendPreview} disabled={previewBusy} className="gap-2">
+              <Button variant="outline" onClick={resendNow} disabled={resendBusy} className="gap-2">
                 <Send className="h-4 w-4" />
-                {previewBusy ? "A enviar..." : "Enviar pré-visualização"}
+                {resendBusy ? "A enviar..." : "Reenviar resumo agora"}
               </Button>
               <Button variant="ghost" onClick={unsubscribe} disabled={recapBusy} className="text-destructive">
                 Cancelar subscrição
