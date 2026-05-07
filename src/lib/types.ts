@@ -57,11 +57,18 @@ export interface SavingsGoal {
   monthlyContribution?: number;
 }
 
+export interface IncomeCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color?: string;
+}
+
 export interface Income {
   id: string;
   amount: number;
   description: string;
-  type: string;
+  type: string; // IncomeCategory id (legacy values like "salary","bonus" still work via seed mapping)
   date: string; // ISO string
 }
 
@@ -100,12 +107,13 @@ export interface Investment {
 
 export interface AppData {
   categories: Category[];
+  incomeCategories?: IncomeCategory[];
   expenses: Expense[];
   monthlyConfigs: MonthlyConfig[];
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
   investments?: Investment[];
   incomes?: Income[];
-  monthStartDay?: number; // 1-28, day of month when budget cycle starts
+  monthStartDay?: number;
   profile?: UserProfile;
 }

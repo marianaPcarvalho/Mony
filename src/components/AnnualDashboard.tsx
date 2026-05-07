@@ -6,6 +6,7 @@ import {
   Legend, PieChart, Pie, Cell,
 } from "recharts";
 import { Wallet, TrendingDown, PiggyBank, Target, ClipboardList } from "lucide-react";
+import { YearlyPlanner } from "@/components/YearlyPlanner";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const COLORS = [
@@ -238,6 +239,8 @@ export function AnnualDashboard() {
           })}
         </div>
       </Card>
+
+      <YearlyPlanner />
     </div>
   );
 }

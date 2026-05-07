@@ -15,17 +15,10 @@ import {
 import { Plus, Trash2, Pencil, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const INCOME_TYPES = [
-  { value: "salary", label: "Salary", icon: "💼" },
-  { value: "freelance", label: "Freelance", icon: "💻" },
-  { value: "bonus", label: "Bonus", icon: "🎁" },
-  { value: "investment", label: "Investment Return", icon: "📈" },
-  { value: "gift", label: "Gift", icon: "🎀" },
-  { value: "other", label: "Other", icon: "📦" },
-];
-
 export function IncomeList() {
   const { data, selectedMonth, addIncome, updateIncome, deleteIncome } = useStore();
+  const incomeCategories = data.incomeCategories ?? [];
+  const fallbackType = incomeCategories[0]?.id ?? "other";
 
   const [filterType, setFilterType] = useState<string>("all");
   const [expanded, setExpanded] = useState(false);
@@ -33,7 +26,7 @@ export function IncomeList() {
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [type, setType] = useState("salary");
+  const [type, setType] = useState(fallbackType);
   const [amount, setAmount] = useState("");
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState<string>("");
@@ -44,7 +37,7 @@ export function IncomeList() {
   const incomes = filterType === "all" ? allIncomes : allIncomes.filter(i => i.type === filterType);
   const pendingDelete = deleteId ? (data.incomes ?? []).find(i => i.id === deleteId) : null;
 
-  const resetForm = () => { setType("salary"); setAmount(""); setDesc(""); setDate(""); setEditingId(null); };
+  const resetForm = () => { setType(fallbackType); setAmount(""); setDesc(""); setDate(""); setEditingId(null); };
 
   const amountNum = parseFloat(amount);
   const isValid = !!type && !!date && !isNaN(amountNum) && amountNum > 0;
@@ -73,7 +66,10 @@ export function IncomeList() {
     setOpen(true);
   };
 
-  const getType = (v: string) => INCOME_TYPES.find(t => t.value === v) ?? INCOME_TYPES[INCOME_TYPES.length - 1];
+  const getType = (v: string) => {
+    const found = incomeCategories.find(t => t.id === v);
+    return found ?? { id: v, name: v || "Other", icon: "📦", color: undefined as string | undefined };
+  };
 
   const visibleIncomes = expanded ? incomes : incomes.slice(0, 5);
 
@@ -90,8 +86,8 @@ export function IncomeList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All types</SelectItem>
-              {INCOME_TYPES.map(t => (
-                <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>
+              {incomeCategories.map(t => (
+                <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -113,8 +109,8 @@ export function IncomeList() {
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger id="inc-type" className="h-9"><SelectValue placeholder="Choose a type" /></SelectTrigger>
                   <SelectContent>
-                    {INCOME_TYPES.map(t => (
-                      <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>
+                    {incomeCategories.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -176,11 +172,11 @@ export function IncomeList() {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-lg flex-shrink-0" aria-hidden="true">{t.icon}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate text-foreground">{i.description || t.label}</p>
+                  <p className="text-sm font-medium truncate text-foreground">{i.description || t.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                     <span>{new Date(i.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border text-[10px] font-medium">
-                      {t.label}
+                      {t.name}
                     </span>
                   </p>
                 </div>
@@ -218,7 +214,7 @@ export function IncomeList() {
             <AlertDialogTitle>Delete this income?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.description || getType(pendingDelete.type).label}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
+                <>This will permanently remove <strong>{pendingDelete.description || getType(pendingDelete.type).name}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
               ) : "This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>

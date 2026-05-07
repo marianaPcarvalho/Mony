@@ -311,8 +311,92 @@ function SubEditRow({ sub, onSave, onCancel }: { sub?: SubCategory; onSave: (s: 
   );
 }
 
+function IncomeCategoriesTab() {
+  const { data, addIncomeCategory, updateIncomeCategory, deleteIncomeCategory, selectedMonth } = useStore();
+  const cats = data.incomeCategories ?? [];
+  const incomes = (data.incomes ?? []).filter(i => i.date.startsWith(selectedMonth));
+  const totalReceived = (id: string) => incomes.filter(i => i.type === id).reduce((s, i) => s + i.amount, 0);
+
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newIcon, setNewIcon] = useState("💰");
+  const [newColor, setNewColor] = useState(DEFAULT_TAG_COLOR);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editIcon, setEditIcon] = useState("");
+  const [editColor, setEditColor] = useState(DEFAULT_TAG_COLOR);
+
+  const startEdit = (c: typeof cats[number]) => {
+    setEditId(c.id); setEditName(c.name); setEditIcon(c.icon); setEditColor(c.color ?? DEFAULT_TAG_COLOR);
+  };
+  const saveEdit = () => {
+    if (!editName.trim() || !editId) return;
+    updateIncomeCategory({ id: editId, name: editName.trim(), icon: editIcon || "💰", color: editColor });
+    setEditId(null);
+  };
+  const submitNew = () => {
+    if (!newName.trim()) return;
+    addIncomeCategory({ name: newName.trim(), icon: newIcon || "💰", color: newColor });
+    setNewName(""); setNewIcon("💰"); setNewColor(DEFAULT_TAG_COLOR); setAdding(false);
+  };
+
+  return (
+    <div className="space-y-2">
+      {adding && (
+        <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
+          <EmojiPickerButton value={newIcon} onChange={setNewIcon} size="md" />
+          <Input autoFocus placeholder="Income category name" value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && submitNew()} className="flex-1" />
+          <ColorPicker value={newColor} onChange={setNewColor} />
+          <Button size="icon" onClick={submitNew} aria-label="Save"><Check className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setAdding(false)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+        </div>
+      )}
+      {cats.map(c => {
+        const received = totalReceived(c.id);
+        const isEditing = editId === c.id;
+        return (
+          <div key={c.id} className="rounded-xl border border-border/60 bg-card/40 hover:bg-card/70 transition-colors p-3">
+            {!isEditing ? (
+              <div className="flex items-center gap-3">
+                <span className="h-9 w-9 rounded-lg flex items-center justify-center text-xl" style={{ background: `${c.color ?? DEFAULT_TAG_COLOR}1A`, color: c.color ?? DEFAULT_TAG_COLOR }}>{c.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground truncate">{c.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Received this month: <span className="font-semibold text-foreground">€{received.toFixed(2)}</span>
+                  </p>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(c)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteIncomeCategory(c.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <EmojiPickerButton value={editIcon} onChange={setEditIcon} size="md" />
+                <Input autoFocus value={editName} onChange={e => setEditName(e.target.value)} onKeyDown={e => e.key === "Enter" && saveEdit()} className="flex-1" />
+                <ColorPicker value={editColor} onChange={setEditColor} />
+                <Button size="icon" onClick={saveEdit} aria-label="Save"><Check className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => setEditId(null)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {cats.length === 0 && !adding && (
+        <div className="text-center py-12 text-sm text-muted-foreground">
+          No income categories yet. Click 'New category' to add one.
+        </div>
+      )}
+      {!adding && (
+        <Button variant="outline" size="sm" className="gap-1.5 border-dashed" onClick={() => setAdding(true)}>
+          <Plus className="h-4 w-4" /> New income category
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function CategoryBudgets() {
   const { data, selectedMonth, getCategorySpent, addCategory } = useStore();
+  const [tab, setTab] = useState<"expenses" | "incomes">("expenses");
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
 
@@ -343,48 +427,73 @@ export function CategoryBudgets() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories</h1>
           <p className="text-sm text-muted-foreground">
-            {enriched.length} categories · €{totalSpent.toFixed(2)} spent of €{totalBudget.toFixed(2)}
+            {tab === "expenses"
+              ? <>{enriched.length} expense categories · €{totalSpent.toFixed(2)} spent of €{totalBudget.toFixed(2)}</>
+              : <>{(data.incomeCategories ?? []).length} income categories</>}
           </p>
         </div>
-        <Button onClick={() => setAdding(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> New category
-        </Button>
-      </div>
-
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search categories or sub-categories…"
-          className="pl-9 h-10"
-        />
-      </div>
-
-      <div className="space-y-2">
-        {adding && (
-          <NewCategoryRow
-            onCreate={({ name, icon, budget }) => {
-              addCategory({
-                name, icon,
-                color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`,
-                monthlyBudget: budget,
-                subCategories: [],
-              });
-              setAdding(false);
-            }}
-            onCancel={() => setAdding(false)}
-          />
+        {tab === "expenses" && (
+          <Button onClick={() => setAdding(true)} className="gap-1.5">
+            <Plus className="h-4 w-4" /> New category
+          </Button>
         )}
-        {filtered.map((cat) => (
-          <CategoryRow key={cat.id} cat={cat} spent={cat.spent} />
-        ))}
-        {filtered.length === 0 && !adding && (
-          <div className="text-center py-12 text-sm text-muted-foreground">
-            {search ? "No categories match your search." : "No categories yet. Click 'New category' to get started."}
+      </div>
+
+      <div className="inline-flex items-center rounded-lg bg-muted/60 border border-border p-0.5 text-xs font-medium">
+        <button
+          onClick={() => setTab("expenses")}
+          className={`px-3 py-1.5 rounded-md transition-colors ${tab === "expenses" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          💸 Expenses
+        </button>
+        <button
+          onClick={() => setTab("incomes")}
+          className={`px-3 py-1.5 rounded-md transition-colors ${tab === "incomes" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          💰 Incomes
+        </button>
+      </div>
+
+      {tab === "expenses" ? (
+        <>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search categories or sub-categories…"
+              className="pl-9 h-10"
+            />
           </div>
-        )}
-      </div>
+
+          <div className="space-y-2">
+            {adding && (
+              <NewCategoryRow
+                onCreate={({ name, icon, budget }) => {
+                  addCategory({
+                    name, icon,
+                    color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`,
+                    monthlyBudget: budget,
+                    subCategories: [],
+                  });
+                  setAdding(false);
+                }}
+                onCancel={() => setAdding(false)}
+              />
+            )}
+            {filtered.map((cat) => (
+              <CategoryRow key={cat.id} cat={cat} spent={cat.spent} />
+            ))}
+            {filtered.length === 0 && !adding && (
+              <div className="text-center py-12 text-sm text-muted-foreground">
+                {search ? "No categories match your search." : "No categories yet. Click 'New category' to get started."}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <IncomeCategoriesTab />
+      )}
     </div>
   );
 }

@@ -131,17 +131,25 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Reminder: if previous calendar month has no imported statement, nudge once per browser session.
   useEffect(() => {
     try {
+      const SESSION_KEY = "bank-import-reminder-session";
+      if (sessionStorage.getItem(SESSION_KEY)) return;
       const now = new Date();
-      const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      const last = localStorage.getItem(REMINDER_KEY);
-      if (last && last !== cur) {
+      const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+      const m = loadMeta();
+      const hasPrev = !!m.byMonth?.[prevKey];
+      if (!hasPrev) {
         toast({
-          title: "New month started 📅",
-          description: `Don't forget to import your bank statement for ${last}.`,
+          title: "Time to import last month's statement 📅",
+          description: `You haven't uploaded a bank statement for ${prevKey} yet.`,
         });
+        sessionStorage.setItem(SESSION_KEY, "1");
       }
+      // Keep legacy single-shot key updated for backwards compatibility
+      const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
       localStorage.setItem(REMINDER_KEY, cur);
     } catch { /* ignore */ }
   }, []);

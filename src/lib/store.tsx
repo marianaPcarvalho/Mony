@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction, Income } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction, Income, IncomeCategory } from "./types";
 import { useCloudSync } from "./cloudSync";
 
 const STORAGE_KEY = "budget-app-data";
@@ -18,6 +18,15 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const defaultIncomeCategories: IncomeCategory[] = [
+  { id: "salary", name: "Salary", icon: "💼", color: "hsl(178, 60%, 40%)" },
+  { id: "freelance", name: "Freelance", icon: "💻", color: "hsl(220, 70%, 55%)" },
+  { id: "bonus", name: "Bonus", icon: "🎁", color: "hsl(38, 92%, 50%)" },
+  { id: "investment", name: "Investment Return", icon: "📈", color: "hsl(142, 55%, 42%)" },
+  { id: "gift", name: "Gift", icon: "🎀", color: "hsl(330, 70%, 58%)" },
+  { id: "other", name: "Other", icon: "📦", color: "hsl(220, 14%, 50%)" },
+];
+
 const defaultProfile: UserProfile = {
   name: "Mariana",
   defaultSalary: 3000,
@@ -30,6 +39,7 @@ const defaultProfile: UserProfile = {
 
 const defaultData: AppData = {
   categories: defaultCategories,
+  incomeCategories: defaultIncomeCategories,
   expenses: [],
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
@@ -71,6 +81,7 @@ function loadData(): AppData {
       parsed.incomes = (parsed.incomes ?? []).map((i: any) => ({
         ...i,
       }));
+      parsed.incomeCategories = parsed.incomeCategories ?? defaultIncomeCategories;
       parsed.profile = {
         ...defaultProfile,
         ...(parsed.profile ?? {}),
@@ -129,6 +140,9 @@ interface StoreContextType {
   addIncome: (i: Omit<Income, "id">) => void;
   updateIncome: (i: Income) => void;
   deleteIncome: (id: string) => void;
+  addIncomeCategory: (c: Omit<IncomeCategory, "id">) => void;
+  updateIncomeCategory: (c: IncomeCategory) => void;
+  deleteIncomeCategory: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -290,6 +304,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteIncome = (id: string) =>
     update(d => ({ ...d, incomes: (d.incomes ?? []).filter(x => x.id !== id) }));
 
+  const addIncomeCategory = (c: Omit<IncomeCategory, "id">) =>
+    update(d => ({ ...d, incomeCategories: [...(d.incomeCategories ?? []), { ...c, id: uid() }] }));
+  const updateIncomeCategory = (c: IncomeCategory) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).map(x => x.id === c.id ? c : x) }));
+  const deleteIncomeCategory = (id: string) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).filter(x => x.id !== id) }));
+
   const monthStartDay = data.monthStartDay ?? 1;
 
   const getMonthExpenses = (month: string) => {
@@ -338,6 +359,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setMonthStartDay, updateProfile, getProfile,
       addInvestment, updateInvestment, deleteInvestment, addInvestmentTransaction, deleteInvestmentTransaction,
       addIncome, updateIncome, deleteIncome,
+      addIncomeCategory, updateIncomeCategory, deleteIncomeCategory,
     }}>
       {children}
     </StoreContext.Provider>
