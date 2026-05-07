@@ -4,6 +4,7 @@ import { HomeHero } from "@/components/HomeHero";
 import { CategoryBudgets } from "@/components/CategoryBudgets";
 
 import { ExpenseList } from "@/components/ExpenseList";
+import { IncomeList } from "@/components/IncomeList";
 import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { InvestmentsTracker } from "@/components/InvestmentsTracker";
@@ -33,6 +34,7 @@ const Index = () => {
               {view === "home" && (
                 <>
                   <HomeHero />
+                  <IncomeList />
                   <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
                     <div className="lg:col-span-2">
                       <BudgetVsSpent />
