@@ -2,38 +2,32 @@ import { useStore } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { TrendingDown, PiggyBank, Wallet } from "lucide-react";
+import { buildCategoryPalette } from "@/lib/colors";
 
 const PT_MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-6))",
-];
 
 export function HomeHero() {
   const { data, selectedMonth, getCategorySpent, getSalary, getTotalSpent, getActualSavedTotal } = useStore();
 
-  // Always display the current month in Portugal (Europe/Lisbon)
-  const now = new Date();
-  const ptMonthName = PT_MONTHS[now.getMonth()];
-  const ptYear = now.getFullYear();
+  // Display title based on the currently SELECTED month (cards follow the picker).
+  const [selYear, selMon] = selectedMonth.split("-").map(Number);
+  const ptMonthName = PT_MONTHS[(selMon - 1) % 12] ?? "";
+  const ptYear = selYear;
 
   const salary = getSalary(selectedMonth);
   const spent = getTotalSpent(selectedMonth);
   const current = salary - spent;
 
+  const palette = buildCategoryPalette(data.categories.length);
   const pieData = data.categories
     .map((c, i) => ({
       name: c.name,
       icon: c.icon,
       value: getCategorySpent(c.id, selectedMonth),
-      color: COLORS[i % COLORS.length],
+      color: palette[i] ?? `hsl(${(i * 53) % 360}, 70%, 52%)`,
     }))
     .filter(d => d.value > 0);
+
 
   const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
