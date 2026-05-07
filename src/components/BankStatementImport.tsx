@@ -456,23 +456,23 @@ export function BankStatementImport({ variant = "full" }: Props) {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" /> Review extracted entries
+              <FileText className="h-5 w-5" /> Rever entradas extraídas
             </DialogTitle>
           </DialogHeader>
 
           {parsed && (
             <div className="space-y-5">
               <div className="text-xs text-muted-foreground">
-                Statement month: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "unknown"}</span>
+                Mês do extrato: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "desconhecido"}</span>
               </div>
 
               {monthAlreadyImported && (
                 <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <div className="text-xs">
-                    A statement for <strong>{effectiveMonth}</strong> was already imported
+                    Já existe um extrato para <strong>{effectiveMonth}</strong> importado
                     {meta.byMonth?.[effectiveMonth!]?.fileName && <> ({meta.byMonth![effectiveMonth!].fileName})</>}.
-                    Confirming will replace duplicate entries with the new ones.
+                    Ao confirmar, as entradas duplicadas serão substituídas.
                   </div>
                 </div>
               )}
@@ -481,7 +481,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40">
                   <label className="flex items-center gap-2 text-sm">
                     <Checkbox checked={importSalary} onCheckedChange={v => setImportSalary(!!v)} />
-                    Set salary for {effectiveMonth ?? selectedMonth} to
+                    Definir salário para {effectiveMonth ?? selectedMonth} to
                     <span className="font-mono font-semibold">€{parsed.detectedSalary.toFixed(2)}</span>
                   </label>
                 </div>
@@ -491,27 +491,27 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div>
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <h4 className="font-semibold text-sm text-success">
-                      Incomes ({parsed.incomes.filter(i => i._include).length})
+                      Receitas ({parsed.incomes.filter(i => i._include).length})
                     </h4>
                     <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Checkbox
                         checked={bulkIncSel.size === parsed.incomes.length && parsed.incomes.length > 0}
                         onCheckedChange={v => toggleAllIncomes(!!v)}
                       />
-                      Select all
+                      Selecionar tudo
                     </label>
                   </div>
 
                   {bulkIncSel.size > 0 && (
                     <div className="flex items-center gap-2 mb-2 p-2 rounded-md bg-muted/40 border border-border flex-wrap">
-                      <span className="text-xs text-muted-foreground">{bulkIncSel.size} selected →</span>
+                      <span className="text-xs text-muted-foreground">{bulkIncSel.size} selecionadas →</span>
                       <Input
                         value={bulkIncType}
                         onChange={e => setBulkIncType(e.target.value)}
-                        placeholder="Type (salary, refund, …)"
+                        placeholder="Tipo (salário, reembolso…)"
                         className="h-8 text-xs w-44"
                       />
-                      <Button size="sm" className="h-8" onClick={applyBulkIncome} disabled={!bulkIncType}>Apply</Button>
+                      <Button size="sm" className="h-8" onClick={applyBulkIncome} disabled={!bulkIncType}>Aplicar</Button>
                     </div>
                   )}
 
@@ -551,20 +551,20 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <div>
                   <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                     <h4 className="font-semibold text-sm text-destructive">
-                      Expenses ({parsed.expenses.filter(e => e._include).length})
+                      Despesas ({parsed.expenses.filter(e => e._include).length})
                     </h4>
                     <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Checkbox
                         checked={bulkSel.size === parsed.expenses.length && parsed.expenses.length > 0}
                         onCheckedChange={v => toggleAllExpenses(!!v)}
                       />
-                      Select all
+                      Selecionar tudo
                     </label>
                   </div>
 
                   {bulkSel.size > 0 && (
                     <div className="flex items-center gap-2 mb-2 p-2 rounded-md bg-muted/40 border border-border flex-wrap">
-                      <span className="text-xs text-muted-foreground">{bulkSel.size} selected →</span>
+                      <span className="text-xs text-muted-foreground">{bulkSel.size} selecionadas →</span>
                       <Select
                         value={bulkCat}
                         onValueChange={v => {
@@ -578,22 +578,22 @@ export function BankStatementImport({ variant = "full" }: Props) {
                             <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                           ))}
                           <SelectItem value="__new__">
-                            <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> New category…</span>
+                            <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Nova categoria…</span>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       {bulkSubs.length > 0 && (
                         <Select value={bulkSub || "none"} onValueChange={v => setBulkSub(v === "none" ? "" : v)}>
-                          <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Sub-category" /></SelectTrigger>
+                          <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder="Subcategoria" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="none">Nenhuma</SelectItem>
                             {bulkSubs.map(s => (
                               <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       )}
-                      <Button size="sm" className="h-8" onClick={applyBulkExpense} disabled={!bulkCat}>Apply</Button>
+                      <Button size="sm" className="h-8" onClick={applyBulkExpense} disabled={!bulkCat}>Aplicar</Button>
                     </div>
                   )}
 
@@ -623,7 +623,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate">{e.description}</div>
-                            <div className="text-xs text-muted-foreground">{e.date} · suggested: {e.categoryGuess}</div>
+                            <div className="text-xs text-muted-foreground">{e.date} · sugerido: {e.categoryGuess}</div>
                           </div>
                           <Select
                             value={e._categoryId || ""}
@@ -636,14 +636,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
                             }}
                           >
                             <SelectTrigger className="w-40 h-8 text-xs">
-                              <SelectValue placeholder="Pick category" />
+                              <SelectValue placeholder="Escolher categoria" />
                             </SelectTrigger>
                             <SelectContent>
                               {data.categories.map(c => (
                                 <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                               ))}
                               <SelectItem value="__new__">
-                                <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> New category…</span>
+                                <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Nova categoria…</span>
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -660,7 +660,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                                 <SelectValue placeholder="Sub" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="none">Nenhuma</SelectItem>
                                 {subs.map(s => (
                                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                                 ))}
@@ -674,7 +674,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
                   </div>
                   {skipped > 0 && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      {skipped} expense(s) have no category and will be skipped.
+                      {skipped} despesa(s) sem categoria serão ignoradas.
                     </p>
                   )}
                 </div>
@@ -683,8 +683,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
           )}
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setParsed(null)}>Cancel</Button>
-            <Button onClick={handleConfirm}>Import selected</Button>
+            <Button variant="ghost" onClick={() => setParsed(null)}>Cancelar</Button>
+            <Button onClick={handleConfirm}>Importar selecionados</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -692,12 +692,12 @@ export function BankStatementImport({ variant = "full" }: Props) {
       <Dialog open={newCatOpen} onOpenChange={setNewCatOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>New category</DialogTitle>
+            <DialogTitle>Nova categoria</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Name</Label>
-              <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
+              <Label>Nome</Label>
+              <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="ex.: Subscrições" />
             </div>
             <div>
               <Label>Ícone</Label>
@@ -705,8 +705,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setNewCatOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()}>Create & assign</Button>
+            <Button variant="ghost" onClick={() => setNewCatOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()}>Criar e atribuir</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
