@@ -304,6 +304,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteIncome = (id: string) =>
     update(d => ({ ...d, incomes: (d.incomes ?? []).filter(x => x.id !== id) }));
 
+  const addIncomeCategory = (c: Omit<IncomeCategory, "id">) =>
+    update(d => ({ ...d, incomeCategories: [...(d.incomeCategories ?? []), { ...c, id: uid() }] }));
+  const updateIncomeCategory = (c: IncomeCategory) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).map(x => x.id === c.id ? c : x) }));
+  const deleteIncomeCategory = (id: string) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).filter(x => x.id !== id) }));
+
   const monthStartDay = data.monthStartDay ?? 1;
 
   const getMonthExpenses = (month: string) => {
