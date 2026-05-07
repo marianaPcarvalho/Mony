@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Sparkles, Loader2, FileText } from "lucide-react";
+import { Upload, Sparkles, Loader2, FileText, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ParsedExpense {
@@ -44,12 +45,36 @@ const fileToBase64 = (file: File): Promise<string> =>
     r.readAsDataURL(file);
   });
 
+// Derive the statement month from the most common YYYY-MM in transaction dates
+const deriveMonth = (p: Parsed): string | null => {
+  const counts = new Map<string, number>();
+  const collect = (d: string) => {
+    const m = d?.slice(0, 7);
+    if (m && /^\d{4}-\d{2}$/.test(m)) counts.set(m, (counts.get(m) ?? 0) + 1);
+  };
+  p.expenses?.forEach(e => collect(e.date));
+  p.incomes?.forEach(i => collect(i.date));
+  let best: string | null = null;
+  let max = 0;
+  counts.forEach((v, k) => { if (v > max) { max = v; best = k; } });
+  return best;
+};
+
 export function BankStatementImport() {
-  const { data, addExpense, addIncome, setSalary, selectedMonth } = useStore();
+  const { data, addExpense, addIncome, addCategory, setSalary, setSelectedMonth, selectedMonth } = useStore();
   const [loading, setLoading] = useState(false);
   const [parsed, setParsed] = useState<Parsed | null>(null);
   const [importSalary, setImportSalary] = useState(true);
+  const [newCatOpen, setNewCatOpen] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("📦");
+  const [newCatTargetIdx, setNewCatTargetIdx] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const effectiveMonth = useMemo(() => {
+    if (!parsed) return null;
+    return parsed.statementMonth ?? deriveMonth(parsed);
+  }, [parsed]);
 
   const handleFile = async (file: File) => {
     if (file.type !== "application/pdf") {
@@ -74,6 +99,8 @@ export function BankStatementImport() {
       const p = result as Parsed;
       p.expenses = (p.expenses ?? []).map(e => ({ ...e, _include: true, _categoryId: e.categoryId ?? "" }));
       p.incomes = (p.incomes ?? []).map(i => ({ ...i, _include: true }));
+      // Fallback month detection from transaction dates
+      if (!p.statementMonth) p.statementMonth = deriveMonth(p);
       setParsed(p);
       toast({ title: "Statement analyzed", description: `Found ${p.expenses.length} expenses and ${p.incomes.length} incomes.` });
     } catch (e: any) {
@@ -93,20 +120,56 @@ export function BankStatementImport() {
         categoryId: e._categoryId!,
         amount: e.amount,
         description: e.description,
-        date: e.date,
+        date: new Date(e.date).toISOString(),
       });
       added++;
     });
     parsed.incomes.filter(i => i._include).forEach(i => {
-      addIncome({ amount: i.amount, description: i.description, type: i.type, date: i.date });
+      addIncome({
+        amount: i.amount,
+        description: i.description,
+        type: i.type,
+        date: new Date(i.date).toISOString(),
+      });
       added++;
     });
-    if (importSalary && parsed.detectedSalary && parsed.detectedSalary > 0) {
-      const month = parsed.statementMonth ?? selectedMonth;
-      setSalary(month, parsed.detectedSalary);
+    if (importSalary && parsed.detectedSalary && parsed.detectedSalary > 0 && effectiveMonth) {
+      setSalary(effectiveMonth, parsed.detectedSalary);
     }
-    toast({ title: "Imported!", description: `${added} entries added.` });
+    if (effectiveMonth) setSelectedMonth(effectiveMonth);
+    toast({ title: "Imported!", description: `${added} entries added${effectiveMonth ? ` to ${effectiveMonth}` : ""}.` });
     setParsed(null);
+  };
+
+  const openNewCategory = (idx: number) => {
+    const guess = parsed?.expenses[idx]?.categoryGuess ?? "";
+    setNewCatName(guess);
+    setNewCatIcon("📦");
+    setNewCatTargetIdx(idx);
+    setNewCatOpen(true);
+  };
+
+  const handleCreateCategory = () => {
+    if (!newCatName.trim()) return;
+    const id = crypto.randomUUID();
+    addCategory({
+      // addCategory ignores any provided id and creates its own — so we pre-create here
+      name: newCatName.trim(),
+      icon: newCatIcon || "📦",
+      color: "hsl(var(--chart-1))",
+      monthlyBudget: 0,
+      subCategories: [],
+    } as any);
+    // Find the newly added category by name (most recent match)
+    setTimeout(() => {
+      const cat = [...data.categories].reverse().find(c => c.name === newCatName.trim());
+      if (cat && parsed && newCatTargetIdx != null) {
+        const n = { ...parsed };
+        n.expenses[newCatTargetIdx]._categoryId = cat.id;
+        setParsed({ ...n });
+      }
+    }, 0);
+    setNewCatOpen(false);
   };
 
   const skipped = parsed?.expenses.filter(e => e._include && !e._categoryId).length ?? 0;
@@ -148,11 +211,14 @@ export function BankStatementImport() {
 
           {parsed && (
             <div className="space-y-5">
+              <div className="text-xs text-muted-foreground">
+                Statement month: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "unknown"}</span>
+              </div>
               {parsed.detectedSalary != null && parsed.detectedSalary > 0 && (
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40">
                   <label className="flex items-center gap-2 text-sm">
                     <Checkbox checked={importSalary} onCheckedChange={v => setImportSalary(!!v)} />
-                    Set salary for {parsed.statementMonth ?? selectedMonth} to
+                    Set salary for {effectiveMonth ?? selectedMonth} to
                     <span className="font-mono font-semibold">€{parsed.detectedSalary.toFixed(2)}</span>
                   </label>
                 </div>
@@ -204,6 +270,7 @@ export function BankStatementImport() {
                         <Select
                           value={e._categoryId || ""}
                           onValueChange={v => {
+                            if (v === "__new__") { openNewCategory(idx); return; }
                             const n = { ...parsed };
                             n.expenses[idx]._categoryId = v;
                             setParsed({ ...n });
@@ -216,6 +283,9 @@ export function BankStatementImport() {
                             {data.categories.map(c => (
                               <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                             ))}
+                            <SelectItem value="__new__">
+                              <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> New category…</span>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <span className="font-mono text-sm font-semibold text-destructive w-20 text-right">€{e.amount.toFixed(2)}</span>
@@ -235,6 +305,28 @@ export function BankStatementImport() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setParsed(null)}>Cancel</Button>
             <Button onClick={handleConfirm}>Import selected</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newCatOpen} onOpenChange={setNewCatOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>New category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Name</Label>
+              <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
+            </div>
+            <div>
+              <Label>Icon (emoji)</Label>
+              <Input value={newCatIcon} onChange={e => setNewCatIcon(e.target.value)} maxLength={4} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNewCatOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateCategory} disabled={!newCatName.trim()}>Create & assign</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
