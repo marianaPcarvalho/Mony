@@ -78,15 +78,15 @@ export function ExpenseList() {
       {/* Primary Add Expense Button */}
       <div className="flex items-center justify-between gap-2">
         <h3 className="section-title flex items-center gap-2">
-          <Receipt className="h-4 w-4 text-muted-foreground" /> Expenses
+          <Receipt className="h-4 w-4 text-muted-foreground" /> Despesas
         </h3>
         <div className="flex items-center gap-2">
           <Select value={filterCat} onValueChange={setFilterCat}>
-            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filter by category">
-              <SelectValue placeholder="All categories" />
+            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filtrar por categoria">
+              <SelectValue placeholder="Todas as categorias" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">Todas as categorias</SelectItem>
               {data.categories.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
               ))}
@@ -98,8 +98,8 @@ export function ExpenseList() {
       {/* Primary action - Add Expense */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
         <DialogTrigger asChild>
-          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Add expense">
-            <Plus className="h-4 w-4" /> Add Expense
+          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Adicionar despesa">
+            <Plus className="h-4 w-4" /> Adicionar Despesa
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
