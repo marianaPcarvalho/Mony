@@ -172,11 +172,11 @@ export function IncomeList() {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-lg flex-shrink-0" aria-hidden="true">{t.icon}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate text-foreground">{i.description || t.label}</p>
+                  <p className="text-sm font-medium truncate text-foreground">{i.description || t.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                     <span>{new Date(i.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border text-[10px] font-medium">
-                      {t.label}
+                      {t.name}
                     </span>
                   </p>
                 </div>
@@ -214,7 +214,7 @@ export function IncomeList() {
             <AlertDialogTitle>Delete this income?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.description || getType(pendingDelete.type).label}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
+                <>This will permanently remove <strong>{pendingDelete.description || getType(pendingDelete.type).name}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
               ) : "This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
