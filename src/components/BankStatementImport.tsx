@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, BellOff, BellRing, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
+import { EmojiPickerButton } from "./EmojiPickerButton";
 
 interface ParsedExpense {
   amount: number;
@@ -785,8 +786,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
               <Input value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Subscriptions" />
             </div>
             <div>
-              <Label>Icon (emoji)</Label>
-              <Input value={newCatIcon} onChange={e => setNewCatIcon(e.target.value)} maxLength={4} />
+              <Label>Ícone</Label>
+              <EmojiPickerButton value={newCatIcon} onChange={setNewCatIcon} size="md" ariaLabel="Escolher ícone" />
             </div>
           </div>
           <DialogFooter>

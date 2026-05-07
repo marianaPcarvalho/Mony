@@ -77,15 +77,15 @@ export function IncomeList() {
     <Card className="glass-card p-5 space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="section-title flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" /> Income
+          <TrendingUp className="h-4 w-4 text-muted-foreground" /> Receitas
         </h3>
         <div className="flex items-center gap-2">
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filter by type">
-              <SelectValue placeholder="All types" />
+            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filtrar por tipo">
+              <SelectValue placeholder="Todos os tipos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="all">Todos os tipos</SelectItem>
               {incomeCategories.map(t => (
                 <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
               ))}
@@ -96,18 +96,18 @@ export function IncomeList() {
 
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
         <DialogTrigger asChild>
-          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Add income">
-            <Plus className="h-4 w-4" /> Add Income
+          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Adicionar receita">
+            <Plus className="h-4 w-4" /> Adicionar Receita
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editingId ? "Edit" : "Add"} Income</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Editar" : "Adicionar"} Receita</DialogTitle></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="inc-type">Type <span className="text-destructive">*</span></Label>
+                <Label htmlFor="inc-type">Tipo <span className="text-destructive">*</span></Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger id="inc-type" className="h-9"><SelectValue placeholder="Choose a type" /></SelectTrigger>
+                  <SelectTrigger id="inc-type" className="h-9"><SelectValue placeholder="Escolhe um tipo" /></SelectTrigger>
                   <SelectContent>
                     {incomeCategories.map(t => (
                       <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
@@ -116,11 +116,11 @@ export function IncomeList() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="inc-desc">Description</Label>
-                <Input id="inc-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g. November salary" maxLength={120} />
+                <Label htmlFor="inc-desc">Descrição</Label>
+                <Input id="inc-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="ex.: Salário de novembro" maxLength={120} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="inc-amount">Amount <span className="text-destructive">*</span></Label>
+                <Label htmlFor="inc-amount">Valor <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                   <Input
@@ -145,9 +145,9 @@ export function IncomeList() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Date <span className="text-destructive">*</span></Label>
+                <Label>Data <span className="text-destructive">*</span></Label>
                 <span className="text-xs text-muted-foreground">
-                  {date ? format(parseISO(date), "PPP") : "Pick a day"}
+                  {date ? format(parseISO(date), "PPP") : "Escolhe um dia"}
                 </span>
               </div>
               <div className="rounded-md border border-border flex justify-center">
@@ -155,12 +155,13 @@ export function IncomeList() {
                   mode="single"
                   selected={date ? parseISO(date) : undefined}
                   onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                  disabled={(d) => d > new Date()}
                   className={cn("p-2 pointer-events-auto")}
                 />
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Update" : "Add"} Income</Button>
+          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Atualizar" : "Adicionar"} Receita</Button>
         </DialogContent>
       </Dialog>
 
@@ -174,7 +175,7 @@ export function IncomeList() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate text-foreground">{i.description || t.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                    <span>{new Date(i.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span>{new Date(i.date).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric" })}</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border text-[10px] font-medium">
                       {t.name}
                     </span>
@@ -182,13 +183,13 @@ export function IncomeList() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span className="font-mono text-sm font-bold text-teal-600 dark:text-teal-400" aria-label={`plus ${i.amount.toFixed(2)} euros`}>
+                <span className="font-mono text-sm font-bold text-[hsl(var(--success))]" aria-label={`mais ${i.amount.toFixed(2)} euros`}>
                   +€{i.amount.toFixed(2)}
                 </span>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(i.id)} aria-label="Edit income">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(i.id)} aria-label="Editar receita">
                   <Pencil className="h-3 w-3 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(i.id)} aria-label="Delete income">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(i.id)} aria-label="Eliminar receita">
                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
@@ -197,34 +198,34 @@ export function IncomeList() {
         })}
         {incomes.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-6">
-            {filterType !== "all" ? "No income of this type." : "No income this month. Add your first entry above!"}
+            {filterType !== "all" ? "Sem receitas deste tipo." : "Sem receitas este mês. Adiciona a primeira acima!"}
           </p>
         )}
       </div>
 
       {incomes.length > 5 && (
         <Button variant="ghost" size="sm" className="w-full text-xs gap-1" onClick={() => setExpanded(!expanded)}>
-          {expanded ? <><ChevronUp className="h-3 w-3" /> Show less</> : <><ChevronDown className="h-3 w-3" /> Show all {incomes.length} entries</>}
+          {expanded ? <><ChevronUp className="h-3 w-3" /> Mostrar menos</> : <><ChevronDown className="h-3 w-3" /> Mostrar todas as {incomes.length} entradas</>}
         </Button>
       )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this income?</AlertDialogTitle>
+            <AlertDialogTitle>Eliminar esta receita?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.description || getType(pendingDelete.type).name}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
-              ) : "This action cannot be undone."}
+                <>Vai remover permanentemente <strong>{pendingDelete.description || getType(pendingDelete.type).name}</strong> (€{pendingDelete.amount.toFixed(2)}). Esta ação não pode ser revertida.</>
+              ) : "Esta ação não pode ser revertida."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteIncome(deleteId); setDeleteId(null); }}
             >
-              Delete
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -78,15 +78,15 @@ export function ExpenseList() {
       {/* Primary Add Expense Button */}
       <div className="flex items-center justify-between gap-2">
         <h3 className="section-title flex items-center gap-2">
-          <Receipt className="h-4 w-4 text-muted-foreground" /> Expenses
+          <Receipt className="h-4 w-4 text-muted-foreground" /> Despesas
         </h3>
         <div className="flex items-center gap-2">
           <Select value={filterCat} onValueChange={setFilterCat}>
-            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filter by category">
-              <SelectValue placeholder="All categories" />
+            <SelectTrigger className="h-8 text-xs w-[130px]" aria-label="Filtrar por categoria">
+              <SelectValue placeholder="Todas as categorias" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">Todas as categorias</SelectItem>
               {data.categories.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
               ))}
@@ -98,19 +98,19 @@ export function ExpenseList() {
       {/* Primary action - Add Expense */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
         <DialogTrigger asChild>
-          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Add expense">
-            <Plus className="h-4 w-4" /> Add Expense
+          <Button className="w-full gap-2 h-11 text-sm font-semibold" aria-label="Adicionar despesa">
+            <Plus className="h-4 w-4" /> Adicionar Despesa
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editingId ? "Edit" : "Add"} Expense</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Editar" : "Adicionar"} Despesa</DialogTitle></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
             {/* Left: category, description, amount */}
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="exp-category">Category <span className="text-destructive">*</span></Label>
+                <Label htmlFor="exp-category">Categoria <span className="text-destructive">*</span></Label>
                 <Select value={catId} onValueChange={(v) => { setCatId(v); setSubCatId(""); }}>
-                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Choose a category" /></SelectTrigger>
+                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Escolhe uma categoria" /></SelectTrigger>
                   <SelectContent>
                     {data.categories.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
@@ -120,11 +120,11 @@ export function ExpenseList() {
               </div>
               {subCategories.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="exp-subcategory">Sub-category</Label>
+                  <Label htmlFor="exp-subcategory">Subcategoria</Label>
                   <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
-                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="Optional" /></SelectTrigger>
+                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="Opcional" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">Nenhuma</SelectItem>
                       {subCategories.map(s => (
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                       ))}
@@ -133,11 +133,11 @@ export function ExpenseList() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="exp-desc">Description</Label>
-                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g. Groceries at Continente" maxLength={120} />
+                <Label htmlFor="exp-desc">Descrição</Label>
+                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="ex.: Compras no Continente" maxLength={120} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="exp-amount">Amount <span className="text-destructive">*</span></Label>
+                <Label htmlFor="exp-amount">Valor <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                   <Input
@@ -163,9 +163,9 @@ export function ExpenseList() {
             {/* Right: calendar */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Date <span className="text-destructive">*</span></Label>
+                <Label>Data <span className="text-destructive">*</span></Label>
                 <span className="text-xs text-muted-foreground">
-                  {date ? format(parseISO(date), "PPP") : "Pick a day"}
+                  {date ? format(parseISO(date), "PPP") : "Escolhe um dia"}
                 </span>
               </div>
               <div className="rounded-md border border-border flex justify-center">
@@ -173,12 +173,13 @@ export function ExpenseList() {
                   mode="single"
                   selected={date ? parseISO(date) : undefined}
                   onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                  disabled={(d) => d > new Date()}
                   className={cn("p-2 pointer-events-auto")}
                 />
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Update" : "Add"} Expense</Button>
+          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Atualizar" : "Adicionar"} Despesa</Button>
         </DialogContent>
       </Dialog>
 
@@ -193,7 +194,7 @@ export function ExpenseList() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate text-foreground">{e.description || cat?.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                    <span>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span>{new Date(e.date).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric" })}</span>
                     {sub && (
                       <span
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-medium"
@@ -211,13 +212,13 @@ export function ExpenseList() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span className="font-mono text-sm font-bold text-destructive" aria-label={`minus ${e.amount.toFixed(2)} euros`}>
+                <span className="font-mono text-sm font-bold text-destructive" aria-label={`menos ${e.amount.toFixed(2)} euros`}>
                   −€{e.amount.toFixed(2)}
                 </span>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Edit expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Editar despesa">
                   <Pencil className="h-3 w-3 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Delete expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Eliminar despesa">
                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
@@ -226,34 +227,34 @@ export function ExpenseList() {
         })}
         {expenses.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-6">
-            {filterCat !== "all" ? "No expenses in this category." : "No expenses this month. Add your first expense above!"}
+            {filterCat !== "all" ? "Sem despesas nesta categoria." : "Sem despesas este mês. Adiciona a primeira acima!"}
           </p>
         )}
       </div>
 
       {expenses.length > 5 && (
         <Button variant="ghost" size="sm" className="w-full text-xs gap-1" onClick={() => setExpanded(!expanded)}>
-          {expanded ? <><ChevronUp className="h-3 w-3" /> Show less</> : <><ChevronDown className="h-3 w-3" /> Show all {expenses.length} expenses</>}
+          {expanded ? <><ChevronUp className="h-3 w-3" /> Mostrar menos</> : <><ChevronDown className="h-3 w-3" /> Mostrar todas as {expenses.length} despesas</>}
         </Button>
       )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+            <AlertDialogTitle>Eliminar esta despesa?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.description || "this expense"}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
-              ) : "This action cannot be undone."}
+                <>Vai remover permanentemente <strong>{pendingDelete.description || "esta despesa"}</strong> (€{pendingDelete.amount.toFixed(2)}). Esta ação não pode ser revertida.</>
+              ) : "Esta ação não pode ser revertida."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteExpense(deleteId); setDeleteId(null); }}
             >
-              Delete
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

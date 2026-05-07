@@ -6,102 +6,108 @@
 
 @layer base {
   :root {
-    /* MONY palette — vibrant, young, accessible
-       Hot pink #FF2E93, electric violet #6E3BFF, neon lime #C6FF3D,
-       sunshine #FFC93C, deep ink #15131F, off-white #FFF8F1 */
+    /* MONY palette — fresh teal + deep navy, vibrant yet coherent */
 
-    --background: 30 100% 97%;
-    --foreground: 250 18% 10%;
+    --background: 190 50% 98%;
+    --foreground: 210 40% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 250 18% 10%;
+    --card-foreground: 210 40% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 250 18% 10%;
+    --popover-foreground: 210 40% 12%;
 
-    --primary: 330 100% 59%;
+    /* Primary = vivid teal */
+    --primary: 178 70% 38%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 254 100% 62%;
+    /* Secondary = deep navy blue */
+    --secondary: 215 75% 28%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 30% 92%;
-    --muted-foreground: 250 12% 32%;
+    /* Soft pastel surfaces */
+    --muted: 190 35% 93%;
+    --muted-foreground: 210 20% 32%;
 
-    --accent: 75 100% 62%;
-    --accent-foreground: 250 25% 8%;
+    /* Accent = mint */
+    --accent: 160 55% 58%;
+    --accent-foreground: 210 40% 12%;
 
-    --destructive: 358 82% 52%;
+    --destructive: 358 75% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 42 100% 50%;
-    --warning-foreground: 250 25% 8%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 12%;
 
-    --success: 156 72% 36%;
+    --success: 156 65% 38%;
     --success-foreground: 0 0% 100%;
 
-    --info: 200 95% 44%;
+    --info: 200 85% 44%;
     --info-foreground: 0 0% 100%;
 
-    --savings: 254 100% 62%;
+    --savings: 178 70% 38%;
     --savings-foreground: 0 0% 100%;
 
-    --housing: 75 90% 38%;
+    --housing: 24 80% 48%;
     --housing-foreground: 0 0% 100%;
 
-    --budget-bar: 254 100% 62%;
-    --spent-bar: 330 100% 59%;
+    --budget-bar: 178 70% 38%;
+    --spent-bar: 215 75% 32%;
 
-    --border: 250 15% 88%;
-    --input: 250 15% 88%;
-    --ring: 330 100% 59%;
+    /* Pastel progress track */
+    --progress-track: 190 60% 90%;
+
+    --border: 200 25% 86%;
+    --input: 200 25% 86%;
+    --ring: 178 70% 38%;
 
     --radius: 1rem;
 
-    --sidebar-background: 250 25% 8%;
-    --sidebar-foreground: 30 100% 96%;
-    --sidebar-primary: 330 100% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 250 22% 14%;
-    --sidebar-accent-foreground: 75 100% 80%;
-    --sidebar-border: 250 22% 16%;
-    --sidebar-ring: 75 100% 62%;
+    --sidebar-background: 215 50% 14%;
+    --sidebar-foreground: 190 40% 96%;
+    --sidebar-primary: 178 70% 50%;
+    --sidebar-primary-foreground: 215 50% 10%;
+    --sidebar-accent: 215 45% 20%;
+    --sidebar-accent-foreground: 160 60% 80%;
+    --sidebar-border: 215 40% 22%;
+    --sidebar-ring: 178 70% 50%;
 
-    --chart-1: 330 100% 59%;
-    --chart-2: 254 100% 62%;
-    --chart-3: 75 90% 45%;
-    --chart-4: 200 95% 48%;
-    --chart-5: 42 100% 52%;
-    --chart-6: 14 95% 58%;
+    --chart-1: 178 70% 42%;
+    --chart-2: 215 75% 45%;
+    --chart-3: 160 60% 45%;
+    --chart-4: 200 85% 50%;
+    --chart-5: 38 92% 55%;
+    --chart-6: 280 50% 55%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(330 100% 59%) 0%, hsl(280 100% 60%) 50%, hsl(254 100% 62%) 100%);
-    --gradient-sun: linear-gradient(135deg, hsl(42 100% 60%) 0%, hsl(330 100% 62%) 100%);
-    --gradient-fresh: linear-gradient(135deg, hsl(156 72% 45%) 0%, hsl(75 90% 55%) 100%);
-    --gradient-ink: linear-gradient(135deg, hsl(250 25% 8%) 0%, hsl(254 40% 18%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(178 70% 42%) 0%, hsl(195 75% 42%) 50%, hsl(215 75% 36%) 100%);
+    --gradient-sun: linear-gradient(135deg, hsl(38 92% 60%) 0%, hsl(160 55% 50%) 100%);
+    --gradient-fresh: linear-gradient(135deg, hsl(156 65% 45%) 0%, hsl(178 70% 50%) 100%);
+    --gradient-ink: linear-gradient(135deg, hsl(215 60% 14%) 0%, hsl(215 50% 22%) 100%);
 
-    --shadow-brand: 0 10px 30px -10px hsl(330 100% 59% / 0.45);
-    --shadow-soft: 0 8px 24px -10px hsl(250 25% 18% / 0.18);
-    --shadow-pop: 0 1px 0 hsl(250 25% 8% / 0.06), 0 12px 28px -12px hsl(254 100% 62% / 0.35);
+    --shadow-brand: 0 10px 30px -10px hsl(178 70% 38% / 0.40);
+    --shadow-soft: 0 8px 24px -10px hsl(215 50% 18% / 0.18);
+    --shadow-pop: 0 1px 0 hsl(215 50% 14% / 0.06), 0 12px 28px -12px hsl(178 70% 38% / 0.30);
   }
 
   .dark {
-    --background: 250 25% 7%;
-    --foreground: 30 100% 96%;
-    --card: 250 25% 10%;
-    --card-foreground: 30 100% 96%;
-    --popover: 250 25% 10%;
-    --popover-foreground: 30 100% 96%;
-    --primary: 330 100% 65%;
-    --primary-foreground: 250 25% 8%;
-    --secondary: 254 100% 70%;
-    --secondary-foreground: 250 25% 8%;
-    --muted: 250 22% 14%;
-    --muted-foreground: 30 20% 72%;
-    --accent: 75 100% 65%;
-    --accent-foreground: 250 25% 8%;
-    --border: 250 22% 18%;
-    --input: 250 22% 18%;
-    --ring: 330 100% 65%;
+    --background: 215 45% 8%;
+    --foreground: 190 40% 96%;
+    --card: 215 40% 12%;
+    --card-foreground: 190 40% 96%;
+    --popover: 215 40% 12%;
+    --popover-foreground: 190 40% 96%;
+    --primary: 178 70% 50%;
+    --primary-foreground: 215 50% 10%;
+    --secondary: 215 65% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 215 35% 18%;
+    --muted-foreground: 190 25% 72%;
+    --accent: 160 55% 50%;
+    --accent-foreground: 215 50% 10%;
+    --progress-track: 215 35% 22%;
+    --border: 215 30% 22%;
+    --input: 215 30% 22%;
+    --ring: 178 70% 50%;
   }
 }
 
@@ -114,9 +120,9 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     background-image:
-      radial-gradient(1100px 600px at -10% -20%, hsl(330 100% 59% / 0.10), transparent 60%),
-      radial-gradient(900px 500px at 110% 0%, hsl(254 100% 62% / 0.10), transparent 55%),
-      radial-gradient(800px 500px at 50% 120%, hsl(75 100% 62% / 0.10), transparent 55%);
+      radial-gradient(1100px 600px at -10% -20%, hsl(178 70% 50% / 0.10), transparent 60%),
+      radial-gradient(900px 500px at 110% 0%, hsl(215 75% 45% / 0.10), transparent 55%),
+      radial-gradient(800px 500px at 50% 120%, hsl(160 60% 55% / 0.10), transparent 55%);
     background-attachment: fixed;
   }
 
