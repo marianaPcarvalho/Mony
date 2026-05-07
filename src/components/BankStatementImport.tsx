@@ -415,11 +415,11 @@ export function BankStatementImport({ variant = "full" }: Props) {
             <div className="min-w-0">
               {meta.lastFileName ? (
                 <p className="text-xs text-muted-foreground truncate">
-                  Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
-                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
+                  Último: <span className="font-medium text-foreground">{meta.lastFileName}</span>
+                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric" })}</>}
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground">No statement imported yet.</p>
+                <p className="text-xs text-muted-foreground">Ainda sem extrato importado.</p>
               )}
             </div>
             {triggerButton}
@@ -438,8 +438,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold text-foreground">Import bank statement</h3>
-                <p className="text-xs text-muted-foreground">Upload your monthly PDF — Mony will read and sort it for you.</p>
+                <h3 className="font-semibold text-foreground">Importar extrato bancário</h3>
+                <p className="text-xs text-muted-foreground">Carrega o PDF mensal — a MONY lê e organiza por ti.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
