@@ -71,3 +71,43 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Resend test email
+
+1. Install the package:
+
+```sh
+npm install resend
+```
+
+2. Create a local env file from the example and add your real key:
+
+```sh
+cp .env.example .env
+```
+
+Then edit `.env` and set:
+
+```sh
+RESEND_API_KEY=re_xxxxxxxxx
+```
+
+3. Send the test email:
+
+```sh
+npm run email:test
+```
+
+This command loads variables from `.env` automatically.
+
+## Monthly reports by email
+
+- Open the new `Profile` section in the sidebar.
+- On the card **Resumo mensal por email**, add the user's email and click `Salvar`.
+- Enable the switch to automatically send one report per month (for the previous month).
+- Use `Reenviar resumo agora` to send the report anytime.
+
+### Server environment variable
+
+The report sender endpoint reads `RESEND_API_KEY` from server environment variables.
+If you deploy this app, set `RESEND_API_KEY` in your hosting provider's environment settings so `/api/monthly-report` can send emails securely.

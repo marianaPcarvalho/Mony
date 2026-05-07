@@ -62,4 +62,9 @@ export interface AppData {
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
   monthStartDay?: number; // 1-28, day of month when budget cycle starts
+  monthlyEmailReport?: {
+    email: string;
+    enabled: boolean;
+    lastSentMonth?: string;
+  };
 }

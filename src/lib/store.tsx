@@ -23,6 +23,11 @@ const defaultData: AppData = {
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
+  monthlyEmailReport: {
+    email: "",
+    enabled: false,
+    lastSentMonth: undefined,
+  },
 };
 
 function loadData(): AppData {
@@ -50,6 +55,11 @@ function loadData(): AppData {
           subCategories: c.subCategories ?? [],
         }));
       }
+      parsed.monthlyEmailReport = {
+        email: parsed.monthlyEmailReport?.email ?? "",
+        enabled: parsed.monthlyEmailReport?.enabled ?? false,
+        lastSentMonth: parsed.monthlyEmailReport?.lastSentMonth,
+      };
       return parsed;
     }
   } catch {}
@@ -92,6 +102,9 @@ interface StoreContextType {
   getActualSavedTotal: () => number;
   getActualSavedInMonth: (month: string) => number;
   setMonthStartDay: (day: number) => void;
+  setMonthlyReportEmail: (email: string) => void;
+  setMonthlyReportEnabled: (enabled: boolean) => void;
+  markMonthlyReportSent: (month: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -187,6 +200,36 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const setMonthStartDay = (day: number) =>
     update(d => ({ ...d, monthStartDay: day }));
 
+  const setMonthlyReportEmail = (email: string) =>
+    update(d => ({
+      ...d,
+      monthlyEmailReport: {
+        email,
+        enabled: d.monthlyEmailReport?.enabled ?? false,
+        lastSentMonth: d.monthlyEmailReport?.lastSentMonth,
+      },
+    }));
+
+  const setMonthlyReportEnabled = (enabled: boolean) =>
+    update(d => ({
+      ...d,
+      monthlyEmailReport: {
+        email: d.monthlyEmailReport?.email ?? "",
+        enabled,
+        lastSentMonth: d.monthlyEmailReport?.lastSentMonth,
+      },
+    }));
+
+  const markMonthlyReportSent = (month: string) =>
+    update(d => ({
+      ...d,
+      monthlyEmailReport: {
+        email: d.monthlyEmailReport?.email ?? "",
+        enabled: d.monthlyEmailReport?.enabled ?? false,
+        lastSentMonth: month,
+      },
+    }));
+
   const monthStartDay = data.monthStartDay ?? 1;
 
   const getMonthExpenses = (month: string) => {
@@ -233,6 +276,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
       setMonthStartDay,
+      setMonthlyReportEmail, setMonthlyReportEnabled, markMonthlyReportSent,
     }}>
       {children}
     </StoreContext.Provider>

@@ -1,6 +1,6 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
-export type ViewKey = "home" | "categories" | "savings" | "investments" | "annual";
+export type ViewKey = "home" | "categories" | "savings" | "investments" | "annual" | "profile";
 
 const items: { key: ViewKey; label: string; icon: string }[] = [
   { key: "home", label: "Home", icon: "🏠" },
@@ -8,6 +8,7 @@ const items: { key: ViewKey; label: string; icon: string }[] = [
   { key: "savings", label: "Savings", icon: "🐷" },
   { key: "investments", label: "Investments", icon: "📈" },
   { key: "annual", label: "Annual View", icon: "🗓️" },
+  { key: "profile", label: "Profile", icon: "👤" },
 ];
 
 export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v: ViewKey) => void }) {

@@ -10,6 +10,7 @@ import { MonthSelector } from "@/components/MonthSelector";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar, ViewKey } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
+import { ProfileSettings } from "@/components/ProfileSettings";
 
 const Index = () => {
   const [view, setView] = useState<ViewKey>("home");
@@ -47,6 +48,8 @@ const Index = () => {
               )}
 
               {view === "annual" && <AnnualDashboard />}
+
+              {view === "profile" && <ProfileSettings />}
             </main>
           </SidebarInset>
         </div>
