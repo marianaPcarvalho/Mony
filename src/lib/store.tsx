@@ -35,6 +35,7 @@ const defaultData: AppData = {
   yearlyPlans: [],
   savingsGoals: [],
   investments: [],
+  incomes: [],
   profile: defaultProfile,
 };
 
@@ -66,6 +67,9 @@ function loadData(): AppData {
       parsed.investments = (parsed.investments ?? []).map((i: any) => ({
         ...i,
         transactions: i.transactions ?? [],
+      }));
+      parsed.incomes = (parsed.incomes ?? []).map((i: any) => ({
+        ...i,
       }));
       parsed.profile = {
         ...defaultProfile,
