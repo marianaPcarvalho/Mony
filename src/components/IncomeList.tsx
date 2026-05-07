@@ -15,17 +15,10 @@ import {
 import { Plus, Trash2, Pencil, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const INCOME_TYPES = [
-  { value: "salary", label: "Salary", icon: "💼" },
-  { value: "freelance", label: "Freelance", icon: "💻" },
-  { value: "bonus", label: "Bonus", icon: "🎁" },
-  { value: "investment", label: "Investment Return", icon: "📈" },
-  { value: "gift", label: "Gift", icon: "🎀" },
-  { value: "other", label: "Other", icon: "📦" },
-];
-
 export function IncomeList() {
   const { data, selectedMonth, addIncome, updateIncome, deleteIncome } = useStore();
+  const incomeCategories = data.incomeCategories ?? [];
+  const fallbackType = incomeCategories[0]?.id ?? "other";
 
   const [filterType, setFilterType] = useState<string>("all");
   const [expanded, setExpanded] = useState(false);
