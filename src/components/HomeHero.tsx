@@ -1,5 +1,4 @@
 import { useStore } from "@/lib/store";
-import { Card } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { TrendingDown, PiggyBank, Wallet } from "lucide-react";
 import { buildCategoryPalette } from "@/lib/colors";
@@ -9,7 +8,6 @@ const PT_MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "
 export function HomeHero() {
   const { data, selectedMonth, getCategorySpent, getSalary, getTotalSpent, getActualSavedTotal } = useStore();
 
-  // Display title based on the currently SELECTED month (cards follow the picker).
   const [selYear, selMon] = selectedMonth.split("-").map(Number);
   const ptMonthName = PT_MONTHS[(selMon - 1) % 12] ?? "";
   const ptYear = selYear;
@@ -28,7 +26,6 @@ export function HomeHero() {
     }))
     .filter(d => d.value > 0);
 
-
   const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const savings = getActualSavedTotal();
@@ -39,16 +36,17 @@ export function HomeHero() {
   ];
 
   return (
-    <Card className="glass-card p-6">
-      <div className="flex items-baseline justify-between gap-3 mb-5">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground capitalize">
-          {ptMonthName}<span className="text-muted-foreground font-medium ml-2 text-base">{ptYear}</span>
-        </h2>
+    <section aria-labelledby="month-heading" className="space-y-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h1 id="month-heading" className="text-3xl font-bold tracking-tight text-foreground capitalize">
+          {ptMonthName}
+          <span className="text-muted-foreground font-medium ml-2 text-lg">{ptYear}</span>
+        </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Left: donut + breakdown list */}
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        {/* Donut + breakdown */}
+        <div className="space-y-3">
           <div className="relative">
             {pieData.length > 0 ? (
               <>
@@ -87,37 +85,32 @@ export function HomeHero() {
             )}
           </div>
 
-          {pieData.length > 0 ? (
+          {pieData.length > 0 && (
             <ul className="space-y-1.5" aria-label="Spending breakdown">
-              {pieData
-                .slice()
-                .sort((a, b) => b.value - a.value)
-                .map((d, i) => {
-                  const total = pieData.reduce((s, p) => s + p.value, 0);
-                  const pct = total > 0 ? (d.value / total) * 100 : 0;
-                  return (
-                    <li key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} aria-hidden="true" />
-                        <span className="text-sm font-medium text-foreground truncate">{d.icon} {d.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="font-mono text-sm font-semibold text-foreground">{fmt(d.value)}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">{pct.toFixed(1)}%</span>
-                      </div>
-                    </li>
-                  );
-                })}
+              {pieData.slice().sort((a, b) => b.value - a.value).map((d, i) => {
+                const total = pieData.reduce((s, p) => s + p.value, 0);
+                const pct = total > 0 ? (d.value / total) * 100 : 0;
+                return (
+                  <li key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.color }} aria-hidden="true" />
+                      <span className="text-sm font-medium text-foreground truncate">{d.icon} {d.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="font-mono text-sm font-semibold text-foreground">{fmt(d.value)}</span>
+                      <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">{pct.toFixed(1)}%</span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
-          ) : (
-            <div className="text-sm text-muted-foreground text-center">Add an expense to see your breakdown.</div>
           )}
         </div>
 
-        {/* Right: stats column */}
+        {/* Stats column */}
         <div className="space-y-3">
           {stats.map(s => (
-            <div key={s.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
+            <div key={s.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/40 border border-border">
               <div className="flex items-center gap-3">
                 <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${s.tone === "success" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}`}>
                   <s.icon className="h-4 w-4" />
@@ -131,6 +124,6 @@ export function HomeHero() {
           ))}
         </div>
       </div>
-    </Card>
+    </section>
   );
 }
