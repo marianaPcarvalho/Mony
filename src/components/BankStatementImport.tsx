@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle } from "lucide-react";
+import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, BellOff, BellRing, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 
 interface ParsedExpense {
   amount: number;
@@ -38,6 +39,7 @@ interface Parsed {
 const MEMORY_KEY = "bank-import-memory-v1";
 const META_KEY = "bank-import-meta-v2"; // v2: per-month tracking
 const REMINDER_KEY = "bank-import-reminder-v1";
+const REMINDER_SETTINGS_KEY = "bank-import-reminder-settings-v1";
 
 interface MemoryEntry {
   categoryId: string;
@@ -51,6 +53,15 @@ interface ImportMeta {
   lastImportedAt?: string;
   byMonth?: Record<string, { fileName: string; importedAt: string }>;
 }
+
+interface ReminderSettings {
+  enabled: boolean;
+  snoozedUntil?: string; // ISO date; suppress reminders before this
+}
+const loadReminderSettings = (): ReminderSettings => {
+  try { return JSON.parse(localStorage.getItem(REMINDER_SETTINGS_KEY) ?? "") || { enabled: true }; } catch { return { enabled: true }; }
+};
+const saveReminderSettings = (s: ReminderSettings) => localStorage.setItem(REMINDER_SETTINGS_KEY, JSON.stringify(s));
 
 const normalizeDesc = (s: string) =>
   (s ?? "")
@@ -131,28 +142,60 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(loadReminderSettings);
+
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+  const prevMonthLabel = prev.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const prevMonthImport = meta.byMonth?.[prevMonthKey];
+  const prevMonthHasImport = !!prevMonthImport;
+
   // Reminder: if previous calendar month has no imported statement, nudge once per browser session.
   useEffect(() => {
     try {
       const SESSION_KEY = "bank-import-reminder-session";
       if (sessionStorage.getItem(SESSION_KEY)) return;
-      const now = new Date();
-      const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const prevKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
-      const m = loadMeta();
-      const hasPrev = !!m.byMonth?.[prevKey];
-      if (!hasPrev) {
-        toast({
-          title: "Time to import last month's statement 📅",
-          description: `You haven't uploaded a bank statement for ${prevKey} yet.`,
-        });
-        sessionStorage.setItem(SESSION_KEY, "1");
-      }
-      // Keep legacy single-shot key updated for backwards compatibility
+      if (!reminderSettings.enabled) return;
+      if (reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date()) return;
+      if (prevMonthHasImport) return;
+
+      sonnerToast("Time to import last month's statement 📅", {
+        description: `You haven't uploaded a bank statement for ${prevMonthLabel} yet.`,
+        duration: 8000,
+        action: {
+          label: "Snooze 7d",
+          onClick: () => {
+            const until = new Date(); until.setDate(until.getDate() + 7);
+            const next = { ...reminderSettings, snoozedUntil: until.toISOString() };
+            setReminderSettings(next); saveReminderSettings(next);
+          },
+        },
+      });
+      sessionStorage.setItem(SESSION_KEY, "1");
       const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
       localStorage.setItem(REMINDER_KEY, cur);
     } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const snoozedActive = !!reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date();
+
+  const toggleRemindersEnabled = () => {
+    const next = { ...reminderSettings, enabled: !reminderSettings.enabled, snoozedUntil: undefined };
+    setReminderSettings(next); saveReminderSettings(next);
+    toast({ title: next.enabled ? "Reminders enabled" : "Reminders disabled" });
+  };
+  const snoozeReminders = (days: number) => {
+    const until = new Date(); until.setDate(until.getDate() + days);
+    const next = { ...reminderSettings, enabled: true, snoozedUntil: until.toISOString() };
+    setReminderSettings(next); saveReminderSettings(next);
+    toast({ title: `Reminders snoozed for ${days} day${days === 1 ? "" : "s"}` });
+  };
+  const clearSnooze = () => {
+    const next = { ...reminderSettings, snoozedUntil: undefined };
+    setReminderSettings(next); saveReminderSettings(next);
+  };
 
   useEffect(() => {
     if (!pendingAssign || !parsed) return;
@@ -407,22 +450,70 @@ export function BankStatementImport({ variant = "full" }: Props) {
     />
   );
 
+  const lastMonthStatusBadge = (
+    <div
+      className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
+        prevMonthHasImport
+          ? "border-success/40 bg-success/10 text-success"
+          : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+      }`}
+      title={prevMonthHasImport && prevMonthImport?.fileName ? `File: ${prevMonthImport.fileName}` : undefined}
+    >
+      {prevMonthHasImport ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+      {prevMonthLabel}: {prevMonthHasImport ? "imported" : "missing"}
+    </div>
+  );
+
+  const reminderControls = (
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 px-2 text-xs gap-1"
+        onClick={toggleRemindersEnabled}
+        title={reminderSettings.enabled ? "Disable monthly reminders" : "Enable monthly reminders"}
+      >
+        {reminderSettings.enabled ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+        {reminderSettings.enabled ? "On" : "Off"}
+      </Button>
+      {reminderSettings.enabled && (
+        snoozedActive ? (
+          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" onClick={clearSnooze} title="Cancel snooze">
+            <X className="h-3.5 w-3.5" />
+            Snoozed to {new Date(reminderSettings.snoozedUntil!).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          </Button>
+        ) : (
+          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => snoozeReminders(7)}>
+            Snooze 7d
+          </Button>
+        )
+      )}
+    </div>
+  );
+
   return (
     <>
       {variant === "compact" ? (
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="min-w-0">
-            {meta.lastFileName ? (
-              <p className="text-xs text-muted-foreground truncate">
-                Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
-                {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">No statement imported yet.</p>
-            )}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="min-w-0">
+              {meta.lastFileName ? (
+                <p className="text-xs text-muted-foreground truncate">
+                  Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
+                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">No statement imported yet.</p>
+              )}
+            </div>
+            {triggerButton}
+            {fileInput}
           </div>
-          {triggerButton}
-          {fileInput}
+          <div className="flex items-center gap-2 flex-wrap">
+            {lastMonthStatusBadge}
+            {reminderControls}
+          </div>
         </div>
       ) : (
         <Card className="glass-card p-5">
@@ -438,6 +529,10 @@ export function BankStatementImport({ variant = "full" }: Props) {
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
             {fileInput}
+          </div>
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            {lastMonthStatusBadge}
+            {reminderControls}
           </div>
         </Card>
       )}
