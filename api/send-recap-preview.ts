@@ -132,6 +132,15 @@ function buildRecapPreviewEmail(data: any, subscriberEmail: string): string {
 }
 
 export default async function handler(req: any, res: any) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -149,6 +158,17 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Invalid device token format' });
     }
 
+    // Check environment variables
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Missing Supabase environment variables');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+      console.error('Missing Resend environment variables');
+      return res.status(500).json({ error: 'Email configuration error' });
+    }
+
     // Get subscriber info
     const { data: subscriber, error: subError } = await supabase
       .from('recap_subscribers')
@@ -156,7 +176,12 @@ export default async function handler(req: any, res: any) {
       .eq('device_token', deviceToken)
       .single();
 
-    if (subError || !subscriber) {
+    if (subError) {
+      console.error('Subscriber query error:', subError);
+      return res.status(404).json({ error: 'Subscriber not found' });
+    }
+
+    if (!subscriber) {
       return res.status(404).json({ error: 'Subscriber not found' });
     }
 
@@ -173,7 +198,12 @@ export default async function handler(req: any, res: any) {
       .limit(1)
       .single();
 
-    if (snapError || !snapshot) {
+    if (snapError) {
+      console.error('Snapshot query error:', snapError);
+      return res.status(404).json({ error: 'No data found for this device' });
+    }
+
+    if (!snapshot) {
       return res.status(404).json({ error: 'No data found for this device' });
     }
 
