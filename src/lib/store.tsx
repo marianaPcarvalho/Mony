@@ -81,6 +81,7 @@ function loadData(): AppData {
       parsed.incomes = (parsed.incomes ?? []).map((i: any) => ({
         ...i,
       }));
+      parsed.incomeCategories = parsed.incomeCategories ?? defaultIncomeCategories;
       parsed.profile = {
         ...defaultProfile,
         ...(parsed.profile ?? {}),
