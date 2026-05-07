@@ -103,7 +103,7 @@ export function ExpenseList() {
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editingId ? "Edit" : "Add"} Expense</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "Editar" : "Adicionar"} Despesa</DialogTitle></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
             {/* Left: category, description, amount */}
             <div className="space-y-3">
