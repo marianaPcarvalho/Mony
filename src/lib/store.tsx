@@ -140,6 +140,9 @@ interface StoreContextType {
   addIncome: (i: Omit<Income, "id">) => void;
   updateIncome: (i: Income) => void;
   deleteIncome: (id: string) => void;
+  addIncomeCategory: (c: Omit<IncomeCategory, "id">) => void;
+  updateIncomeCategory: (c: IncomeCategory) => void;
+  deleteIncomeCategory: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
