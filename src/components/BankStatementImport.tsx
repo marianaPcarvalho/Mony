@@ -40,6 +40,17 @@ const MEMORY_KEY = "bank-import-memory-v1";
 const META_KEY = "bank-import-meta-v2"; // v2: per-month tracking
 
 interface MemoryEntry {
+  categoryId: string;
+  subCategoryId?: string;
+  incomeType?: string;
+}
+type Memory = Record<string, MemoryEntry>;
+
+interface ImportMeta {
+  lastFileName?: string;
+  lastImportedAt?: string;
+  byMonth?: Record<string, { fileName: string; importedAt: string }>;
+}
 
 const normalizeDesc = (s: string) =>
   (s ?? "")
