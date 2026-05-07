@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { User, Wallet, Bell, Check, Mail, Send, FileText } from "lucide-react";
+import { User, Wallet, Bell, Check, Mail, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { BankStatementImport } from "@/components/BankStatementImport";
 import {
   getLocalSubscriber, setLocalSubscriber,
-  updateSubscription, sendRecapPreview, pushSnapshot,
+  updateSubscription, pushSnapshot,
 } from "@/lib/cloudSync";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,9 +22,7 @@ export function ProfilePage() {
   const initialSub = getLocalSubscriber();
   const [recapEmail, setRecapEmail] = useState(initialSub?.email ?? "");
   const [recapEnabled, setRecapEnabled] = useState(initialSub?.enabled ?? true);
-  const [lastSentAt, setLastSentAt] = useState<string | null>(initialSub?.lastSentAt ?? null);
   const [recapBusy, setRecapBusy] = useState(false);
-  const [resendBusy, setResendBusy] = useState(false);
   const [name, setName] = useState(profile.name);
   const [salary, setSalary] = useState(String(profile.defaultSalary));
 
@@ -54,13 +52,10 @@ export function ProfilePage() {
       await pushSnapshot(data);
       const { error } = await updateSubscription({ email: e, enabled: recapEnabled });
       if (error) throw error;
-      const local = getLocalSubscriber();
       setLocalSubscriber({
         email: e,
         enabled: recapEnabled,
-        lastSentAt: local?.lastSentAt,
       });
-      setLastSentAt(local?.lastSentAt ?? null);
       toast.success("Subscrito — vais receber um resumo no dia 1 de cada mês");
     } catch (err: any) {
       toast.error(err?.message ?? "Não foi possível subscrever");
@@ -86,31 +81,6 @@ export function ProfilePage() {
       setRecapEmail("");
       toast.success("Subscrição removida");
     } finally { setRecapBusy(false); }
-  };
-
-  const resendNow = async () => {
-    const e = recapEmail.trim().toLowerCase();
-    if (!EMAIL_RE.test(e)) { toast.error("Introduz um email válido"); return; }
-
-    setResendBusy(true);
-    try {
-      await pushSnapshot(data);
-      const local = getLocalSubscriber();
-      if (!local || local.email !== e || local.enabled !== recapEnabled) {
-        const { error: subError } = await updateSubscription({ email: e, enabled: recapEnabled });
-        if (subError) throw subError;
-      }
-      const { error } = await sendRecapPreview();
-      if (error) throw error;
-      const now = new Date().toISOString();
-      setLocalSubscriber({ email: e, enabled: recapEnabled, lastSentAt: now });
-      setLastSentAt(now);
-      toast.success("Resumo reenviado — verifica o teu email");
-    } catch (err: any) {
-      toast.error(err?.message ?? "Não foi possível reenviar o resumo");
-    } finally {
-      setResendBusy(false);
-    }
   };
 
   const isSubscribed = !!getLocalSubscriber();
@@ -247,17 +217,10 @@ export function ProfilePage() {
               <Switch checked={recapEnabled} onCheckedChange={toggleRecapEnabled} aria-label="Ativar resumo" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={resendNow} disabled={resendBusy} className="gap-2">
-                <Send className="h-4 w-4" />
-                {resendBusy ? "A enviar..." : "Reenviar resumo agora"}
-              </Button>
               <Button variant="ghost" onClick={unsubscribe} disabled={recapBusy} className="text-destructive">
                 Cancelar subscrição
               </Button>
             </div>
-            {lastSentAt && (
-              <p className="text-xs text-muted-foreground">Último envio: {new Date(lastSentAt).toLocaleString("pt-PT", { dateStyle: "medium", timeStyle: "short" })}</p>
-            )}
           </>
         )}
       </Card>
