@@ -35,7 +35,7 @@ function HomeView() {
       <HomeHero />
       <section aria-labelledby="month-details-heading" className="space-y-5 pt-2">
         <h2 id="month-details-heading" className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-          Activity for this month
+          Atividade deste mês
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <IncomeList />

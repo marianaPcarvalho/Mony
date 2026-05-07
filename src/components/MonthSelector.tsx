@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTH_NAMES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 export function MonthSelector() {
   const { selectedMonth, setSelectedMonth } = useStore();
@@ -46,13 +46,13 @@ export function MonthSelector() {
   return (
     <div className="flex items-center gap-1.5">
       <Button variant="ghost" size="sm" className="text-xs h-8 px-2" onClick={goToToday}>
-        Today
+        Hoje
       </Button>
-      <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="h-8 w-8" aria-label="Previous month">
+      <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="h-8 w-8" aria-label="Mês anterior">
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <Select value={String(month).padStart(2, "0")} onValueChange={handleMonthChange}>
-        <SelectTrigger className="h-8 w-[110px] text-xs font-semibold" aria-label="Select month">
+        <SelectTrigger className="h-8 w-[110px] text-xs font-semibold" aria-label="Selecionar mês">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -67,7 +67,7 @@ export function MonthSelector() {
         </SelectContent>
       </Select>
       <Select value={String(year)} onValueChange={handleYearChange}>
-        <SelectTrigger className="h-8 w-[75px] text-xs font-semibold" aria-label="Select year">
+        <SelectTrigger className="h-8 w-[75px] text-xs font-semibold" aria-label="Selecionar ano">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -76,7 +76,7 @@ export function MonthSelector() {
           ))}
         </SelectContent>
       </Select>
-      <Button variant="outline" size="icon" onClick={() => navigate(1)} className="h-8 w-8" aria-label="Next month" disabled={nextDisabled}>
+      <Button variant="outline" size="icon" onClick={() => navigate(1)} className="h-8 w-8" aria-label="Mês seguinte" disabled={nextDisabled}>
         <ChevronRight className="h-4 w-4" />
       </Button>
     </div>

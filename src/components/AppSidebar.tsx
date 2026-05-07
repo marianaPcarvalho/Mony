@@ -16,11 +16,11 @@ import { useStore } from "@/lib/store";
 export type ViewKey = "home" | "categories" | "savings" | "investments" | "annual" | "profile";
 
 const items: { key: ViewKey; label: string; icon: any }[] = [
-  { key: "home", label: "Home", icon: Home },
-  { key: "categories", label: "Categories", icon: Tags },
-  { key: "savings", label: "Savings", icon: PiggyBank },
-  { key: "investments", label: "Investments", icon: TrendingUp },
-  { key: "annual", label: "Annual View", icon: CalendarDays },
+  { key: "home", label: "Início", icon: Home },
+  { key: "categories", label: "Categorias", icon: Tags },
+  { key: "savings", label: "Poupanças", icon: PiggyBank },
+  { key: "investments", label: "Investimentos", icon: TrendingUp },
+  { key: "annual", label: "Vista Anual", icon: CalendarDays },
 ];
 
 export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v: ViewKey) => void }) {
@@ -42,7 +42,7 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="text-base font-extrabold tracking-tight text-sidebar-foreground truncate font-display">MONY</p>
-            <p className="text-xs text-sidebar-foreground/70 truncate">Hey, {profile.name} ✨</p>
+            <p className="text-xs text-sidebar-foreground/70 truncate">Olá, {profile.name} ✨</p>
           </div>
         </div>
       </SidebarHeader>
@@ -74,13 +74,13 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
             <SidebarMenuButton
               isActive={active === "profile"}
               onClick={() => onSelect("profile")}
-              tooltip={`Profile — ${profile.name}`}
+              tooltip={`Perfil — ${profile.name}`}
               className="h-11"
             >
               <UserCircle2 className="h-4 w-4" />
               <div className="flex flex-col items-start min-w-0 leading-tight">
                 <span className="text-sm font-semibold truncate">{profile.name}</span>
-                <span className="text-[11px] text-sidebar-foreground/60 truncate">View profile</span>
+                <span className="text-[11px] text-sidebar-foreground/60 truncate">Ver perfil</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

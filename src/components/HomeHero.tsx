@@ -26,21 +26,21 @@ export function HomeHero() {
     }))
     .filter(d => d.value > 0);
 
-  const fmt = (v: number) => `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (v: number) => `€${v.toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const savings = getActualSavedTotal();
   const stats = [
-    { label: "Current", value: fmt(current), icon: Wallet, tone: current >= 0 ? "success" : "destructive" as const },
-    { label: "Total spent", value: fmt(spent), icon: TrendingDown, tone: "destructive" as const },
-    { label: "Current savings", value: fmt(savings), icon: PiggyBank, tone: "success" as const },
+    { label: "Atual", value: fmt(current), icon: Wallet, tone: current >= 0 ? "success" : "destructive" as const },
+    { label: "Total gasto", value: fmt(spent), icon: TrendingDown, tone: "destructive" as const },
+    { label: "Poupanças atuais", value: fmt(savings), icon: PiggyBank, tone: "success" as const },
   ];
 
   const total = pieData.reduce((s, p) => s + p.value, 0);
   const top = pieData.slice().sort((a, b) => b.value - a.value)[0];
   const chartSummary = pieData.length === 0
-    ? "No expenses recorded for this month."
-    : `Spent ${fmt(spent)} across ${pieData.length} categor${pieData.length === 1 ? "y" : "ies"}. ` +
-      (top ? `Largest: ${top.name} at ${fmt(top.value)} (${((top.value / total) * 100).toFixed(0)}%).` : "");
+    ? "Sem despesas registadas neste mês."
+    : `Gastaste ${fmt(spent)} em ${pieData.length} categori${pieData.length === 1 ? "a" : "as"}. ` +
+      (top ? `Maior: ${top.name} com ${fmt(top.value)} (${((top.value / total) * 100).toFixed(0)}%).` : "");
 
   return (
     <section aria-labelledby="month-heading" className="space-y-5">
@@ -89,14 +89,14 @@ export function HomeHero() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ height: 260 }}>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Spent</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Gasto</span>
                   <span className="font-mono font-bold text-xl text-foreground">{fmt(spent)}</span>
                 </div>
                 {/* Screen-reader-only data table for chart accessibility */}
                 <table className="sr-only">
-                  <caption>Spending by category for {ptMonthName} {ptYear}</caption>
+                  <caption>Despesas por categoria — {ptMonthName} {ptYear}</caption>
                   <thead>
-                    <tr><th scope="col">Category</th><th scope="col">Amount</th><th scope="col">Percent</th></tr>
+                    <tr><th scope="col">Categoria</th><th scope="col">Valor</th><th scope="col">Percentagem</th></tr>
                   </thead>
                   <tbody>
                     {pieData.map((d, i) => {
@@ -114,13 +114,13 @@ export function HomeHero() {
               </>
             ) : (
               <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground">
-                No expenses yet this month
+                Sem despesas neste mês
               </div>
             )}
           </div>
 
           {pieData.length > 0 && (
-            <ul className="space-y-1.5" aria-label="Spending breakdown">
+            <ul className="space-y-1.5" aria-label="Distribuição de despesas">
               {pieData.slice().sort((a, b) => b.value - a.value).map((d, i) => {
                 const pct = total > 0 ? (d.value / total) * 100 : 0;
                 return (
