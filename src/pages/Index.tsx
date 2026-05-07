@@ -56,13 +56,13 @@ const Index = () => {
         <div className="min-h-screen flex w-full bg-background">
           <AppSidebar active={view} onSelect={setView} />
           <SidebarInset>
-            <header className="h-14 flex items-center gap-3 border-b border-border bg-card sticky top-0 z-10 px-4">
+            <header className="h-14 flex items-center gap-2 sm:gap-3 border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-10 px-3 sm:px-4">
               <SidebarTrigger />
               <div className="flex-1" />
               {view === "home" && <MonthSelector />}
             </header>
 
-            <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+            <main className="container max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
               {view === "home" && <HomeView />}
               {view === "categories" && <CategoryBudgets />}
               {view === "savings" && <SavingsGoals />}

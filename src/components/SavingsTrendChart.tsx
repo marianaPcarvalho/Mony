@@ -94,55 +94,64 @@ export function SavingsTrendChart() {
       </div>
 
       {hasAnyData ? (
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="savedFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--savings))" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="hsl(var(--savings))" stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-            <YAxis
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => fmt(v)}
-              tickLine={false} axisLine={false} width={55}
-            />
-            <Tooltip
-              wrapperStyle={{ outline: "none", fontSize: 11 }}
-              contentStyle={{ padding: "6px 10px", borderRadius: 8, fontSize: 11, border: "1px solid hsl(var(--border))" }}
-              formatter={(value: any, name: string) => {
-                if (value === null || value === undefined) return ["—", name];
-                return [fmt2(Number(value)), name];
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="line" />
-            <Area
-              type="monotone"
-              dataKey="saved"
-              name="Saved"
-              stroke="hsl(var(--savings))"
-              strokeWidth={2.5}
-              fill="url(#savedFill)"
-              connectNulls={false}
-              dot={{ r: 2.5, fill: "hsl(var(--savings))", strokeWidth: 0 }}
-              activeDot={{ r: 4 }}
-            />
-            {hasAnyTarget && (
-              <Line
-                type="monotone"
-                dataKey="target"
-                name="Target trajectory"
-                stroke="hsl(var(--muted-foreground))"
-                strokeWidth={1.5}
-                strokeDasharray="5 4"
-                dot={false}
-                activeDot={false}
+        <div role="img" aria-label="Savings over the last 12 months, with optional target trajectory.">
+          <ResponsiveContainer width="100%" height={240} minWidth={0}>
+            <ComposedChart data={series} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="savedFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--savings))" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="hsl(var(--savings))" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                tickFormatter={(v) => fmt(v)}
+                tickLine={false} axisLine={false} width={55}
               />
-            )}
-          </ComposedChart>
-        </ResponsiveContainer>
+              <Tooltip
+                wrapperStyle={{ outline: "none", fontSize: 12 }}
+                contentStyle={{
+                  padding: "6px 10px", borderRadius: 8, fontSize: 12,
+                  background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))",
+                  border: "1px solid hsl(var(--border))",
+                }}
+                formatter={(value: any, name: string) => {
+                  if (value === null || value === undefined) return ["—", name];
+                  return [fmt2(Number(value)), name];
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 6 }} iconType="line" />
+              <Area
+                type="monotone"
+                dataKey="saved"
+                name="Saved"
+                stroke="hsl(var(--savings))"
+                strokeWidth={2.5}
+                fill="url(#savedFill)"
+                connectNulls={false}
+                dot={{ r: 2.5, fill: "hsl(var(--savings))", strokeWidth: 0 }}
+                activeDot={{ r: 4 }}
+                isAnimationActive={false}
+              />
+              {hasAnyTarget && (
+                <Line
+                  type="monotone"
+                  dataKey="target"
+                  name="Target trajectory"
+                  stroke="hsl(var(--foreground))"
+                  strokeOpacity={0.7}
+                  strokeWidth={1.75}
+                  strokeDasharray="5 4"
+                  dot={false}
+                  activeDot={false}
+                  isAnimationActive={false}
+                />
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       ) : (
         <div className="h-[240px] flex items-center justify-center text-sm text-muted-foreground">
           Add a savings goal to see your trajectory.

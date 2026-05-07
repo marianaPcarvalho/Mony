@@ -78,16 +78,21 @@ export function AnnualDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Left: donut + breakdown list */}
           <div className="space-y-4">
-            <div className="relative">
+            <div
+              className="relative"
+              role="img"
+              aria-label={`Yearly spending donut for ${year}. Total ${fmt(totalSpentYear)} across ${categoryYearData.length} categories.`}
+            >
               {categoryYearData.length > 0 ? (
                 <>
-                  <ResponsiveContainer width="100%" height={260}>
+                  <ResponsiveContainer width="100%" height={260} minWidth={0}>
                     <PieChart>
                       <Pie
                         data={categoryYearData}
                         cx="50%" cy="50%"
-                        innerRadius={75} outerRadius={115}
-                        dataKey="value" paddingAngle={0} strokeWidth={0}
+                        innerRadius="58%" outerRadius="88%"
+                        dataKey="value" paddingAngle={1}
+                        stroke="hsl(var(--card))" strokeWidth={2}
                         isAnimationActive={false}
                         style={{ pointerEvents: "none", outline: "none" }}
                       >
@@ -96,8 +101,12 @@ export function AnnualDashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        wrapperStyle={{ outline: "none", fontSize: 11 }}
-                        contentStyle={{ padding: "4px 8px", borderRadius: 6, fontSize: 11 }}
+                        wrapperStyle={{ outline: "none", fontSize: 12 }}
+                        contentStyle={{
+                          padding: "6px 10px", borderRadius: 8, fontSize: 12,
+                          background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))",
+                          border: "1px solid hsl(var(--border))",
+                        }}
                         formatter={(value: number, _name, item: any) => {
                           const total = categoryYearData.reduce((s, p) => s + p.value, 0);
                           const pct = total > 0 ? (value / total) * 100 : 0;
@@ -174,27 +183,33 @@ export function AnnualDashboard() {
         <h3 className="section-title flex items-center gap-2">
           <ClipboardList className="h-4 w-4 text-muted-foreground" /> Monthly overview
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-            <YAxis
-              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => fmt0(Number(v))}
-              tickLine={false} axisLine={false} width={55}
-            />
-            <Tooltip
-              wrapperStyle={{ outline: "none", fontSize: 11 }}
-              contentStyle={{ padding: "6px 10px", borderRadius: 8, fontSize: 11, border: "1px solid hsl(var(--border))" }}
-              formatter={(value: number, name: string) => [fmt(Number(value)), name]}
-            />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="circle" />
-            <Bar dataKey="salary" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} barSize={14} name="Income" />
-            <Bar dataKey="spent" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} barSize={14} name="Spent" />
-            <Bar dataKey="savings" fill="hsl(var(--savings))" radius={[4, 4, 0, 0]} barSize={14} name="Savings" />
-            <Bar dataKey="budgeted" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} barSize={14} name="Budgeted" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div role="img" aria-label="Monthly overview bar chart showing income, spent, savings and budgeted per month.">
+          <ResponsiveContainer width="100%" height={300} minWidth={0}>
+            <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                tickFormatter={(v) => fmt0(Number(v))}
+                tickLine={false} axisLine={false} width={55}
+              />
+              <Tooltip
+                wrapperStyle={{ outline: "none", fontSize: 12 }}
+                contentStyle={{
+                  padding: "6px 10px", borderRadius: 8, fontSize: 12,
+                  background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))",
+                  border: "1px solid hsl(var(--border))",
+                }}
+                formatter={(value: number, name: string) => [fmt(Number(value)), name]}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 6 }} iconType="circle" />
+              <Bar dataKey="salary" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} barSize={14} name="Income" isAnimationActive={false} />
+              <Bar dataKey="spent" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} barSize={14} name="Spent" isAnimationActive={false} />
+              <Bar dataKey="savings" fill="hsl(var(--savings))" radius={[4, 4, 0, 0]} barSize={14} name="Savings" isAnimationActive={false} />
+              <Bar dataKey="budgeted" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} barSize={14} name="Budgeted" isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </Card>
 
       {/* Annual budget usage */}

@@ -1,5 +1,7 @@
 // Generate visually distinct, stable colors per category.
-// Uses an even hue distribution + per-id offset so reorder doesn't collide.
+// Tuned for AA-friendly contrast against light/dark surfaces and to be
+// distinguishable for common color-vision deficiencies (avoids adjacent
+// red/green pairs by spreading hues evenly + alternating lightness/saturation).
 
 function hashId(id: string): number {
   let h = 0;
@@ -8,16 +10,20 @@ function hashId(id: string): number {
 }
 
 /**
- * Build a palette of N distinct HSL colors, evenly spread around the hue wheel.
- * Saturation/lightness are nudged slightly per index to add separation.
+ * Build a palette of N visually distinct HSL colors.
+ * - Hue spread evenly around the wheel
+ * - Alternating lightness so neighboring slices contrast against each other
+ * - Saturation kept high enough to be vibrant but not neon-on-neon
  */
 export function buildCategoryPalette(n: number): string[] {
   if (n <= 0) return [];
   const out: string[] = [];
+  // Start offset avoids landing exactly on pure red, which clashes with destructive.
+  const startHue = 12;
   for (let i = 0; i < n; i++) {
-    const hue = Math.round((i * 360) / n);
-    const sat = 65 + (i % 3) * 6; // 65, 71, 77
-    const light = 50 + (i % 2) * 6; // 50, 56
+    const hue = Math.round((startHue + (i * 360) / n) % 360);
+    const sat = 70 + (i % 3) * 5;       // 70 / 75 / 80
+    const light = i % 2 === 0 ? 46 : 56; // alternate to separate adjacent slices
     out.push(`hsl(${hue}, ${sat}%, ${light}%)`);
   }
   return out;
@@ -26,5 +32,5 @@ export function buildCategoryPalette(n: number): string[] {
 /** Stable color for a given category id when palette index isn't enough. */
 export function colorForId(id: string): string {
   const h = hashId(id) % 360;
-  return `hsl(${h}, 70%, 52%)`;
+  return `hsl(${h}, 72%, 48%)`;
 }

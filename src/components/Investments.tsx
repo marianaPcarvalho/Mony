@@ -157,8 +157,12 @@ export function Investments() {
           <h3 className="section-title mb-4">Portfolio Distribution</h3>
           {pieData.length > 0 ? (
             <>
-              <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
+              <div
+                className="h-56"
+                role="img"
+                aria-label={`Portfolio distribution across ${pieData.length} holdings, total ${fmt(pieData.reduce((s, p) => s + p.value, 0))}.`}
+              >
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -166,9 +170,12 @@ export function Investments() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
+                      innerRadius="55%"
+                      outerRadius="85%"
                       paddingAngle={3}
+                      isAnimationActive={false}
+                      stroke="hsl(var(--card))"
+                      strokeWidth={2}
                     >
                       {pieData.map((entry, i) => (
                         <Cell key={`cell-${i}`} fill={entry.color} />
@@ -176,7 +183,7 @@ export function Investments() {
                     </Pie>
                     <Tooltip
                       formatter={(value: number) => fmt(value)}
-                      contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
+                      contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>

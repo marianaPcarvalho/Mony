@@ -63,7 +63,7 @@
     --sidebar-primary: 330 100% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 250 22% 14%;
-    --sidebar-accent-foreground: 75 100% 70%;
+    --sidebar-accent-foreground: 75 100% 80%;
     --sidebar-border: 250 22% 16%;
     --sidebar-ring: 75 100% 62%;
 
@@ -136,6 +136,24 @@
   ::selection {
     background: hsl(var(--primary) / 0.25);
     color: hsl(var(--foreground));
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    body {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Honor forced-colors mode (Windows High Contrast) */
+  @media (forced-colors: active) {
+    .glass-card, .pop-card { border: 1px solid CanvasText; }
   }
 }
 
