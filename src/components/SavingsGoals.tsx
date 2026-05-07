@@ -192,30 +192,57 @@ export function SavingsGoals() {
       <Card className="glass-card p-6">
         <div className="flex items-baseline justify-between gap-3 mb-5">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Savings <span className="text-muted-foreground font-medium ml-2 text-base">{data.savingsGoals.length} {data.savingsGoals.length === 1 ? "goal" : "goals"}</span>
+            Poupanças <span className="text-muted-foreground font-medium ml-2 text-base">{data.savingsGoals.length} {data.savingsGoals.length === 1 ? "objetivo" : "objetivos"}</span>
           </h2>
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button className="gap-2 h-10" aria-label="New savings goal">
-                <Plus className="h-4 w-4" /> New Goal
+              <Button className="gap-2 h-10" aria-label="Novo objetivo">
+                <Plus className="h-4 w-4" /> Novo Objetivo
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editId ? "Edit" : "New"} Savings Goal</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? "Editar" : "Novo"} Objetivo de Poupança</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="flex items-end gap-3">
                   <div className="space-y-1.5">
-                    <Label>Icon</Label>
-                    <EmojiPickerButton value={icon} onChange={setIcon} size="lg" ariaLabel="Pick goal icon" />
+                    <Label>Ícone</Label>
+                    <EmojiPickerButton value={icon} onChange={setIcon} size="lg" ariaLabel="Escolher ícone" />
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <Label htmlFor="goal-name">Name <span className="text-destructive">*</span></Label>
-                    <Input id="goal-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., House Down Payment" />
+                    <Label htmlFor="goal-name">Nome <span className="text-destructive">*</span></Label>
+                    <Input id="goal-name" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="ex.: Entrada da casa" />
                   </div>
                 </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="goal-image">Imagem (opcional)</Label>
+                  <div className="flex items-center gap-3">
+                    {imageUrl ? (
+                      <div className="relative">
+                        <img src={imageUrl} alt="Pré-visualização" className="h-16 w-16 rounded-lg object-cover border border-border" />
+                        <button
+                          type="button"
+                          onClick={() => setImageUrl("")}
+                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center"
+                          aria-label="Remover imagem"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-16 w-16 rounded-lg border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center px-1">
+                        Sem imagem
+                      </div>
+                    )}
+                    <Input id="goal-image" type="file" accept="image/*"
+                      onChange={(e) => handleImageUpload(e.target.files?.[0] ?? null)}
+                      className="cursor-pointer" />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-target">Target Amount <span className="text-destructive">*</span></Label>
+                    <Label htmlFor="goal-target">Valor Alvo <span className="text-destructive">*</span></Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                       <Input id="goal-target" type="number" min="0" step="0.01" inputMode="decimal" value={target}
@@ -223,7 +250,7 @@ export function SavingsGoals() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-current">Current Savings</Label>
+                    <Label htmlFor="goal-current">Poupança Atual</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                       <Input id="goal-current" type="number" min="0" step="0.01" inputMode="decimal" value={current}
@@ -233,11 +260,11 @@ export function SavingsGoals() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-date">Target Date</Label>
+                    <Label htmlFor="goal-date">Data Alvo</Label>
                     <Input id="goal-date" type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} onKeyDown={handleKeyDown} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-monthly">Planned Monthly</Label>
+                    <Label htmlFor="goal-monthly">Mensal Planeado</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                       <Input id="goal-monthly" type="number" min="0" step="0.01" inputMode="decimal" value={monthlyContrib}
@@ -245,7 +272,7 @@ export function SavingsGoals() {
                     </div>
                   </div>
                 </div>
-                <Button onClick={handleSave} disabled={!isValid} className="w-full">{editId ? "Update" : "Create"} Goal</Button>
+                <Button onClick={handleSave} disabled={!isValid} className="w-full">{editId ? "Atualizar" : "Criar"} Objetivo</Button>
               </div>
             </DialogContent>
           </Dialog>
