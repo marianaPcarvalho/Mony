@@ -26,7 +26,7 @@ export function IncomeList() {
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [type, setType] = useState("salary");
+  const [type, setType] = useState(fallbackType);
   const [amount, setAmount] = useState("");
   const [desc, setDesc] = useState("");
   const [date, setDate] = useState<string>("");
