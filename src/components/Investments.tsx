@@ -48,7 +48,7 @@ export function Investments() {
 
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [type, setType] = useState<Investment["type"]>"stock";
+  const [type, setType] = useState<Investment["type"]>("stock");
   const [icon, setIcon] = useState("📈");
   const [units, setUnits] = useState("");
   const [avgCost, setAvgCost] = useState("");
