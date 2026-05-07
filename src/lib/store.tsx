@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction, Income, IncomeCategory } from "./types";
+import { useCloudSync } from "./cloudSync";
 
 const STORAGE_KEY = "budget-app-data";
 
@@ -17,17 +18,35 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const defaultIncomeCategories: IncomeCategory[] = [
+  { id: "salary", name: "Salary", icon: "💼", color: "hsl(178, 60%, 40%)" },
+  { id: "freelance", name: "Freelance", icon: "💻", color: "hsl(220, 70%, 55%)" },
+  { id: "bonus", name: "Bonus", icon: "🎁", color: "hsl(38, 92%, 50%)" },
+  { id: "investment", name: "Investment Return", icon: "📈", color: "hsl(142, 55%, 42%)" },
+  { id: "gift", name: "Gift", icon: "🎀", color: "hsl(330, 70%, 58%)" },
+  { id: "other", name: "Other", icon: "📦", color: "hsl(220, 14%, 50%)" },
+];
+
+const defaultProfile: UserProfile = {
+  name: "Mariana",
+  defaultSalary: 3000,
+  notifications: {
+    budgetAlerts: true,
+    monthlySummary: true,
+    savingsReminders: false,
+  },
+};
+
 const defaultData: AppData = {
   categories: defaultCategories,
+  incomeCategories: defaultIncomeCategories,
   expenses: [],
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
   savingsGoals: [],
-  monthlyEmailReport: {
-    email: "",
-    enabled: false,
-    lastSentMonth: undefined,
-  },
+  investments: [],
+  incomes: [],
+  profile: defaultProfile,
 };
 
 function loadData(): AppData {
@@ -55,10 +74,18 @@ function loadData(): AppData {
           subCategories: c.subCategories ?? [],
         }));
       }
-      parsed.monthlyEmailReport = {
-        email: parsed.monthlyEmailReport?.email ?? "",
-        enabled: parsed.monthlyEmailReport?.enabled ?? false,
-        lastSentMonth: parsed.monthlyEmailReport?.lastSentMonth,
+      parsed.investments = (parsed.investments ?? []).map((i: any) => ({
+        ...i,
+        transactions: i.transactions ?? [],
+      }));
+      parsed.incomes = (parsed.incomes ?? []).map((i: any) => ({
+        ...i,
+      }));
+      parsed.incomeCategories = parsed.incomeCategories ?? defaultIncomeCategories;
+      parsed.profile = {
+        ...defaultProfile,
+        ...(parsed.profile ?? {}),
+        notifications: { ...defaultProfile.notifications, ...((parsed.profile?.notifications) ?? {}) },
       };
       return parsed;
     }
@@ -78,6 +105,7 @@ interface StoreContextType {
   updateCategory: (c: Category) => void;
   deleteCategory: (id: string) => void;
   addSubCategory: (categoryId: string, sub: Omit<SubCategory, "id">) => void;
+  updateSubCategory: (categoryId: string, sub: SubCategory) => void;
   deleteSubCategory: (categoryId: string, subId: string) => void;
   addExpense: (e: Omit<Expense, "id">) => void;
   updateExpense: (e: Expense) => void;
@@ -102,9 +130,19 @@ interface StoreContextType {
   getActualSavedTotal: () => number;
   getActualSavedInMonth: (month: string) => number;
   setMonthStartDay: (day: number) => void;
-  setMonthlyReportEmail: (email: string) => void;
-  setMonthlyReportEnabled: (enabled: boolean) => void;
-  markMonthlyReportSent: (month: string) => void;
+  updateProfile: (p: Partial<UserProfile>) => void;
+  getProfile: () => UserProfile;
+  addInvestment: (i: Omit<Investment, "id">) => void;
+  updateInvestment: (i: Investment) => void;
+  deleteInvestment: (id: string) => void;
+  addInvestmentTransaction: (investmentId: string, tx: Omit<InvestmentTransaction, "id">) => void;
+  deleteInvestmentTransaction: (investmentId: string, txId: string) => void;
+  addIncome: (i: Omit<Income, "id">) => void;
+  updateIncome: (i: Income) => void;
+  deleteIncome: (id: string) => void;
+  addIncomeCategory: (c: Omit<IncomeCategory, "id">) => void;
+  updateIncomeCategory: (c: IncomeCategory) => void;
+  deleteIncomeCategory: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -114,6 +152,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth());
 
   useEffect(() => { saveData(data); }, [data]);
+  useCloudSync(data);
 
   const update = useCallback((fn: (d: AppData) => AppData) => {
     setData(prev => fn(prev));
@@ -133,6 +172,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       categories: d.categories.map(c =>
         c.id === categoryId
           ? { ...c, subCategories: [...(c.subCategories ?? []), { ...sub, id: uid() }] }
+          : c
+      ),
+    }));
+  const updateSubCategory = (categoryId: string, sub: SubCategory) =>
+    update(d => ({
+      ...d,
+      categories: d.categories.map(c =>
+        c.id === categoryId
+          ? { ...c, subCategories: (c.subCategories ?? []).map(s => s.id === sub.id ? sub : s) }
           : c
       ),
     }));
@@ -161,7 +209,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (existing) return { ...d, monthlyConfigs: d.monthlyConfigs.map(m => m.month === month ? { ...m, salary } : m) };
       return { ...d, monthlyConfigs: [...d.monthlyConfigs, { month, salary, budget: 0 }] };
     });
-  const getSalary = (month: string) => getMonthConfig(month).salary;
+  const getProfile = (): UserProfile => data.profile ?? defaultProfile;
+  const getSalary = (month: string) => {
+    const cfg = data.monthlyConfigs.find(m => m.month === month);
+    if (cfg) return cfg.salary;
+    return getProfile().defaultSalary;
+  };
+  const updateProfile = (p: Partial<UserProfile>) =>
+    update(d => ({
+      ...d,
+      profile: {
+        ...(d.profile ?? defaultProfile),
+        ...p,
+        notifications: { ...(d.profile?.notifications ?? defaultProfile.notifications), ...(p.notifications ?? {}) },
+      },
+    }));
   const setBudget = (month: string, budget: number) =>
     update(d => {
       const existing = d.monthlyConfigs.find(m => m.month === month);
@@ -200,35 +262,54 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const setMonthStartDay = (day: number) =>
     update(d => ({ ...d, monthStartDay: day }));
 
-  const setMonthlyReportEmail = (email: string) =>
+  const addInvestment = (i: Omit<Investment, "id">) =>
+    update(d => ({ ...d, investments: [...(d.investments ?? []), { ...i, id: uid(), transactions: i.transactions ?? [] }] }));
+  const updateInvestment = (i: Investment) =>
+    update(d => ({ ...d, investments: (d.investments ?? []).map(x => x.id === i.id ? i : x) }));
+  const deleteInvestment = (id: string) =>
+    update(d => ({ ...d, investments: (d.investments ?? []).filter(x => x.id !== id) }));
+  const addInvestmentTransaction = (investmentId: string, tx: Omit<InvestmentTransaction, "id">) =>
     update(d => ({
       ...d,
-      monthlyEmailReport: {
-        email,
-        enabled: d.monthlyEmailReport?.enabled ?? false,
-        lastSentMonth: d.monthlyEmailReport?.lastSentMonth,
-      },
+      investments: (d.investments ?? []).map(inv => {
+        if (inv.id !== investmentId) return inv;
+        const newTx = { ...tx, id: uid() };
+        let units = inv.units;
+        let avgCost = inv.avgCost;
+        if (tx.type === "buy" && tx.units && tx.pricePerUnit) {
+          const newUnits = units + tx.units;
+          avgCost = newUnits > 0 ? (units * avgCost + tx.units * tx.pricePerUnit) / newUnits : 0;
+          units = newUnits;
+        } else if (tx.type === "sell" && tx.units) {
+          units = Math.max(0, units - tx.units);
+          if (units === 0) avgCost = 0;
+        }
+        return { ...inv, units, avgCost, transactions: [...(inv.transactions ?? []), newTx] };
+      }),
+    }));
+  const deleteInvestmentTransaction = (investmentId: string, txId: string) =>
+    update(d => ({
+      ...d,
+      investments: (d.investments ?? []).map(inv =>
+        inv.id === investmentId
+          ? { ...inv, transactions: (inv.transactions ?? []).filter(t => t.id !== txId) }
+          : inv
+      ),
     }));
 
-  const setMonthlyReportEnabled = (enabled: boolean) =>
-    update(d => ({
-      ...d,
-      monthlyEmailReport: {
-        email: d.monthlyEmailReport?.email ?? "",
-        enabled,
-        lastSentMonth: d.monthlyEmailReport?.lastSentMonth,
-      },
-    }));
+  const addIncome = (i: Omit<Income, "id">) =>
+    update(d => ({ ...d, incomes: [...(d.incomes ?? []), { ...i, id: uid() }] }));
+  const updateIncome = (i: Income) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).map(x => x.id === i.id ? i : x) }));
+  const deleteIncome = (id: string) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).filter(x => x.id !== id) }));
 
-  const markMonthlyReportSent = (month: string) =>
-    update(d => ({
-      ...d,
-      monthlyEmailReport: {
-        email: d.monthlyEmailReport?.email ?? "",
-        enabled: d.monthlyEmailReport?.enabled ?? false,
-        lastSentMonth: month,
-      },
-    }));
+  const addIncomeCategory = (c: Omit<IncomeCategory, "id">) =>
+    update(d => ({ ...d, incomeCategories: [...(d.incomeCategories ?? []), { ...c, id: uid() }] }));
+  const updateIncomeCategory = (c: IncomeCategory) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).map(x => x.id === c.id ? c : x) }));
+  const deleteIncomeCategory = (id: string) =>
+    update(d => ({ ...d, incomeCategories: (d.incomeCategories ?? []).filter(x => x.id !== id) }));
 
   const monthStartDay = data.monthStartDay ?? 1;
 
@@ -268,15 +349,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   return (
     <StoreContext.Provider value={{
       data, selectedMonth, setSelectedMonth,
-      addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory,
+      addCategory, updateCategory, deleteCategory, addSubCategory, updateSubCategory, deleteSubCategory,
       addExpense, updateExpense, deleteExpense,
       setSalary, getSalary, setBudget, getBudget, getMonthConfig,
       addYearlyPlan, updateYearlyPlan, deleteYearlyPlan,
       addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal,
       getMonthExpenses, getCategorySpent, getTotalSpent, getTotalBudget,
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
-      setMonthStartDay,
-      setMonthlyReportEmail, setMonthlyReportEnabled, markMonthlyReportSent,
+      setMonthStartDay, updateProfile, getProfile,
+      addInvestment, updateInvestment, deleteInvestment, addInvestmentTransaction, deleteInvestmentTransaction,
+      addIncome, updateIncome, deleteIncome,
+      addIncomeCategory, updateIncomeCategory, deleteIncomeCategory,
     }}>
       {children}
     </StoreContext.Provider>

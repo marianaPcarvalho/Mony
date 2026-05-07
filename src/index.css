@@ -2,107 +2,194 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
-    /* Palette: f2e9dc cream, cfd11a lime, 648767 green, 79addc blue, 791e94 purple */
-    --background: 35 45% 91%;       /* f2e9dc cream */
-    --foreground: 130 25% 12%;      /* deep green-near-black for contrast */
+    /* MONY palette — fresh teal + deep navy, vibrant yet coherent */
 
-    --card: 35 50% 97%;
-    --card-foreground: 130 25% 12%;
+    --background: 190 50% 98%;
+    --foreground: 210 40% 12%;
 
-    --popover: 35 50% 97%;
-    --popover-foreground: 130 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 12%;
 
-    --primary: 130 16% 38%;         /* 648767 green (slightly darkened for contrast) */
-    --primary-foreground: 35 45% 96%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 12%;
 
-    --secondary: 35 35% 85%;
-    --secondary-foreground: 130 25% 18%;
+    /* Primary = vivid teal */
+    --primary: 178 70% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --muted: 35 30% 87%;
-    --muted-foreground: 130 14% 28%;
+    /* Secondary = deep navy blue */
+    --secondary: 215 75% 28%;
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 285 67% 35%;          /* 791e94 purple as accent */
-    --accent-foreground: 35 45% 96%;
+    /* Soft pastel surfaces */
+    --muted: 190 35% 93%;
+    --muted-foreground: 210 20% 32%;
 
-    /* Positive / negative semantics use distinct hues for clarity */
-    --destructive: 8 75% 42%;       /* warm red for negatives */
+    /* Accent = mint */
+    --accent: 160 55% 58%;
+    --accent-foreground: 210 40% 12%;
+
+    --destructive: 358 75% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 32 90% 42%;          /* amber */
-    --warning-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 12%;
 
-    --success: 130 30% 32%;         /* deeper green for AA contrast on cream */
+    --success: 156 65% 38%;
     --success-foreground: 0 0% 100%;
 
-    --info: 205 57% 42%;            /* darker 79addc */
+    --info: 200 85% 44%;
     --info-foreground: 0 0% 100%;
 
-    --savings: 285 67% 35%;         /* purple */
+    --savings: 178 70% 38%;
     --savings-foreground: 0 0% 100%;
 
-    --housing: 62 78% 30%;          /* lime, darkened */
-    --housing-foreground: 35 45% 96%;
+    --housing: 24 80% 48%;
+    --housing-foreground: 0 0% 100%;
 
-    --budget-bar: 205 57% 60%;      /* 79addc blue */
-    --spent-bar: 8 75% 50%;         /* red for spent */
+    --budget-bar: 178 70% 38%;
+    --spent-bar: 215 75% 32%;
 
-    --border: 35 25% 76%;
-    --input: 35 25% 76%;
-    --ring: 130 16% 38%;
+    /* Pastel progress track */
+    --progress-track: 190 60% 90%;
 
-    --radius: 0.625rem;
+    --border: 200 25% 86%;
+    --input: 200 25% 86%;
+    --ring: 178 70% 38%;
 
-    --sidebar-background: 130 25% 16%;
-    --sidebar-foreground: 35 45% 91%;
-    --sidebar-primary: 62 78% 46%;
-    --sidebar-primary-foreground: 130 25% 12%;
-    --sidebar-accent: 130 20% 24%;
-    --sidebar-accent-foreground: 35 45% 91%;
-    --sidebar-border: 130 20% 24%;
-    --sidebar-ring: 62 78% 46%;
+    --radius: 1rem;
 
-    --chart-1: 130 16% 42%;         /* green */
-    --chart-2: 205 57% 55%;         /* blue */
-    --chart-3: 62 70% 42%;          /* lime */
-    --chart-4: 285 67% 42%;         /* purple */
-    --chart-5: 32 85% 48%;          /* amber */
-    --chart-6: 8 70% 52%;           /* coral */
+    --sidebar-background: 215 50% 14%;
+    --sidebar-foreground: 190 40% 96%;
+    --sidebar-primary: 178 70% 50%;
+    --sidebar-primary-foreground: 215 50% 10%;
+    --sidebar-accent: 215 45% 20%;
+    --sidebar-accent-foreground: 160 60% 80%;
+    --sidebar-border: 215 40% 22%;
+    --sidebar-ring: 178 70% 50%;
+
+    --chart-1: 178 70% 42%;
+    --chart-2: 215 75% 45%;
+    --chart-3: 160 60% 45%;
+    --chart-4: 200 85% 50%;
+    --chart-5: 38 92% 55%;
+    --chart-6: 280 50% 55%;
+
+    --gradient-brand: linear-gradient(135deg, hsl(178 70% 42%) 0%, hsl(195 75% 42%) 50%, hsl(215 75% 36%) 100%);
+    --gradient-sun: linear-gradient(135deg, hsl(38 92% 60%) 0%, hsl(160 55% 50%) 100%);
+    --gradient-fresh: linear-gradient(135deg, hsl(156 65% 45%) 0%, hsl(178 70% 50%) 100%);
+    --gradient-ink: linear-gradient(135deg, hsl(215 60% 14%) 0%, hsl(215 50% 22%) 100%);
+
+    --shadow-brand: 0 10px 30px -10px hsl(178 70% 38% / 0.40);
+    --shadow-soft: 0 8px 24px -10px hsl(215 50% 18% / 0.18);
+    --shadow-pop: 0 1px 0 hsl(215 50% 14% / 0.06), 0 12px 28px -12px hsl(178 70% 38% / 0.30);
+  }
+
+  .dark {
+    --background: 215 45% 8%;
+    --foreground: 190 40% 96%;
+    --card: 215 40% 12%;
+    --card-foreground: 190 40% 96%;
+    --popover: 215 40% 12%;
+    --popover-foreground: 190 40% 96%;
+    --primary: 178 70% 50%;
+    --primary-foreground: 215 50% 10%;
+    --secondary: 215 65% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 215 35% 18%;
+    --muted-foreground: 190 25% 72%;
+    --accent: 160 55% 50%;
+    --accent-foreground: 215 50% 10%;
+    --progress-track: 215 35% 22%;
+    --border: 215 30% 22%;
+    --input: 215 30% 22%;
+    --ring: 178 70% 50%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
+
+  html { -webkit-text-size-adjust: 100%; }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-image:
+      radial-gradient(1100px 600px at -10% -20%, hsl(178 70% 50% / 0.10), transparent 60%),
+      radial-gradient(900px 500px at 110% 0%, hsl(215 75% 45% / 0.10), transparent 55%),
+      radial-gradient(800px 500px at 50% 120%, hsl(160 60% 55% / 0.10), transparent 55%);
+    background-attachment: fixed;
   }
 
-  .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+  h1, h2, h3, .font-display {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    body {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Honor forced-colors mode (Windows High Contrast) */
+  @media (forced-colors: active) {
+    .glass-card, .pop-card { border: 1px solid CanvasText; }
   }
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card border border-border shadow-sm rounded-xl;
+    @apply bg-card/90 backdrop-blur-sm border border-border rounded-2xl;
+    box-shadow: var(--shadow-soft);
   }
 
-  .budget-gradient {
-    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--chart-2)));
+  .pop-card {
+    @apply bg-card border border-border rounded-2xl;
+    box-shadow: var(--shadow-pop);
   }
 
-  .stat-value {
-    @apply text-2xl font-bold font-mono tracking-tight;
+  .brand-gradient { background: var(--gradient-brand); }
+
+  .text-gradient-brand {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
-  .section-title {
-    @apply text-base font-semibold tracking-tight text-foreground;
+  .budget-gradient { background: var(--gradient-brand); }
+
+  .stat-value { @apply text-2xl font-bold font-mono tracking-tight; }
+
+  .section-title { @apply text-base font-semibold tracking-tight text-foreground font-display; }
+
+  .chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border border-border bg-muted/60;
   }
 }
