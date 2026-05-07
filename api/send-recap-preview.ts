@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,7 +16,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -105,29 +104,30 @@ function buildRecapPreviewEmail(data: any) {
   const savingsGoals = data.savingsGoals ?? [];
   const categories = data.categories ?? [];
 
-  const totalIncome = incomes.reduce((sum: number, income: any) => sum + (income.amount || 0), 0);
-  const totalSpent = expenses.reduce((sum: number, expense: any) => sum + (expense.amount || 0), 0);
+  const totalIncome = incomes.reduce((sum: number, income: any) => sum + (typeof income.amount === "number" ? income.amount : 0), 0);
+  const totalSpent = expenses.reduce((sum: number, expense: any) => sum + (typeof expense.amount === "number" ? expense.amount : 0), 0);
   const monthName = new Date().toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
   const categoryMap = new Map(categories.map((category: any) => [category.id, category]));
 
   const categoryTotals = expenses.reduce((totals: Record<string, number>, expense: any) => {
     const category = categoryMap.get(expense.categoryId);
-    const label = category?.name ?? "Outros";
-    totals[label] = (totals[label] ?? 0) + (expense.amount || 0);
+    const label = typeof category?.name === "string" ? category.name : "Outros";
+    const amt = typeof expense.amount === "number" ? expense.amount : 0;
+    totals[label] = (totals[label] ?? 0) + amt;
     return totals;
   }, {});
 
   const topExpenses = [...expenses]
-    .sort((a: any, b: any) => (b.amount || 0) - (a.amount || 0))
+    .sort((a: any, b: any) => (typeof b.amount === "number" ? b.amount : 0) - (typeof a.amount === "number" ? a.amount : 0))
     .slice(0, 5);
 
   const goalsHtml = savingsGoals.length
     ? savingsGoals
         .map(
           (goal: any) =>
-            `<li style="margin-bottom:10px;"><strong>${escapeHtml(goal.name)}</strong> — ${currency.format(
-              goal.currentAmount || 0,
-            )} de ${currency.format(goal.targetAmount || 0)}${goal.targetDate ? ` até ${new Date(goal.targetDate).toLocaleDateString("pt-PT")}` : ""}</li>`,
+            `<li style="margin-bottom:10px;"><strong>${escapeHtml(goal.name ?? "-")}</strong> — ${currency.format(
+              typeof goal.currentAmount === "number" ? goal.currentAmount : 0,
+            )} de ${currency.format(typeof goal.targetAmount === "number" ? goal.targetAmount : 0)}${goal.targetDate ? ` até ${new Date(goal.targetDate).toLocaleDateString("pt-PT")}` : ""}</li>`,
         )
         .join("")
     : "<p style=\"margin:0;color:#555;\">Ainda não tens objetivos de poupança definidos.</p>";
@@ -167,7 +167,7 @@ function buildRecapPreviewEmail(data: any) {
             ${topExpenses
               .map(
                 (expense: any) =>
-                  `<tr><td style="padding:8px 0;">${escapeHtml(expense.description || "-")}</td><td style="padding:8px 0; text-align:right;">${currency.format(expense.amount || 0)}</td></tr>`,
+                  `<tr><td style="padding:8px 0;">${escapeHtml(expense.description ?? "-")}</td><td style="padding:8px 0; text-align:right;">${currency.format(typeof expense.amount === "number" ? expense.amount : 0)}</td></tr>`,
               )
               .join("")}
           </tbody>
