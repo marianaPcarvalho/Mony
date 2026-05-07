@@ -34,15 +34,11 @@ const Index = () => {
               {view === "home" && (
                 <>
                   <HomeHero />
-                  <IncomeList />
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
-                    <div className="lg:col-span-2">
-                      <BudgetVsSpent />
-                    </div>
-                    <div className="lg:col-span-3">
-                      <ExpenseList />
-                    </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <IncomeList />
+                    <ExpenseList />
                   </div>
+                  <BudgetVsSpent />
                 </>
               )}
 
