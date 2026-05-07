@@ -37,7 +37,7 @@ export function IncomeList() {
   const incomes = filterType === "all" ? allIncomes : allIncomes.filter(i => i.type === filterType);
   const pendingDelete = deleteId ? (data.incomes ?? []).find(i => i.id === deleteId) : null;
 
-  const resetForm = () => { setType("salary"); setAmount(""); setDesc(""); setDate(""); setEditingId(null); };
+  const resetForm = () => { setType(fallbackType); setAmount(""); setDesc(""); setDate(""); setEditingId(null); };
 
   const amountNum = parseFloat(amount);
   const isValid = !!type && !!date && !isNaN(amountNum) && amountNum > 0;
