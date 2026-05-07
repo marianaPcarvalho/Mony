@@ -52,6 +52,7 @@ export interface SavingsGoal {
   currentAmount: number;
   icon: string;
   color: string;
+  imageUrl?: string; // optional photo for the goal (data URL)
   targetDate?: string; // ISO date
   fundHistory: SavingsFundEntry[];
   monthlyContribution?: number;
