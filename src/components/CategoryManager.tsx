@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Settings2, ChevronDown, ChevronRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Settings2, ChevronDown, ChevronRight, Repeat } from "lucide-react";
 
 export function CategoryManager() {
   const { data, addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory } = useStore();
