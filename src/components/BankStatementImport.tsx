@@ -8,9 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, BellOff, BellRing, Check, X } from "lucide-react";
+import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { toast as sonnerToast } from "sonner";
 import { EmojiPickerButton } from "./EmojiPickerButton";
 
 interface ParsedExpense {
