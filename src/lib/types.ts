@@ -56,6 +56,14 @@ export interface SavingsGoal {
   monthlyContribution?: number;
 }
 
+export interface Income {
+  id: string;
+  amount: number;
+  description: string;
+  type: string;
+  date: string; // ISO string
+}
+
 export interface UserProfile {
   name: string;
   defaultSalary: number;
@@ -96,6 +104,7 @@ export interface AppData {
   yearlyPlans: YearlyPlan[];
   savingsGoals: SavingsGoal[];
   investments?: Investment[];
+  incomes?: Income[];
   monthStartDay?: number; // 1-28, day of month when budget cycle starts
   profile?: UserProfile;
 }
