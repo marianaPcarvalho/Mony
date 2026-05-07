@@ -283,7 +283,7 @@ export function SavingsGoals() {
             <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-success/15 text-success">
               <PiggyBank className="h-5 w-5" />
             </div>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total saved</span>
+            <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Total poupado</span>
           </div>
           <span className="font-mono font-bold text-xl text-success">{fmt(totalSaved)}</span>
         </div>
@@ -292,12 +292,12 @@ export function SavingsGoals() {
       {/* Goals list */}
       <Card className="glass-card p-5 space-y-3">
         <h3 className="section-title flex items-center gap-2">
-          <PiggyBank className="h-4 w-4 text-muted-foreground" /> Your goals
+          <PiggyBank className="h-4 w-4 text-muted-foreground" /> Os teus objetivos
         </h3>
 
         {data.savingsGoals.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-10">
-            No savings goals yet. Click <strong>New Goal</strong> to start planning for your future!
+            Ainda não tens objetivos. Clica em <strong>Novo Objetivo</strong> para começar!
           </p>
         )}
 
@@ -321,7 +321,11 @@ export function SavingsGoals() {
                 <div className="p-4 space-y-3 group">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-2xl flex-shrink-0" aria-hidden="true">{goal.icon}</span>
+                      {goal.imageUrl ? (
+                        <img src={goal.imageUrl} alt="" className="h-12 w-12 rounded-lg object-cover border border-border flex-shrink-0" />
+                      ) : (
+                        <span className="text-2xl flex-shrink-0" aria-hidden="true">{goal.icon}</span>
+                      )}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-semibold text-sm text-foreground truncate">{goal.name}</p>
