@@ -32,13 +32,17 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2.5 px-1 py-1">
-          <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground text-sm font-bold flex-shrink-0">
-            💰
+        <div className="flex items-center gap-2.5 px-1 py-1.5">
+          <div
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-base font-extrabold flex-shrink-0 shadow-lg"
+            style={{ background: "var(--gradient-brand)", color: "hsl(var(--primary-foreground))" }}
+            aria-hidden
+          >
+            M
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-sm font-bold tracking-tight text-sidebar-foreground truncate">BudgetFlow</p>
-            <p className="text-xs text-sidebar-foreground/70 truncate">Hi, {profile.name} 👋</p>
+            <p className="text-base font-extrabold tracking-tight text-sidebar-foreground truncate font-display">MONY</p>
+            <p className="text-xs text-sidebar-foreground/70 truncate">Hey, {profile.name} ✨</p>
           </div>
         </div>
       </SidebarHeader>
