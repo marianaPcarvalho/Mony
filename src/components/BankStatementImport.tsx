@@ -426,8 +426,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
             {fileInput}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {lastMonthStatusBadge}
-            {reminderControls}
+            {currentMonthStatusBadge}
+            
           </div>
         </div>
       ) : (
@@ -446,8 +446,8 @@ export function BankStatementImport({ variant = "full" }: Props) {
             {fileInput}
           </div>
           <div className="mt-3 flex items-center gap-2 flex-wrap">
-            {lastMonthStatusBadge}
-            {reminderControls}
+            {currentMonthStatusBadge}
+            
           </div>
         </Card>
       )}
