@@ -126,6 +126,9 @@ interface StoreContextType {
   deleteInvestment: (id: string) => void;
   addInvestmentTransaction: (investmentId: string, tx: Omit<InvestmentTransaction, "id">) => void;
   deleteInvestmentTransaction: (investmentId: string, txId: string) => void;
+  addIncome: (i: Omit<Income, "id">) => void;
+  updateIncome: (i: Income) => void;
+  deleteIncome: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -279,6 +282,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           : inv
       ),
     }));
+
+  const addIncome = (i: Omit<Income, "id">) =>
+    update(d => ({ ...d, incomes: [...(d.incomes ?? []), { ...i, id: uid() }] }));
+  const updateIncome = (i: Income) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).map(x => x.id === i.id ? i : x) }));
+  const deleteIncome = (id: string) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).filter(x => x.id !== id) }));
 
   const monthStartDay = data.monthStartDay ?? 1;
 
