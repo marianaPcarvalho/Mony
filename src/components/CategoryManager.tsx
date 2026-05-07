@@ -97,6 +97,15 @@ export function CategoryManager() {
                 <Label htmlFor="cat-budget">Monthly Budget (€)</Label>
                 <Input id="cat-budget" type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={e => setBudget(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
               </div>
+              <div className="flex items-start justify-between gap-3 p-3 rounded-md border border-border bg-muted/30">
+                <div className="space-y-0.5">
+                  <Label htmlFor="cat-recurring" className="flex items-center gap-1.5 cursor-pointer">
+                    <Repeat className="h-3.5 w-3.5 text-primary" /> Recurring
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Mark categories like rent or subscriptions that repeat every month.</p>
+                </div>
+                <Switch id="cat-recurring" checked={recurring} onCheckedChange={setRecurring} />
+              </div>
               <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Create"} Category</Button>
             </div>
           </DialogContent>
