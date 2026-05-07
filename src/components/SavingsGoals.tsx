@@ -18,7 +18,7 @@ import { EmojiPickerButton } from "./EmojiPickerButton";
 
 
 const fmt = (v: number) =>
-  `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  `€${v.toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function SavingsGoals() {
   const { data, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, addFundsToGoal } = useStore();
@@ -62,10 +62,10 @@ export function SavingsGoals() {
 
   const getStatus = (goal: { currentAmount: number; targetAmount: number; targetDate?: string; monthlyContribution?: number }) => {
     if (goal.targetAmount > 0 && goal.currentAmount >= goal.targetAmount) {
-      return { label: "Complete", tone: "success" as const, Icon: CheckCircle2 };
+      return { label: "Completo", tone: "success" as const, Icon: CheckCircle2 };
     }
     if (!goal.targetDate && !goal.monthlyContribution) {
-      return { label: "No plan", tone: "neutral" as const, Icon: Clock };
+      return { label: "Sem plano", tone: "neutral" as const, Icon: Clock };
     }
     if (goal.targetDate) {
       const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
@@ -75,14 +75,14 @@ export function SavingsGoals() {
       const required = months > 0 ? remaining / months : remaining;
       if (goal.monthlyContribution && goal.monthlyContribution > 0) {
         return goal.monthlyContribution >= required
-          ? { label: "On track", tone: "success" as const, Icon: CheckCircle2 }
-          : { label: "Off track", tone: "destructive" as const, Icon: AlertTriangle };
+          ? { label: "Dentro do plano", tone: "success" as const, Icon: CheckCircle2 }
+          : { label: "Fora do plano", tone: "destructive" as const, Icon: AlertTriangle };
       }
       // Has date but no monthly plan
-      return { label: "Needs plan", tone: "warning" as const, Icon: AlertTriangle };
+      return { label: "Precisa de plano", tone: "warning" as const, Icon: AlertTriangle };
     }
     // Monthly only, no date — informational
-    return { label: "Saving", tone: "neutral" as const, Icon: Clock };
+    return { label: "A poupar", tone: "neutral" as const, Icon: Clock };
   };
 
   const resetForm = () => {
@@ -181,9 +181,9 @@ export function SavingsGoals() {
   const pendingDelete = deleteId ? data.savingsGoals.find(g => g.id === deleteId) : null;
 
   const stats = [
-    { label: "Total saved", value: fmt(totalSaved), icon: PiggyBank, tone: "success" as const },
-    { label: "Total target", value: fmt(totalTarget), icon: Target, tone: "neutral" as const },
-    { label: "Planned / month", value: fmt(totalPlannedMonthly), icon: CalendarClock, tone: "neutral" as const },
+    { label: "Total poupado", value: fmt(totalSaved), icon: PiggyBank, tone: "success" as const },
+    { label: "Objetivo total", value: fmt(totalTarget), icon: Target, tone: "neutral" as const },
+    { label: "Planeado / mês", value: fmt(totalPlannedMonthly), icon: CalendarClock, tone: "neutral" as const },
   ];
 
   return (
@@ -347,10 +347,10 @@ export function SavingsGoals() {
                       <span className={`text-sm font-bold font-mono ${isComplete ? "text-success" : "text-[hsl(var(--savings))]"}`}>
                         {pct.toFixed(0)}%
                       </span>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(goal)} aria-label={`Edit ${goal.name}`}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(goal)} aria-label={`Editar ${goal.name}`}>
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteId(goal.id)} aria-label={`Delete ${goal.name}`}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDeleteId(goal.id)} aria-label={`Eliminar ${goal.name}`}>
                         <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
                     </div>
@@ -358,16 +358,16 @@ export function SavingsGoals() {
 
                   <Progress value={pct} className="h-2.5"
                     style={{ ["--progress-color" as any]: isComplete ? "hsl(var(--success))" : "hsl(var(--savings))" }}
-                    aria-label={`${goal.name}: ${pct.toFixed(0)} percent saved`} />
+                    aria-label={`${goal.name}: ${pct.toFixed(0)} percento poupado`} />
 
                   <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
                     <div className="flex gap-3 flex-wrap text-muted-foreground">
                       {goal.targetDate && (
                         <span className="text-foreground">
-                          {daysUntil(goal.targetDate)} days left · {new Date(goal.targetDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          {daysUntil(goal.targetDate)} dias · {new Date(goal.targetDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                         </span>
                       )}
-                      {goal.monthlyContribution && <span>Planned: {fmt(goal.monthlyContribution)}/mo</span>}
+                      {goal.monthlyContribution && <span>Planeado: {fmt(goal.monthlyContribution)}/mo</span>}
                     </div>
                     <div className="flex gap-1.5">
                       <Button
@@ -383,7 +383,7 @@ export function SavingsGoals() {
                         {isInlineOpen ? <X className="h-3 w-3" /> : <Plus className="h-3 w-3" />} Add Funds
                       </Button>
                       <Button variant="ghost" size="sm" className="text-xs h-7 gap-1" onClick={() => setExpandedGoal(isExpanded ? null : goal.id)} aria-expanded={isExpanded}>
-                        <History className="h-3 w-3" /> History
+                        <History className="h-3 w-3" /> Histórico
                         {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                       </Button>
                     </div>
@@ -427,9 +427,9 @@ export function SavingsGoals() {
                         <div>
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">At planned pace</p>
                           <p className={`font-mono font-semibold ${proj.onTrack === false ? "text-destructive" : proj.onTrack === true ? "text-success" : "text-foreground"}`}>
-                            {proj.projectedMonths} {proj.projectedMonths === 1 ? "month" : "months"}
-                            {proj.onTrack === false && " · behind"}
-                            {proj.onTrack === true && " · on track"}
+                            {proj.projectedMonths} {proj.projectedMonths === 1 ? "mês" : "meses"}
+                            {proj.onTrack === false && " · atrasado"}
+                            {proj.onTrack === true && " · dentro do plano"}
                           </p>
                         </div>
                       )}
@@ -465,10 +465,10 @@ export function SavingsGoals() {
       {/* Add funds dialog */}
       <Dialog open={!!fundDialogGoalId} onOpenChange={(v) => { if (!v) { setFundDialogGoalId(null); setAddFundAmt(""); setAddFundNote(""); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Funds</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Adicionar Fundos</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label htmlFor="fund-amount">Amount <span className="text-destructive">*</span></Label>
+              <Label htmlFor="fund-amount">Valor <span className="text-destructive">*</span></Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                 <Input id="fund-amount" type="number" min="0" step="0.01" inputMode="decimal" value={addFundAmt}
@@ -476,10 +476,10 @@ export function SavingsGoals() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="fund-note">Note (optional)</Label>
-              <Input id="fund-note" value={addFundNote} onChange={e => setAddFundNote(e.target.value)} onKeyDown={handleFundKeyDown} placeholder="e.g., Bonus from work" maxLength={120} />
+              <Label htmlFor="fund-note">Nota (opcional)</Label>
+              <Input id="fund-note" value={addFundNote} onChange={e => setAddFundNote(e.target.value)} onKeyDown={handleFundKeyDown} placeholder="ex.: Bónus do trabalho" maxLength={120} />
             </div>
-            <Button onClick={handleAddFunds} disabled={!fundValid} className="w-full">Add Funds</Button>
+            <Button onClick={handleAddFunds} disabled={!fundValid} className="w-full">Adicionar Fundos</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -488,15 +488,15 @@ export function SavingsGoals() {
       <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this goal?</AlertDialogTitle>
+            <AlertDialogTitle>Eliminar este objetivo?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.name}</strong> and its entire fund history ({fmt(pendingDelete.currentAmount)} saved). This action cannot be undone.</>
-              ) : "This action cannot be undone."}
+                <>Vai remover permanentemente <strong>{pendingDelete.name}</strong> e todo o histórico ({fmt(pendingDelete.currentAmount)} poupados). Esta ação não pode ser revertida.</>
+              ) : "Esta ação não pode ser revertida."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteSavingsGoal(deleteId); setDeleteId(null); }}

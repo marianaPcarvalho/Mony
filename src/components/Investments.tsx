@@ -23,18 +23,18 @@ const fmt = (v: number) =>
   `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const TYPE_LABELS: Record<Investment["type"], string> = {
-  stock: "Stocks & ETFs",
-  etf: "Stocks & ETFs",
-  crypto: "Crypto",
-  fund: "Bonds / Funds",
-  bond: "Bonds / Funds",
-  other: "Other",
+  stock: "Ações & ETFs",
+  etf: "Ações & ETFs",
+  crypto: "Cripto",
+  fund: "Obrigações / Fundos",
+  bond: "Obrigações / Fundos",
+  other: "Outros",
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  "Stocks & ETFs": "hsl(220, 55%, 50%)",
+  "Ações & ETFs": "hsl(220, 55%, 50%)",
   Crypto: "hsl(38, 92%, 45%)",
-  "Bonds / Funds": "hsl(270, 50%, 48%)",
+  "Obrigações / Fundos": "hsl(270, 50%, 48%)",
   Other: "hsl(168, 55%, 32%)",
 };
 
@@ -104,11 +104,11 @@ export function Investments() {
 
   // Aggregates
   const { totalInvested, totalCurrent, totalGain, totalGainPct } = useMemo(() => {
-    const invested = investments.reduce((s, i) => s + i.units * i.avgCost, 0);
+    const investido = investments.reduce((s, i) => s + i.units * i.avgCost, 0);
     const current = investments.reduce((s, i) => s + i.units * i.currentPrice, 0);
-    const gain = current - invested;
-    const gainPct = invested > 0 ? (gain / invested) * 100 : 0;
-    return { totalInvested: invested, totalCurrent: current, totalGain: gain, totalGainPct: gainPct };
+    const gain = current - investido;
+    const gainPct = investido > 0 ? (gain / investido) * 100 : 0;
+    return { totalInvested: investido, totalCurrent: current, totalGain: gain, totalGainPct: gainPct };
   }, [investments]);
 
   // Pie chart data — group by simplified type
@@ -130,21 +130,21 @@ export function Investments() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="glass-card p-4 flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total Invested</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total Investido</span>
           <span className="font-mono font-bold text-lg text-foreground">{fmt(totalInvested)}</span>
         </Card>
         <Card className="glass-card p-4 flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Current Value</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Valor Atual</span>
           <span className="font-mono font-bold text-lg text-foreground">{fmt(totalCurrent)}</span>
         </Card>
         <Card className="glass-card p-4 flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total Gain / Loss</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Ganho / Perda Total</span>
           <span className={`font-mono font-bold text-lg ${totalGain >= 0 ? "text-success" : "text-destructive"}`}>
             {totalGain >= 0 ? "+" : ""}{fmt(totalGain)}
           </span>
         </Card>
         <Card className="glass-card p-4 flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Return</span>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Retorno</span>
           <span className={`font-mono font-bold text-lg ${totalGainPct >= 0 ? "text-success" : "text-destructive"}`}>
             {totalGainPct >= 0 ? "+" : ""}{totalGainPct.toFixed(2)}%
           </span>
@@ -154,13 +154,13 @@ export function Investments() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Pie chart */}
         <Card className="glass-card p-5 lg:col-span-1">
-          <h3 className="section-title mb-4">Portfolio Distribution</h3>
+          <h3 className="section-title mb-4">Distribuição da Carteira</h3>
           {pieData.length > 0 ? (
             <>
               <div
                 className="h-56"
                 role="img"
-                aria-label={`Portfolio distribution across ${pieData.length} holdings, total ${fmt(pieData.reduce((s, p) => s + p.value, 0))}.`}
+                aria-label={`Distribuição da carteira em ${pieData.length} posições, total ${fmt(pieData.reduce((s, p) => s + p.value, 0))}.`}
               >
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <PieChart>
@@ -212,53 +212,53 @@ export function Investments() {
             </h3>
             <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button className="gap-2 h-9" aria-label="Add investment">
-                  <Plus className="h-4 w-4" /> Add
+                <Button className="gap-2 h-9" aria-label="Adicionar investimento">
+                  <Plus className="h-4 w-4" /> Adicionar
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{editingId ? "Edit" : "Add"} Investment</DialogTitle>
+                  <DialogTitle>{editingId ? "Editar" : "Adicionar"} Investimento</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div className="flex items-end gap-3">
                     <div className="space-y-1.5">
-                      <Label>Icon</Label>
-                      <EmojiPickerButton value={icon} onChange={setIcon} size="lg" ariaLabel="Pick icon" />
+                      <Label>Ícone</Label>
+                      <EmojiPickerButton value={icon} onChange={setIcon} size="lg" ariaLabel="Escolher ícone" />
                     </div>
                     <div className="flex-1 space-y-1.5">
-                      <Label htmlFor="inv-name">Name <span className="text-destructive">*</span></Label>
-                      <Input id="inv-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., S&P 500 ETF, Bitcoin" autoFocus />
+                      <Label htmlFor="inv-name">Nome <span className="text-destructive">*</span></Label>
+                      <Input id="inv-name" value={name} onChange={e => setName(e.target.value)} placeholder="ex.: S&P 500 ETF, Bitcoin" autoFocus />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="inv-symbol">Symbol / Ticker</Label>
+                      <Label htmlFor="inv-symbol">Símbolo / Ticker</Label>
                       <Input id="inv-symbol" value={symbol} onChange={e => setSymbol(e.target.value.toUpperCase())} placeholder="AAPL" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Type</Label>
+                      <Label>Tipo</Label>
                       <Select value={type} onValueChange={(v) => setType(v as Investment["type"])}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="stock">Stock</SelectItem>
+                          <SelectItem value="stock">Ação</SelectItem>
                           <SelectItem value="etf">ETF</SelectItem>
-                          <SelectItem value="crypto">Crypto</SelectItem>
-                          <SelectItem value="fund">Fund</SelectItem>
-                          <SelectItem value="bond">Bond</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="crypto">Cripto</SelectItem>
+                          <SelectItem value="fund">Fundo</SelectItem>
+                          <SelectItem value="bond">Obrigação</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="inv-units">Units</Label>
+                      <Label htmlFor="inv-units">Unidades</Label>
                       <Input id="inv-units" type="number" min="0" step="any" inputMode="decimal" value={units}
                         onChange={e => setUnits(e.target.value)} placeholder="0" className="font-mono" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="inv-avg">Avg Cost</Label>
+                      <Label htmlFor="inv-avg">Custo Médio</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                         <Input id="inv-avg" type="number" min="0" step="0.01" inputMode="decimal" value={avgCost}
@@ -266,7 +266,7 @@ export function Investments() {
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="inv-price">Current Price</Label>
+                      <Label htmlFor="inv-price">Preço Atual</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                         <Input id="inv-price" type="number" min="0" step="0.01" inputMode="decimal" value={currentPrice}
@@ -275,7 +275,7 @@ export function Investments() {
                     </div>
                   </div>
                   <Button onClick={handleSave} disabled={!isValid} className="w-full">
-                    {editingId ? "Update" : "Add"} Investment
+                    {editingId ? "Atualizar" : "Adicionar"} Investimento
                   </Button>
                 </div>
               </DialogContent>
@@ -313,7 +313,7 @@ export function Investments() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                        {fmt(cost)} invested
+                        {fmt(cost)} investido
                       </p>
                     </div>
                   </div>
@@ -345,13 +345,13 @@ export function Investments() {
       <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Investment</AlertDialogTitle>
+            <AlertDialogTitle>Eliminar Investimento</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete <strong>{pendingDelete?.name}</strong>? This action cannot be undone.
+              Tens a certeza que queres eliminar <strong>{pendingDelete?.name}</strong>? Esta ação não pode ser revertida.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteId(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteInvestment(deleteId); setDeleteId(null); }}

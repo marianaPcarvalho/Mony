@@ -33,7 +33,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           type="button"
           className="h-5 w-5 rounded-full border border-border shrink-0 shadow-sm"
           style={{ background: value }}
-          aria-label="Pick color"
+          aria-label="Escolher cor"
         />
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" align="start">
@@ -96,18 +96,18 @@ function NewCategoryRow({ onCreate, onCancel }: { onCreate: (c: { name: string; 
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
       <EmojiPickerButton value={icon} onChange={setIcon} size="md" />
-      <Input autoFocus placeholder="Category name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="flex-1" />
+      <Input autoFocus placeholder="Nome da categoria" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="flex-1" />
       <div className="relative w-36">
         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
-        <Input type="number" min="0" step="0.01" inputMode="decimal" placeholder="Monthly budget" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="pl-6" />
+        <Input type="number" min="0" step="0.01" inputMode="decimal" placeholder="Orçamento mensal" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="pl-6" />
       </div>
-      <Button size="icon" onClick={submit} aria-label="Save"><Check className="h-4 w-4" /></Button>
-      <Button size="icon" variant="ghost" onClick={onCancel} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+      <Button size="icon" onClick={submit} aria-label="Guardar"><Check className="h-4 w-4" /></Button>
+      <Button size="icon" variant="ghost" onClick={onCancel} aria-label="Cancelar"><X className="h-4 w-4" /></Button>
     </div>
   );
 }
 
-function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
+function CategoryRow({ cat, gasto }: { cat: Category; gasto: number }) {
   const { updateCategory, deleteCategory, addSubCategory, updateSubCategory, deleteSubCategory } = useStore();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(cat.name);
@@ -121,7 +121,7 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
 
   const subs = cat.subCategories ?? [];
   const pct = cat.monthlyBudget > 0 ? (spent / cat.monthlyBudget) * 100 : 0;
-  const over = spent > cat.monthlyBudget && cat.monthlyBudget > 0;
+  const over = gasto > cat.monthlyBudget && cat.monthlyBudget > 0;
 
   const startEdit = () => { setName(cat.name); setIcon(cat.icon); setBudget(String(cat.monthlyBudget)); setEditing(true); };
   const saveEdit = () => {
@@ -148,9 +148,9 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
                   <button
                     onClick={() => { setBudget(String(cat.monthlyBudget)); setEditingBudget(true); }}
                     className="group/budget inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted border border-border/60 transition-colors"
-                    aria-label="Edit monthly budget"
+                    aria-label="Editar orçamento mensal"
                   >
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Budget</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Orçamento</span>
                     <span className="font-mono text-xs font-bold text-foreground">€{cat.monthlyBudget.toFixed(2)}</span>
                     <Pencil className="h-3 w-3 text-muted-foreground group-hover/budget:text-foreground" />
                   </button>
@@ -172,9 +172,9 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
               <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
                 <span className="font-mono">
                   <span className={over ? "text-destructive font-bold" : "text-foreground font-semibold"}>€{spent.toFixed(2)}</span>
-                  <span className="text-muted-foreground"> spent</span>
+                  <span className="text-muted-foreground"> gasto</span>
                 </span>
-                {over && <span className="text-[10px] uppercase tracking-wider text-destructive font-bold">Over budget</span>}
+                {over && <span className="text-[10px] uppercase tracking-wider text-destructive font-bold">Excedido</span>}
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
@@ -188,20 +188,20 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
             </div>
             <ProgressRing pct={pct} over={over} />
             <div className="flex gap-0.5">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={startEdit} aria-label="Edit category">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={startEdit} aria-label="Editar categoria">
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setConfirmDelete(true)} aria-label="Delete category">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setConfirmDelete(true)} aria-label="Eliminar categoria">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
 
-          {/* Sub-categories — always visible */}
+          {/* Subcategorias — always visible */}
           <div className="border-t border-border/40 pt-2.5 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                Sub-categories {subs.length > 0 && <span className="ml-1 text-foreground/70">({subs.length})</span>}
+                Subcategorias {subs.length > 0 && <span className="ml-1 text-foreground/70">({subs.length})</span>}
               </p>
             </div>
             {subs.length > 0 && (
@@ -225,10 +225,10 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
                       }}
                     >
                       <span className="h-2 w-2 rounded-full" style={{ background: sub.color ?? DEFAULT_TAG_COLOR }} aria-hidden="true" />
-                      <button onClick={() => setEditingSubId(sub.id)} className="hover:underline" aria-label={`Edit ${sub.name}`}>
+                      <button onClick={() => setEditingSubId(sub.id)} className="hover:underline" aria-label={`Editar ${sub.name}`}>
                         {sub.name}
                       </button>
-                      <button onClick={() => deleteSubCategory(cat.id, sub.id)} className="rounded-full p-0.5 opacity-60 hover:opacity-100" aria-label={`Delete ${sub.name}`}>
+                      <button onClick={() => deleteSubCategory(cat.id, sub.id)} className="rounded-full p-0.5 opacity-60 hover:opacity-100" aria-label={`Eliminar ${sub.name}`}>
                         <X className="h-3 w-3" />
                       </button>
                     </div>
@@ -243,7 +243,7 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
               />
             ) : (
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 border-dashed" onClick={() => setAddingSub(true)}>
-                <Plus className="h-3 w-3" /> Add sub-category
+                <Plus className="h-3 w-3" /> Adicionar subcategoria
               </Button>
             )}
           </div>
@@ -256,8 +256,8 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">€</span>
             <Input type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={(e) => setBudget(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveEdit()} className="pl-6" />
           </div>
-          <Button size="icon" onClick={saveEdit} aria-label="Save"><Check className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => setEditing(false)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+          <Button size="icon" onClick={saveEdit} aria-label="Guardar"><Check className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setEditing(false)} aria-label="Cancelar"><X className="h-4 w-4" /></Button>
         </div>
       )}
 
@@ -266,7 +266,7 @@ function CategoryRow({ cat, spent }: { cat: Category; spent: number }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete "{cat.name}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the category and all its sub-categories. Existing expenses in this category will remain but become uncategorized. This action cannot be undone.
+              Vai eliminar permanentemente a categoria e todas as subcategorias. As despesas existentes manterão mas ficarão sem categoria. Esta ação não pode ser revertida.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -299,14 +299,14 @@ function SubEditRow({ sub, onSave, onCancel }: { sub?: SubCategory; onSave: (s: 
       <ColorPicker value={color} onChange={setColor} />
       <Input
         autoFocus
-        placeholder="Tag name"
+        placeholder="Nome da etiqueta"
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onCancel(); }}
         className="h-6 text-xs flex-1 border-0 bg-transparent px-1 focus-visible:ring-0 focus-visible:ring-offset-0 w-36"
       />
-      <Button size="icon" className="h-6 w-6 rounded-full" onClick={submit} aria-label="Save"><Check className="h-3 w-3" /></Button>
-      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={onCancel} aria-label="Cancel"><X className="h-3 w-3" /></Button>
+      <Button size="icon" className="h-6 w-6 rounded-full" onClick={submit} aria-label="Guardar"><Check className="h-3 w-3" /></Button>
+      <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={onCancel} aria-label="Cancelar"><X className="h-3 w-3" /></Button>
     </div>
   );
 }
@@ -345,10 +345,10 @@ function IncomeCategoriesTab() {
       {adding && (
         <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5">
           <EmojiPickerButton value={newIcon} onChange={setNewIcon} size="md" />
-          <Input autoFocus placeholder="Income category name" value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && submitNew()} className="flex-1" />
+          <Input autoFocus placeholder="Nome da categoria de receita" value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && submitNew()} className="flex-1" />
           <ColorPicker value={newColor} onChange={setNewColor} />
-          <Button size="icon" onClick={submitNew} aria-label="Save"><Check className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => setAdding(false)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+          <Button size="icon" onClick={submitNew} aria-label="Guardar"><Check className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setAdding(false)} aria-label="Cancelar"><X className="h-4 w-4" /></Button>
         </div>
       )}
       {cats.map(c => {
@@ -362,19 +362,19 @@ function IncomeCategoriesTab() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate">{c.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    Received this month: <span className="font-semibold text-foreground">€{received.toFixed(2)}</span>
+                    Recebido este mês: <span className="font-semibold text-foreground">€{received.toFixed(2)}</span>
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(c)} aria-label="Edit"><Pencil className="h-3.5 w-3.5" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteIncomeCategory(c.id)} aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(c)} aria-label="Editar"><Pencil className="h-3.5 w-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteIncomeCategory(c.id)} aria-label="Eliminar"><Trash2 className="h-3.5 w-3.5" /></Button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <EmojiPickerButton value={editIcon} onChange={setEditIcon} size="md" />
                 <Input autoFocus value={editName} onChange={e => setEditName(e.target.value)} onKeyDown={e => e.key === "Enter" && saveEdit()} className="flex-1" />
                 <ColorPicker value={editColor} onChange={setEditColor} />
-                <Button size="icon" onClick={saveEdit} aria-label="Save"><Check className="h-4 w-4" /></Button>
-                <Button size="icon" variant="ghost" onClick={() => setEditId(null)} aria-label="Cancel"><X className="h-4 w-4" /></Button>
+                <Button size="icon" onClick={saveEdit} aria-label="Guardar"><Check className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => setEditId(null)} aria-label="Cancelar"><X className="h-4 w-4" /></Button>
               </div>
             )}
           </div>
@@ -382,12 +382,12 @@ function IncomeCategoriesTab() {
       })}
       {cats.length === 0 && !adding && (
         <div className="text-center py-12 text-sm text-muted-foreground">
-          No income categories yet. Click 'New category' to add one.
+          Sem categorias de receita. Clica em 'Nova categoria' para adicionar.
         </div>
       )}
       {!adding && (
         <Button variant="outline" size="sm" className="gap-1.5 border-dashed" onClick={() => setAdding(true)}>
-          <Plus className="h-4 w-4" /> New income category
+          <Plus className="h-4 w-4" /> Nova categoria de receita
         </Button>
       )}
     </div>
@@ -403,7 +403,7 @@ export function CategoryBudgets() {
   const enriched = useMemo(
     () =>
       data.categories
-        .map((c) => ({ ...c, spent: getCategorySpent(c.id, selectedMonth) }))
+        .map((c) => ({ ...c, gasto: getCategorySpent(c.id, selectedMonth) }))
         .sort((a, b) => b.spent - a.spent),
     [data.categories, data.expenses, selectedMonth, getCategorySpent]
   );
@@ -425,16 +425,16 @@ export function CategoryBudgets() {
     <div className="space-y-5">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Categories</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Categorias</h1>
           <p className="text-sm text-muted-foreground">
             {tab === "expenses"
-              ? <>{enriched.length} expense categories · €{totalSpent.toFixed(2)} spent of €{totalBudget.toFixed(2)}</>
-              : <>{(data.incomeCategories ?? []).length} income categories</>}
+              ? <>{enriched.length} categorias de despesa · €{totalSpent.toFixed(2)} gasto of €{totalBudget.toFixed(2)}</>
+              : <>{(data.incomeCategories ?? []).length} categorias de receita</>}
           </p>
         </div>
         {tab === "expenses" && (
           <Button onClick={() => setAdding(true)} className="gap-1.5">
-            <Plus className="h-4 w-4" /> New category
+            <Plus className="h-4 w-4" /> Nova categoria
           </Button>
         )}
       </div>
@@ -444,13 +444,13 @@ export function CategoryBudgets() {
           onClick={() => setTab("expenses")}
           className={`px-3 py-1.5 rounded-md transition-colors ${tab === "expenses" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
-          💸 Expenses
+          💸 Despesas
         </button>
         <button
           onClick={() => setTab("incomes")}
           className={`px-3 py-1.5 rounded-md transition-colors ${tab === "incomes" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
-          💰 Incomes
+          💰 Receitas
         </button>
       </div>
 
@@ -461,7 +461,7 @@ export function CategoryBudgets() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search categories or sub-categories…"
+              placeholder="Procurar categorias ou subcategorias…"
               className="pl-9 h-10"
             />
           </div>
@@ -482,11 +482,11 @@ export function CategoryBudgets() {
               />
             )}
             {filtered.map((cat) => (
-              <CategoryRow key={cat.id} cat={cat} spent={cat.spent} />
+              <CategoryRow key={cat.id} cat={cat} gasto={cat.spent} />
             ))}
             {filtered.length === 0 && !adding && (
               <div className="text-center py-12 text-sm text-muted-foreground">
-                {search ? "No categories match your search." : "No categories yet. Click 'New category' to get started."}
+                {search ? "Sem resultados para a procura." : "Sem categorias. Clica em 'Nova categoria' para começar."}
               </div>
             )}
           </div>

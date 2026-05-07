@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Pencil } from "lucide-react";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const MONTH_FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const MONTH_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 export function YearlyPlanner() {
   const { data, addYearlyPlan, updateYearlyPlan, deleteYearlyPlan } = useStore();
@@ -72,9 +72,9 @@ export function YearlyPlanner() {
     <Card className="glass-card p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="section-title">Yearly Planner</h3>
+          <h3 className="section-title">Planeador Anual</h3>
           <p className="text-xs text-muted-foreground font-mono mt-1">
-            Budgeted expenses: <span className="font-semibold text-foreground">€{yearTotal.toLocaleString("en", { minimumFractionDigits: 2 })}</span>
+            Despesas planeadas: <span className="font-semibold text-foreground">€{yearTotal.toLocaleString("en", { minimumFractionDigits: 2 })}</span>
           </p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export function YearlyPlanner() {
                       <p key={p.id} className="text-[10px] text-muted-foreground truncate">{p.name}</p>
                     ))}
                     {m.plans.length > 2 && (
-                      <p className="text-[10px] text-muted-foreground">+{m.plans.length - 2} more</p>
+                      <p className="text-[10px] text-muted-foreground">+{m.plans.length - 2} mais</p>
                     )}
                   </div>
                 )}
@@ -128,7 +128,7 @@ export function YearlyPlanner() {
       <div className="space-y-1.5 pt-2">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {selectedMonthData ? `${selectedMonthData.fullName} — ${selectedMonthData.plans.length} budgeted expenses` : "All budgeted expenses"}
+            {selectedMonthData ? `${selectedMonthData.fullName} — ${selectedMonthData.plans.length} despesas planeadas` : "Todas as despesas planeadas"}
           </p>
           {selectedMonthData && (
             <p className="text-xs font-mono font-semibold text-foreground">
@@ -145,10 +145,10 @@ export function YearlyPlanner() {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="font-mono text-sm font-semibold text-foreground">€{plan.amount.toFixed(2)}</span>
-                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(plan)} aria-label="Edit plan">
+                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(plan)} aria-label="Editar plano">
                   <Pencil className="h-3 w-3" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteYearlyPlan(plan.id)} aria-label="Delete plan">
+                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteYearlyPlan(plan.id)} aria-label="Eliminar plano">
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
@@ -156,7 +156,7 @@ export function YearlyPlanner() {
           ))
         ) : (
           <p className="text-sm text-muted-foreground text-center py-4">
-            {selectedMonthData ? `No budgeted expenses for ${selectedMonthData.fullName}.` : "No budgeted expenses yet. Click +Plan on any month to start!"}
+            {selectedMonthData ? `Sem despesas planeadas para ${selectedMonthData.fullName}.` : "Sem despesas planeadas. Clica em +Planear num mês para começar!"}
           </p>
         )}
       </div>
@@ -164,14 +164,14 @@ export function YearlyPlanner() {
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editId ? "Edit" : "Add"} Budgeted Expense</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editId ? "Editar" : "Adicionar"} Despesa Planeada</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <Label htmlFor="plan-desc">Description</Label>
-              <Input id="plan-desc" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g., Car Insurance" />
+              <Label htmlFor="plan-desc">Descrição</Label>
+              <Input id="plan-desc" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="ex.: Seguro do carro" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="plan-month">Month</Label>
+              <Label htmlFor="plan-month">Mês</Label>
               <Select value={month} onValueChange={setMonth}>
                 <SelectTrigger id="plan-month"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -182,10 +182,10 @@ export function YearlyPlanner() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="plan-amount">Amount (€)</Label>
+              <Label htmlFor="plan-amount">Valor (€)</Label>
               <Input id="plan-amount" type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
             </div>
-            <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Add"} Plan</Button>
+            <Button onClick={handleSave} className="w-full">{editId ? "Atualizar" : "Adicionar"} Plano</Button>
           </div>
         </DialogContent>
       </Dialog>
