@@ -27,6 +27,7 @@ export function SavingsGoals() {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("🏠");
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [target, setTarget] = useState("");
   const [current, setCurrent] = useState("");
   const [targetDate, setTargetDate] = useState("");
@@ -38,6 +39,17 @@ export function SavingsGoals() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [inlineFundGoalId, setInlineFundGoalId] = useState<string | null>(null);
   const [inlineFundAmt, setInlineFundAmt] = useState("");
+
+  const handleImageUpload = (file: File | null) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Imagem demasiado grande (máx 2 MB)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setImageUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const inlineAmtNum = parseFloat(inlineFundAmt);
   const inlineValid = !isNaN(inlineAmtNum) && inlineAmtNum > 0;
@@ -74,7 +86,7 @@ export function SavingsGoals() {
   };
 
   const resetForm = () => {
-    setName(""); setIcon("🏠"); setTarget(""); setCurrent("");
+    setName(""); setIcon("🏠"); setImageUrl(""); setTarget(""); setCurrent("");
     setTargetDate(""); setMonthlyContrib(""); setEditId(null);
   };
 
@@ -86,6 +98,7 @@ export function SavingsGoals() {
     const goalData = {
       name: name.trim(),
       icon,
+      imageUrl: imageUrl || undefined,
       targetAmount: targetNum,
       currentAmount: parseFloat(current || "0") || 0,
       color: "hsl(var(--savings))",
@@ -111,6 +124,7 @@ export function SavingsGoals() {
     setEditId(goal.id);
     setName(goal.name);
     setIcon(goal.icon);
+    setImageUrl(goal.imageUrl ?? "");
     setTarget(String(goal.targetAmount));
     setCurrent(String(goal.currentAmount));
     setTargetDate(goal.targetDate ?? "");
