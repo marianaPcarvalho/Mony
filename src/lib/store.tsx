@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction } from "./types";
+import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction, Income } from "./types";
 import { useCloudSync } from "./cloudSync";
 
 const STORAGE_KEY = "budget-app-data";
@@ -35,6 +35,7 @@ const defaultData: AppData = {
   yearlyPlans: [],
   savingsGoals: [],
   investments: [],
+  incomes: [],
   profile: defaultProfile,
 };
 
@@ -66,6 +67,9 @@ function loadData(): AppData {
       parsed.investments = (parsed.investments ?? []).map((i: any) => ({
         ...i,
         transactions: i.transactions ?? [],
+      }));
+      parsed.incomes = (parsed.incomes ?? []).map((i: any) => ({
+        ...i,
       }));
       parsed.profile = {
         ...defaultProfile,
@@ -122,6 +126,9 @@ interface StoreContextType {
   deleteInvestment: (id: string) => void;
   addInvestmentTransaction: (investmentId: string, tx: Omit<InvestmentTransaction, "id">) => void;
   deleteInvestmentTransaction: (investmentId: string, txId: string) => void;
+  addIncome: (i: Omit<Income, "id">) => void;
+  updateIncome: (i: Income) => void;
+  deleteIncome: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -276,6 +283,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ),
     }));
 
+  const addIncome = (i: Omit<Income, "id">) =>
+    update(d => ({ ...d, incomes: [...(d.incomes ?? []), { ...i, id: uid() }] }));
+  const updateIncome = (i: Income) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).map(x => x.id === i.id ? i : x) }));
+  const deleteIncome = (id: string) =>
+    update(d => ({ ...d, incomes: (d.incomes ?? []).filter(x => x.id !== id) }));
+
   const monthStartDay = data.monthStartDay ?? 1;
 
   const getMonthExpenses = (month: string) => {
@@ -323,6 +337,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       getPlannedMonthlySavings, getActualSavedTotal, getActualSavedInMonth,
       setMonthStartDay, updateProfile, getProfile,
       addInvestment, updateInvestment, deleteInvestment, addInvestmentTransaction, deleteInvestmentTransaction,
+      addIncome, updateIncome, deleteIncome,
     }}>
       {children}
     </StoreContext.Provider>
