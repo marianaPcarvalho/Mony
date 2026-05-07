@@ -86,8 +86,8 @@ export function IncomeList() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All types</SelectItem>
-              {INCOME_TYPES.map(t => (
-                <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>
+              {incomeCategories.map(t => (
+                <SelectItem key={t.id} value={t.id}>{t.icon} {t.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
