@@ -18,6 +18,15 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+const defaultIncomeCategories: IncomeCategory[] = [
+  { id: "salary", name: "Salary", icon: "💼", color: "hsl(178, 60%, 40%)" },
+  { id: "freelance", name: "Freelance", icon: "💻", color: "hsl(220, 70%, 55%)" },
+  { id: "bonus", name: "Bonus", icon: "🎁", color: "hsl(38, 92%, 50%)" },
+  { id: "investment", name: "Investment Return", icon: "📈", color: "hsl(142, 55%, 42%)" },
+  { id: "gift", name: "Gift", icon: "🎀", color: "hsl(330, 70%, 58%)" },
+  { id: "other", name: "Other", icon: "📦", color: "hsl(220, 14%, 50%)" },
+];
+
 const defaultProfile: UserProfile = {
   name: "Mariana",
   defaultSalary: 3000,
@@ -30,6 +39,7 @@ const defaultProfile: UserProfile = {
 
 const defaultData: AppData = {
   categories: defaultCategories,
+  incomeCategories: defaultIncomeCategories,
   expenses: [],
   monthlyConfigs: [{ month: currentMonth(), salary: 3000, budget: 1850 }],
   yearlyPlans: [],
