@@ -66,7 +66,10 @@ export function IncomeList() {
     setOpen(true);
   };
 
-  const getType = (v: string) => INCOME_TYPES.find(t => t.value === v) ?? INCOME_TYPES[INCOME_TYPES.length - 1];
+  const getType = (v: string) => {
+    const found = incomeCategories.find(t => t.id === v);
+    return found ?? { id: v, name: v || "Other", icon: "📦", color: undefined as string | undefined };
+  };
 
   const visibleIncomes = expanded ? incomes : incomes.slice(0, 5);
 
