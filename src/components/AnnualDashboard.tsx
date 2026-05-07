@@ -78,16 +78,21 @@ export function AnnualDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Left: donut + breakdown list */}
           <div className="space-y-4">
-            <div className="relative">
+            <div
+              className="relative"
+              role="img"
+              aria-label={`Yearly spending donut for ${year}. Total ${fmt(totalSpentYear)} across ${categoryYearData.length} categories.`}
+            >
               {categoryYearData.length > 0 ? (
                 <>
-                  <ResponsiveContainer width="100%" height={260}>
+                  <ResponsiveContainer width="100%" height={260} minWidth={0}>
                     <PieChart>
                       <Pie
                         data={categoryYearData}
                         cx="50%" cy="50%"
-                        innerRadius={75} outerRadius={115}
-                        dataKey="value" paddingAngle={0} strokeWidth={0}
+                        innerRadius="58%" outerRadius="88%"
+                        dataKey="value" paddingAngle={1}
+                        stroke="hsl(var(--card))" strokeWidth={2}
                         isAnimationActive={false}
                         style={{ pointerEvents: "none", outline: "none" }}
                       >
@@ -96,8 +101,12 @@ export function AnnualDashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        wrapperStyle={{ outline: "none", fontSize: 11 }}
-                        contentStyle={{ padding: "4px 8px", borderRadius: 6, fontSize: 11 }}
+                        wrapperStyle={{ outline: "none", fontSize: 12 }}
+                        contentStyle={{
+                          padding: "6px 10px", borderRadius: 8, fontSize: 12,
+                          background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))",
+                          border: "1px solid hsl(var(--border))",
+                        }}
                         formatter={(value: number, _name, item: any) => {
                           const total = categoryYearData.reduce((s, p) => s + p.value, 0);
                           const pct = total > 0 ? (value / total) * 100 : 0;
