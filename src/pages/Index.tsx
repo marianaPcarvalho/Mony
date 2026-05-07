@@ -8,6 +8,7 @@ import { IncomeList } from "@/components/IncomeList";
 import { BudgetVsSpent } from "@/components/BudgetVsSpent";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { InvestmentsTracker } from "@/components/InvestmentsTracker";
+import { Investments } from "@/components/Investments";
 import { AnnualDashboard } from "@/components/AnnualDashboard";
 import { ProfilePage } from "@/components/ProfilePage";
 import { MonthSelector } from "@/components/MonthSelector";
@@ -46,7 +47,7 @@ const Index = () => {
 
               {view === "savings" && <SavingsGoals />}
 
-              {view === "investments" && <InvestmentsTracker />}
+              {view === "investments" && <Investments />}
 
               {view === "annual" && <AnnualDashboard />}
 
