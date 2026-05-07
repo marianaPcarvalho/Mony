@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle, BellOff, BellRing, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
+import { EmojiPickerButton } from "./EmojiPickerButton";
 
 interface ParsedExpense {
   amount: number;
