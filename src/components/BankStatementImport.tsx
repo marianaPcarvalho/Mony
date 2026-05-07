@@ -390,45 +390,20 @@ export function BankStatementImport({ variant = "full" }: Props) {
     />
   );
 
-  const lastMonthStatusBadge = (
+  const currentMonthStatusBadge = !curMonthHasImport ? (
     <div
-      className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
-        prevMonthHasImport
-          ? "border-success/40 bg-success/10 text-success"
-          : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
-      }`}
-      title={prevMonthHasImport && prevMonthImport?.fileName ? `File: ${prevMonthImport.fileName}` : undefined}
+      className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
     >
-      {prevMonthHasImport ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-      {prevMonthLabel}: {prevMonthHasImport ? "imported" : "missing"}
+      <AlertTriangle className="h-3 w-3" />
+      <span className="capitalize">{curMonthLabel}</span>: extrato em falta
     </div>
-  );
-
-  const reminderControls = (
-    <div className="flex items-center gap-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-8 px-2 text-xs gap-1"
-        onClick={toggleRemindersEnabled}
-        title={reminderSettings.enabled ? "Disable monthly reminders" : "Enable monthly reminders"}
-      >
-        {reminderSettings.enabled ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
-        {reminderSettings.enabled ? "On" : "Off"}
-      </Button>
-      {reminderSettings.enabled && (
-        snoozedActive ? (
-          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" onClick={clearSnooze} title="Cancel snooze">
-            <X className="h-3.5 w-3.5" />
-            Snoozed to {new Date(reminderSettings.snoozedUntil!).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-          </Button>
-        ) : (
-          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => snoozeReminders(7)}>
-            Snooze 7d
-          </Button>
-        )
-      )}
+  ) : (
+    <div
+      className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-success/40 bg-success/10 text-success"
+      title={curMonthImport?.fileName ? `Ficheiro: ${curMonthImport.fileName}` : undefined}
+    >
+      <Check className="h-3 w-3" />
+      <span className="capitalize">{curMonthLabel}</span>: importado
     </div>
   );
 
