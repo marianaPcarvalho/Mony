@@ -194,7 +194,7 @@ export function ExpenseList() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate text-foreground">{e.description || cat?.name}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                    <span>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span>{new Date(e.date).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric" })}</span>
                     {sub && (
                       <span
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-medium"
@@ -212,13 +212,13 @@ export function ExpenseList() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span className="font-mono text-sm font-bold text-destructive" aria-label={`minus ${e.amount.toFixed(2)} euros`}>
+                <span className="font-mono text-sm font-bold text-destructive" aria-label={`menos ${e.amount.toFixed(2)} euros`}>
                   −€{e.amount.toFixed(2)}
                 </span>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Edit expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(e.id)} aria-label="Editar despesa">
                   <Pencil className="h-3 w-3 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Delete expense">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDeleteId(e.id)} aria-label="Eliminar despesa">
                   <Trash2 className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </div>
@@ -227,34 +227,34 @@ export function ExpenseList() {
         })}
         {expenses.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-6">
-            {filterCat !== "all" ? "No expenses in this category." : "No expenses this month. Add your first expense above!"}
+            {filterCat !== "all" ? "Sem despesas nesta categoria." : "Sem despesas este mês. Adiciona a primeira acima!"}
           </p>
         )}
       </div>
 
       {expenses.length > 5 && (
         <Button variant="ghost" size="sm" className="w-full text-xs gap-1" onClick={() => setExpanded(!expanded)}>
-          {expanded ? <><ChevronUp className="h-3 w-3" /> Show less</> : <><ChevronDown className="h-3 w-3" /> Show all {expenses.length} expenses</>}
+          {expanded ? <><ChevronUp className="h-3 w-3" /> Mostrar menos</> : <><ChevronDown className="h-3 w-3" /> Mostrar todas as {expenses.length} despesas</>}
         </Button>
       )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
+            <AlertDialogTitle>Eliminar esta despesa?</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete ? (
-                <>This will permanently remove <strong>{pendingDelete.description || "this expense"}</strong> (€{pendingDelete.amount.toFixed(2)}). This action cannot be undone.</>
-              ) : "This action cannot be undone."}
+                <>Vai remover permanentemente <strong>{pendingDelete.description || "esta despesa"}</strong> (€{pendingDelete.amount.toFixed(2)}). Esta ação não pode ser revertida.</>
+              ) : "Esta ação não pode ser revertida."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => { if (deleteId) deleteExpense(deleteId); setDeleteId(null); }}
             >
-              Delete
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
