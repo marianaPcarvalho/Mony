@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Settings2, ChevronDown, ChevronRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Settings2, ChevronDown, ChevronRight, Repeat } from "lucide-react";
 
 export function CategoryManager() {
   const { data, addCategory, updateCategory, deleteCategory, addSubCategory, deleteSubCategory } = useStore();
@@ -14,21 +15,22 @@ export function CategoryManager() {
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("📦");
   const [budget, setBudget] = useState("");
+  const [recurring, setRecurring] = useState(false);
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [subOpen, setSubOpen] = useState(false);
   const [subName, setSubName] = useState("");
   const [subIcon, setSubIcon] = useState("📦");
   const [subCatParent, setSubCatParent] = useState("");
 
-  const resetForm = () => { setName(""); setIcon("📦"); setBudget(""); setEditId(null); };
+  const resetForm = () => { setName(""); setIcon("📦"); setBudget(""); setRecurring(false); setEditId(null); };
 
   const handleSave = () => {
     if (!name || !budget) return;
     if (editId) {
       const existing = data.categories.find(c => c.id === editId);
-      if (existing) updateCategory({ ...existing, name, icon, monthlyBudget: parseFloat(budget) });
+      if (existing) updateCategory({ ...existing, name, icon, monthlyBudget: parseFloat(budget), recurring });
     } else {
-      addCategory({ name, icon, color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`, monthlyBudget: parseFloat(budget), subCategories: [] });
+      addCategory({ name, icon, color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`, monthlyBudget: parseFloat(budget), subCategories: [], recurring });
     }
     setOpen(false);
     resetForm();
@@ -45,6 +47,7 @@ export function CategoryManager() {
     setName(cat.name);
     setIcon(cat.icon);
     setBudget(String(cat.monthlyBudget));
+    setRecurring(!!cat.recurring);
     setOpen(true);
   };
 
@@ -94,6 +97,15 @@ export function CategoryManager() {
                 <Label htmlFor="cat-budget">Monthly Budget (€)</Label>
                 <Input id="cat-budget" type="number" min="0" step="0.01" inputMode="decimal" value={budget} onChange={e => setBudget(e.target.value)} onKeyDown={handleKeyDown} placeholder="0.00" />
               </div>
+              <div className="flex items-start justify-between gap-3 p-3 rounded-md border border-border bg-muted/30">
+                <div className="space-y-0.5">
+                  <Label htmlFor="cat-recurring" className="flex items-center gap-1.5 cursor-pointer">
+                    <Repeat className="h-3.5 w-3.5 text-primary" /> Recurring
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Mark categories like rent or subscriptions that repeat every month.</p>
+                </div>
+                <Switch id="cat-recurring" checked={recurring} onCheckedChange={setRecurring} />
+              </div>
               <Button onClick={handleSave} className="w-full">{editId ? "Update" : "Create"} Category</Button>
             </div>
           </DialogContent>
@@ -111,7 +123,14 @@ export function CategoryManager() {
                   {subs.length > 0 ? (isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />) : <span className="w-3.5" />}
                   <span className="text-lg" aria-hidden="true">{cat.icon}</span>
                   <div>
-                    <p className="text-sm font-medium leading-tight text-foreground">{cat.name}</p>
+                    <p className="text-sm font-medium leading-tight text-foreground flex items-center gap-1.5">
+                      {cat.name}
+                      {cat.recurring && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                          <Repeat className="h-2.5 w-2.5" /> Recurring
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground font-mono">€{cat.monthlyBudget.toFixed(2)}/mo</p>
                   </div>
                 </button>

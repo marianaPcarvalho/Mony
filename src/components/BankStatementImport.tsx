@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw } from "lucide-react";
+import { Upload, Sparkles, Loader2, FileText, Plus, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ParsedExpense {
@@ -36,7 +36,7 @@ interface Parsed {
 }
 
 const MEMORY_KEY = "bank-import-memory-v1";
-const META_KEY = "bank-import-meta-v1";
+const META_KEY = "bank-import-meta-v2"; // v2: per-month tracking
 const REMINDER_KEY = "bank-import-reminder-v1";
 
 interface MemoryEntry {
@@ -44,21 +44,25 @@ interface MemoryEntry {
   subCategoryId?: string;
   incomeType?: string;
 }
-type Memory = Record<string, MemoryEntry>; // key = normalized description
+type Memory = Record<string, MemoryEntry>;
 
 interface ImportMeta {
   lastFileName?: string;
   lastImportedAt?: string;
+  byMonth?: Record<string, { fileName: string; importedAt: string }>;
 }
 
 const normalizeDesc = (s: string) =>
   (s ?? "")
     .toLowerCase()
-    .replace(/\d{4,}/g, "") // strip long numbers (card endings, refs)
+    .replace(/\d{4,}/g, "")
     .replace(/\s+/g, " ")
     .replace(/[^a-z0-9\s]/g, "")
     .trim()
     .slice(0, 60);
+
+const dedupeKey = (description: string, amount: number, monthOrDate: string) =>
+  `${normalizeDesc(description)}|${amount.toFixed(2)}|${monthOrDate.slice(0, 7)}`;
 
 const loadMemory = (): Memory => {
   try { return JSON.parse(localStorage.getItem(MEMORY_KEY) ?? "{}"); } catch { return {}; }
@@ -69,6 +73,11 @@ const loadMeta = (): ImportMeta => {
   try { return JSON.parse(localStorage.getItem(META_KEY) ?? "{}"); } catch { return {}; }
 };
 const saveMeta = (m: ImportMeta) => localStorage.setItem(META_KEY, JSON.stringify(m));
+
+export const hasAnyImport = () => {
+  const m = loadMeta();
+  return !!(m.lastFileName || (m.byMonth && Object.keys(m.byMonth).length > 0));
+};
 
 const fileToBase64 = (file: File): Promise<string> =>
   new Promise((res, rej) => {
@@ -95,8 +104,15 @@ const deriveMonth = (p: Parsed): string | null => {
   return best;
 };
 
-export function BankStatementImport() {
-  const { data, addExpense, addIncome, addCategory, setSalary, setSelectedMonth, selectedMonth } = useStore();
+interface Props {
+  variant?: "full" | "compact";
+}
+
+export function BankStatementImport({ variant = "full" }: Props) {
+  const {
+    data, addExpense, addIncome, deleteExpense, deleteIncome,
+    addCategory, setSalary, setSelectedMonth, selectedMonth,
+  } = useStore();
   const [loading, setLoading] = useState(false);
   const [parsed, setParsed] = useState<Parsed | null>(null);
   const [importSalary, setImportSalary] = useState(true);
@@ -107,7 +123,6 @@ export function BankStatementImport() {
   const [pendingAssign, setPendingAssign] = useState<{ name: string; idx: number | "bulk" } | null>(null);
   const [meta, setMeta] = useState<ImportMeta>(loadMeta);
 
-  // Bulk-edit
   const [bulkSel, setBulkSel] = useState<Set<number>>(new Set());
   const [bulkIncSel, setBulkIncSel] = useState<Set<number>>(new Set());
   const [bulkCat, setBulkCat] = useState<string>("");
@@ -116,7 +131,6 @@ export function BankStatementImport() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // New-month reminder: toast once per month change (based on last seen month).
   useEffect(() => {
     try {
       const now = new Date();
@@ -132,7 +146,6 @@ export function BankStatementImport() {
     } catch { /* ignore */ }
   }, []);
 
-  // Re-assign newly created category to the right row(s)
   useEffect(() => {
     if (!pendingAssign || !parsed) return;
     const cat = data.categories.find(c => c.name === pendingAssign.name);
@@ -155,9 +168,19 @@ export function BankStatementImport() {
     return parsed.statementMonth ?? deriveMonth(parsed);
   }, [parsed]);
 
+  const monthAlreadyImported = effectiveMonth ? !!meta.byMonth?.[effectiveMonth] : false;
+
   const handleFile = async (file: File) => {
+    if (!file) {
+      toast({ title: "No file selected", variant: "destructive" });
+      return;
+    }
     if (file.type !== "application/pdf") {
       toast({ title: "PDF only", description: "Please upload a PDF bank statement.", variant: "destructive" });
+      return;
+    }
+    if (file.size === 0) {
+      toast({ title: "Empty file", description: "The selected PDF appears to be empty.", variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -166,28 +189,34 @@ export function BankStatementImport() {
     }
     setLoading(true);
     try {
-      const pdfBase64 = await fileToBase64(file);
+      const pdfBase64 = await fileToBase64(file).catch(() => {
+        throw new Error("Could not read the file. Try saving the PDF again and re-uploading.");
+      });
+      if (!pdfBase64) throw new Error("File appears to be empty.");
+
       const { data: result, error } = await supabase.functions.invoke("parse-bank-statement", {
         body: {
           pdfBase64,
           categories: data.categories.map(c => ({ id: c.id, name: c.name, icon: c.icon })),
         },
       });
-      if (error) throw error;
+      if (error) {
+        const msg = (error as any)?.message ?? "";
+        if (msg.includes("429")) throw new Error("Too many requests right now. Please wait a moment and try again.");
+        if (msg.includes("402")) throw new Error("AI credits exhausted. Please add credits to continue.");
+        throw new Error(msg || "Server error while reading the statement.");
+      }
       if ((result as any)?.error) throw new Error((result as any).error);
       const p = result as Parsed;
-      const memory = loadMemory();
+      if (!p || (!p.expenses?.length && !p.incomes?.length)) {
+        throw new Error("No transactions found in this PDF. Make sure it's a bank statement with a transaction list.");
+      }
 
+      const memory = loadMemory();
       p.expenses = (p.expenses ?? []).map(e => {
         const learned = memory[normalizeDesc(e.description)];
-        // If we've seen this description before, prefer the learned category.
         const catId = learned?.categoryId ?? e.categoryId ?? "";
-        return {
-          ...e,
-          _include: true,
-          _categoryId: catId,
-          _subCategoryId: learned?.subCategoryId ?? "",
-        };
+        return { ...e, _include: true, _categoryId: catId, _subCategoryId: learned?.subCategoryId ?? "" };
       });
       p.incomes = (p.incomes ?? []).map(i => {
         const learned = memory[normalizeDesc(i.description)];
@@ -202,14 +231,14 @@ export function BankStatementImport() {
       setBulkSub("");
       setBulkIncType("");
 
-      const newMeta = { lastFileName: file.name, lastImportedAt: new Date().toISOString() };
-      setMeta(newMeta);
-      saveMeta(newMeta);
-
       toast({ title: "Statement analyzed", description: `Found ${p.expenses.length} expenses and ${p.incomes.length} incomes.` });
     } catch (e: any) {
-      console.error(e);
-      toast({ title: "Could not read statement", description: e.message ?? "Try again.", variant: "destructive" });
+      console.error("Bank statement upload failed:", e);
+      toast({
+        title: "Could not read statement",
+        description: e?.message ?? "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -221,25 +250,42 @@ export function BankStatementImport() {
     const memory = loadMemory();
     let added = 0;
 
+    // Build dedup index of existing entries (by month + key)
+    const existingExpenseByKey = new Map<string, string>(); // key -> id
+    data.expenses.forEach(x => {
+      existingExpenseByKey.set(dedupeKey(x.description, x.amount, x.date), x.id);
+    });
+    const existingIncomeByKey = new Map<string, string>();
+    (data.incomes ?? []).forEach(x => {
+      existingIncomeByKey.set(dedupeKey(x.description, x.amount, x.date), x.id);
+    });
+
     parsed.expenses.filter(e => e._include && e._categoryId).forEach(e => {
+      const iso = new Date(e.date).toISOString();
+      const key = dedupeKey(e.description, e.amount, iso);
+      const existingId = existingExpenseByKey.get(key);
+      if (existingId) deleteExpense(existingId); // override the older entry
       addExpense({
         categoryId: e._categoryId!,
         subCategoryId: e._subCategoryId || undefined,
         amount: e.amount,
         description: e.description,
-        date: new Date(e.date).toISOString(),
+        date: iso,
       });
-      // remember mapping
       const k = normalizeDesc(e.description);
       if (k) memory[k] = { categoryId: e._categoryId!, subCategoryId: e._subCategoryId || undefined };
       added++;
     });
     parsed.incomes.filter(i => i._include).forEach(i => {
+      const iso = new Date(i.date).toISOString();
+      const key = dedupeKey(i.description, i.amount, iso);
+      const existingId = existingIncomeByKey.get(key);
+      if (existingId) deleteIncome(existingId);
       addIncome({
         amount: i.amount,
         description: i.description,
         type: i.type,
-        date: new Date(i.date).toISOString(),
+        date: iso,
       });
       const k = normalizeDesc(i.description);
       if (k) memory[k] = { ...(memory[k] ?? { categoryId: "" }), incomeType: i.type };
@@ -251,9 +297,34 @@ export function BankStatementImport() {
     if (importSalary && parsed.detectedSalary && parsed.detectedSalary > 0 && effectiveMonth) {
       setSalary(effectiveMonth, parsed.detectedSalary);
     }
+
+    // Track per-month import meta
+    const fileName = meta.lastFileName ?? "statement.pdf";
+    const newMeta: ImportMeta = {
+      ...meta,
+      lastFileName: fileName,
+      lastImportedAt: new Date().toISOString(),
+      byMonth: {
+        ...(meta.byMonth ?? {}),
+        ...(effectiveMonth ? { [effectiveMonth]: { fileName, importedAt: new Date().toISOString() } } : {}),
+      },
+    };
+    setMeta(newMeta);
+    saveMeta(newMeta);
+
     if (effectiveMonth) setSelectedMonth(effectiveMonth);
     toast({ title: "Imported!", description: `${added} entries added${effectiveMonth ? ` to ${effectiveMonth}` : ""}.` });
     setParsed(null);
+  };
+
+  // Capture file name when picking — store it on meta so we display "Last import"
+  const onFileChange = (file: File) => {
+    setMeta(m => {
+      const next = { ...m, lastFileName: file.name };
+      saveMeta(next);
+      return next;
+    });
+    handleFile(file);
   };
 
   const openNewCategory = (idx: number | "bulk") => {
@@ -268,17 +339,14 @@ export function BankStatementImport() {
     if (!newCatName.trim() || newCatTargetIdx == null) return;
     const name = newCatName.trim();
     addCategory({
-      name,
-      icon: newCatIcon || "📦",
+      name, icon: newCatIcon || "📦",
       color: "hsl(var(--chart-1))",
-      monthlyBudget: 0,
-      subCategories: [],
+      monthlyBudget: 0, subCategories: [],
     });
     setPendingAssign({ name, idx: newCatTargetIdx as any });
     setNewCatOpen(false);
   };
 
-  // Apply bulk category/sub to all selected expense rows
   const applyBulkExpense = () => {
     if (!parsed || bulkSel.size === 0 || !bulkCat) return;
     const n = { ...parsed };
@@ -313,40 +381,58 @@ export function BankStatementImport() {
   const bulkCatObj = data.categories.find(c => c.id === bulkCat);
   const bulkSubs = bulkCatObj?.subCategories ?? [];
 
+  // ----- compact (profile) variant -----
+  const triggerButton = (
+    <Button onClick={() => fileRef.current?.click()} disabled={loading} size={variant === "compact" ? "sm" : "default"} className="gap-2">
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : meta.lastFileName ? <RefreshCw className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
+      {loading ? "Analyzing…" : meta.lastFileName ? "Re-import PDF" : "Upload PDF"}
+    </Button>
+  );
+
+  const fileInput = (
+    <input
+      ref={fileRef}
+      type="file"
+      accept="application/pdf"
+      className="hidden"
+      onChange={e => e.target.files?.[0] && onFileChange(e.target.files[0])}
+    />
+  );
+
   return (
     <>
-      <Card className="glass-card p-5">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-foreground">Import bank statement</h3>
-              <p className="text-xs text-muted-foreground">Upload your monthly PDF — Mony will read and sort it for you.</p>
-              {meta.lastFileName && (
-                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                  Last import: <span className="font-medium text-foreground">{meta.lastFileName}</span>
-                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
-                </p>
-              )}
-            </div>
+      {variant === "compact" ? (
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="min-w-0">
+            {meta.lastFileName ? (
+              <p className="text-xs text-muted-foreground truncate">
+                Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
+                {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">No statement imported yet.</p>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={() => fileRef.current?.click()} disabled={loading} className="gap-2">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : meta.lastFileName ? <RefreshCw className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-              {loading ? "Analyzing…" : meta.lastFileName ? "Re-import PDF" : "Upload PDF"}
-            </Button>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/pdf"
-            className="hidden"
-            onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
-          />
+          {triggerButton}
+          {fileInput}
         </div>
-      </Card>
+      ) : (
+        <Card className="glass-card p-5">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-foreground">Import bank statement</h3>
+                <p className="text-xs text-muted-foreground">Upload your monthly PDF — Mony will read and sort it for you.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">{triggerButton}</div>
+            {fileInput}
+          </div>
+        </Card>
+      )}
 
       <Dialog open={!!parsed} onOpenChange={o => !o && setParsed(null)}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
@@ -361,6 +447,18 @@ export function BankStatementImport() {
               <div className="text-xs text-muted-foreground">
                 Statement month: <span className="font-mono font-semibold text-foreground">{effectiveMonth ?? "unknown"}</span>
               </div>
+
+              {monthAlreadyImported && (
+                <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs">
+                    A statement for <strong>{effectiveMonth}</strong> was already imported
+                    {meta.byMonth?.[effectiveMonth!]?.fileName && <> ({meta.byMonth![effectiveMonth!].fileName})</>}.
+                    Confirming will replace duplicate entries with the new ones.
+                  </div>
+                </div>
+              )}
+
               {parsed.detectedSalary != null && parsed.detectedSalary > 0 && (
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40">
                   <label className="flex items-center gap-2 text-sm">

@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { User, Wallet, Bell, Check, Mail, Send } from "lucide-react";
+import { User, Wallet, Bell, Check, Mail, Send, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { BankStatementImport } from "@/components/BankStatementImport";
 import {
   getLocalSubscriber, setLocalSubscriber,
   updateSubscription, sendRecapPreview, pushSnapshot,
@@ -155,6 +156,18 @@ export function ProfilePage() {
           </div>
         </div>
       </Card>
+
+      <Card className="glass-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold tracking-tight text-foreground">Bank statement</h2>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Re-upload your monthly statement here. Each month accepts one statement — re-importing replaces duplicate entries.
+        </p>
+        <BankStatementImport variant="compact" />
+      </Card>
+
 
       <Card className="glass-card p-6 space-y-4">
         <div className="flex items-center gap-2">
