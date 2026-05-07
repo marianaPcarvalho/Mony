@@ -12,6 +12,7 @@ export interface Category {
   color: string;
   monthlyBudget: number;
   subCategories?: SubCategory[];
+  recurring?: boolean; // expenses recur every month (e.g. rent, subscriptions)
 }
 
 export interface Expense {
