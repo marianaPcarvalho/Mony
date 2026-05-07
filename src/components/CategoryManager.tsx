@@ -27,9 +27,9 @@ export function CategoryManager() {
     if (!name || !budget) return;
     if (editId) {
       const existing = data.categories.find(c => c.id === editId);
-      if (existing) updateCategory({ ...existing, name, icon, monthlyBudget: parseFloat(budget) });
+      if (existing) updateCategory({ ...existing, name, icon, monthlyBudget: parseFloat(budget), recurring });
     } else {
-      addCategory({ name, icon, color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`, monthlyBudget: parseFloat(budget), subCategories: [] });
+      addCategory({ name, icon, color: `hsl(var(--chart-${(data.categories.length % 6) + 1}))`, monthlyBudget: parseFloat(budget), subCategories: [], recurring });
     }
     setOpen(false);
     resetForm();
