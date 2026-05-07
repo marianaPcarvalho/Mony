@@ -359,6 +359,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setMonthStartDay, updateProfile, getProfile,
       addInvestment, updateInvestment, deleteInvestment, addInvestmentTransaction, deleteInvestmentTransaction,
       addIncome, updateIncome, deleteIncome,
+      addIncomeCategory, updateIncomeCategory, deleteIncomeCategory,
     }}>
       {children}
     </StoreContext.Provider>
