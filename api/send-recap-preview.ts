@@ -150,10 +150,14 @@ function buildRecapPreviewEmail(data: any) {
         <h2 style="font-size:18px; margin-bottom:10px;">Despesas por categoria</h2>
         <ul style="padding-left:18px; margin:0;">
           ${Object.entries(categoryTotals)
-            .sort(([, a], [, b]) => b - a)
+            .sort(([, a], [, b]) => {
+              const numA = typeof a === "number" ? a : 0;
+              const numB = typeof b === "number" ? b : 0;
+              return numB - numA;
+            })
             .map(
               ([category, amount]) =>
-                `<li style="margin-bottom:6px;"><strong>${escapeHtml(category)}</strong>: ${currency.format(amount)}</li>`,
+                `<li style="margin-bottom:6px;"><strong>${escapeHtml(String(category))}</strong>: ${currency.format(typeof amount === "number" ? amount : 0)}</li>`,
             )
             .join("")}
         </ul>
