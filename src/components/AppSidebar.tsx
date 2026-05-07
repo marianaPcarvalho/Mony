@@ -1,14 +1,13 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { Tags, PiggyBank, TrendingUp, CalendarDays, Home } from "lucide-react";
 
 export type ViewKey = "home" | "categories" | "savings" | "investments" | "annual";
 
-const items: { key: ViewKey; label: string; icon: any }[] = [
-  { key: "home", label: "Home", icon: Home },
-  { key: "categories", label: "Categories", icon: Tags },
-  { key: "savings", label: "Savings", icon: PiggyBank },
-  { key: "investments", label: "Investments", icon: TrendingUp },
-  { key: "annual", label: "Annual View", icon: CalendarDays },
+const items: { key: ViewKey; label: string; icon: string }[] = [
+  { key: "home", label: "Home", icon: "🏠" },
+  { key: "categories", label: "Categories", icon: "🏷️" },
+  { key: "savings", label: "Savings", icon: "🐷" },
+  { key: "investments", label: "Investments", icon: "📈" },
+  { key: "annual", label: "Annual View", icon: "🗓️" },
 ];
 
 export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v: ViewKey) => void }) {
@@ -20,7 +19,7 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
             💰
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="text-sm font-bold tracking-tight text-sidebar-foreground truncate">BudgetFlow</p>
+            <p className="text-sm font-bold tracking-tight text-sidebar-foreground truncate">Mony</p>
             <p className="text-xs text-sidebar-foreground/70 truncate">Hi, Mariana 👋</p>
           </div>
         </div>
@@ -36,7 +35,9 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
                     onClick={() => onSelect(item.key)}
                     tooltip={item.label}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <span aria-hidden="true" className="text-base leading-none">
+                      {item.icon}
+                    </span>
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
