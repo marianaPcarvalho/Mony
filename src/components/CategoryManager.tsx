@@ -46,6 +46,7 @@ export function CategoryManager() {
     setName(cat.name);
     setIcon(cat.icon);
     setBudget(String(cat.monthlyBudget));
+    setRecurring(!!cat.recurring);
     setOpen(true);
   };
 
