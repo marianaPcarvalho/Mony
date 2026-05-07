@@ -376,7 +376,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
   const triggerButton = (
     <Button onClick={() => fileRef.current?.click()} disabled={loading} size={variant === "compact" ? "sm" : "default"} className="gap-2">
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : meta.lastFileName ? <RefreshCw className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-      {loading ? "Analyzing…" : meta.lastFileName ? "Re-import PDF" : "Upload PDF"}
+      {loading ? "A analisar…" : meta.lastFileName ? "Reimportar PDF" : "Carregar PDF"}
     </Button>
   );
 
