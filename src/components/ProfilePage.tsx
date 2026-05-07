@@ -166,6 +166,8 @@ export function ProfilePage() {
           Re-upload your monthly statement here. Each month accepts one statement — re-importing replaces duplicate entries.
         </p>
         <BankStatementImport variant="compact" />
+      </Card>
+
 
       <Card className="glass-card p-6 space-y-4">
         <div className="flex items-center gap-2">
