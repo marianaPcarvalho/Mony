@@ -163,25 +163,16 @@ export function BankStatementImport() {
   };
 
   const handleCreateCategory = () => {
-    if (!newCatName.trim()) return;
-    const id = crypto.randomUUID();
+    if (!newCatName.trim() || newCatTargetIdx == null) return;
+    const name = newCatName.trim();
     addCategory({
-      // addCategory ignores any provided id and creates its own — so we pre-create here
-      name: newCatName.trim(),
+      name,
       icon: newCatIcon || "📦",
       color: "hsl(var(--chart-1))",
       monthlyBudget: 0,
       subCategories: [],
-    } as any);
-    // Find the newly added category by name (most recent match)
-    setTimeout(() => {
-      const cat = [...data.categories].reverse().find(c => c.name === newCatName.trim());
-      if (cat && parsed && newCatTargetIdx != null) {
-        const n = { ...parsed };
-        n.expenses[newCatTargetIdx]._categoryId = cat.id;
-        setParsed({ ...n });
-      }
-    }, 0);
+    });
+    setPendingAssign({ name, idx: newCatTargetIdx });
     setNewCatOpen(false);
   };
 
