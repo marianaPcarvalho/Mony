@@ -14,13 +14,14 @@ export function CategoryManager() {
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("📦");
   const [budget, setBudget] = useState("");
+  const [recurring, setRecurring] = useState(false);
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [subOpen, setSubOpen] = useState(false);
   const [subName, setSubName] = useState("");
   const [subIcon, setSubIcon] = useState("📦");
   const [subCatParent, setSubCatParent] = useState("");
 
-  const resetForm = () => { setName(""); setIcon("📦"); setBudget(""); setEditId(null); };
+  const resetForm = () => { setName(""); setIcon("📦"); setBudget(""); setRecurring(false); setEditId(null); };
 
   const handleSave = () => {
     if (!name || !budget) return;
