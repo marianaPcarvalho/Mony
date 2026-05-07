@@ -49,6 +49,23 @@ export async function updateSubscription(opts: { email?: string; enabled?: boole
   });
 }
 
+/** Send a preview recap email immediately. */
+export async function sendRecapPreview() {
+  const deviceToken = getDeviceToken();
+  const res = await fetch("/api/send-recap-preview", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ deviceToken }),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => null);
+    return { error: errorBody?.error ?? `Request failed with status ${res.status}` };
+  }
+
+  return res.json();
+}
+
 /** React hook: debounced cloud sync of `data`. Only syncs if user has subscribed. */
 export function useCloudSync(data: AppData) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
