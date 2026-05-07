@@ -450,22 +450,70 @@ export function BankStatementImport({ variant = "full" }: Props) {
     />
   );
 
+  const lastMonthStatusBadge = (
+    <div
+      className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border ${
+        prevMonthHasImport
+          ? "border-success/40 bg-success/10 text-success"
+          : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+      }`}
+      title={prevMonthHasImport && prevMonthImport?.fileName ? `File: ${prevMonthImport.fileName}` : undefined}
+    >
+      {prevMonthHasImport ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+      {prevMonthLabel}: {prevMonthHasImport ? "imported" : "missing"}
+    </div>
+  );
+
+  const reminderControls = (
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 px-2 text-xs gap-1"
+        onClick={toggleRemindersEnabled}
+        title={reminderSettings.enabled ? "Disable monthly reminders" : "Enable monthly reminders"}
+      >
+        {reminderSettings.enabled ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+        {reminderSettings.enabled ? "On" : "Off"}
+      </Button>
+      {reminderSettings.enabled && (
+        snoozedActive ? (
+          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" onClick={clearSnooze} title="Cancel snooze">
+            <X className="h-3.5 w-3.5" />
+            Snoozed to {new Date(reminderSettings.snoozedUntil!).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          </Button>
+        ) : (
+          <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => snoozeReminders(7)}>
+            Snooze 7d
+          </Button>
+        )
+      )}
+    </div>
+  );
+
   return (
     <>
       {variant === "compact" ? (
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="min-w-0">
-            {meta.lastFileName ? (
-              <p className="text-xs text-muted-foreground truncate">
-                Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
-                {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">No statement imported yet.</p>
-            )}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="min-w-0">
+              {meta.lastFileName ? (
+                <p className="text-xs text-muted-foreground truncate">
+                  Last: <span className="font-medium text-foreground">{meta.lastFileName}</span>
+                  {meta.lastImportedAt && <> · {new Date(meta.lastImportedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</>}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">No statement imported yet.</p>
+              )}
+            </div>
+            {triggerButton}
+            {fileInput}
           </div>
-          {triggerButton}
-          {fileInput}
+          <div className="flex items-center gap-2 flex-wrap">
+            {lastMonthStatusBadge}
+            {reminderControls}
+          </div>
         </div>
       ) : (
         <Card className="glass-card p-5">
@@ -481,6 +529,10 @@ export function BankStatementImport({ variant = "full" }: Props) {
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
             {fileInput}
+          </div>
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            {lastMonthStatusBadge}
+            {reminderControls}
           </div>
         </Card>
       )}
