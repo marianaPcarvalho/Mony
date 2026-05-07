@@ -131,60 +131,11 @@ export function BankStatementImport({ variant = "full" }: Props) {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(loadReminderSettings);
-
   const now = new Date();
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevMonthKey = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
-  const prevMonthLabel = prev.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-  const prevMonthImport = meta.byMonth?.[prevMonthKey];
-  const prevMonthHasImport = !!prevMonthImport;
-
-  // Reminder: if previous calendar month has no imported statement, nudge once per browser session.
-  useEffect(() => {
-    try {
-      const SESSION_KEY = "bank-import-reminder-session";
-      if (sessionStorage.getItem(SESSION_KEY)) return;
-      if (!reminderSettings.enabled) return;
-      if (reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date()) return;
-      if (prevMonthHasImport) return;
-
-      sonnerToast("Time to import last month's statement 📅", {
-        description: `You haven't uploaded a bank statement for ${prevMonthLabel} yet.`,
-        duration: 8000,
-        action: {
-          label: "Snooze 7d",
-          onClick: () => {
-            const until = new Date(); until.setDate(until.getDate() + 7);
-            const next = { ...reminderSettings, snoozedUntil: until.toISOString() };
-            setReminderSettings(next); saveReminderSettings(next);
-          },
-        },
-      });
-      sessionStorage.setItem(SESSION_KEY, "1");
-      const cur = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-      localStorage.setItem(REMINDER_KEY, cur);
-    } catch { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const snoozedActive = !!reminderSettings.snoozedUntil && new Date(reminderSettings.snoozedUntil) > new Date();
-
-  const toggleRemindersEnabled = () => {
-    const next = { ...reminderSettings, enabled: !reminderSettings.enabled, snoozedUntil: undefined };
-    setReminderSettings(next); saveReminderSettings(next);
-    toast({ title: next.enabled ? "Reminders enabled" : "Reminders disabled" });
-  };
-  const snoozeReminders = (days: number) => {
-    const until = new Date(); until.setDate(until.getDate() + days);
-    const next = { ...reminderSettings, enabled: true, snoozedUntil: until.toISOString() };
-    setReminderSettings(next); saveReminderSettings(next);
-    toast({ title: `Reminders snoozed for ${days} day${days === 1 ? "" : "s"}` });
-  };
-  const clearSnooze = () => {
-    const next = { ...reminderSettings, snoozedUntil: undefined };
-    setReminderSettings(next); saveReminderSettings(next);
-  };
+  const curMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const curMonthLabel = now.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
+  const curMonthImport = meta.byMonth?.[curMonthKey];
+  const curMonthHasImport = !!curMonthImport;
 
   useEffect(() => {
     if (!pendingAssign || !parsed) return;
