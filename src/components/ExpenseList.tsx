@@ -108,9 +108,9 @@ export function ExpenseList() {
             {/* Left: category, description, amount */}
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="exp-category">Category <span className="text-destructive">*</span></Label>
+                <Label htmlFor="exp-category">Categoria <span className="text-destructive">*</span></Label>
                 <Select value={catId} onValueChange={(v) => { setCatId(v); setSubCatId(""); }}>
-                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Choose a category" /></SelectTrigger>
+                  <SelectTrigger id="exp-category" className="h-9"><SelectValue placeholder="Escolhe uma categoria" /></SelectTrigger>
                   <SelectContent>
                     {data.categories.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
@@ -120,11 +120,11 @@ export function ExpenseList() {
               </div>
               {subCategories.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="exp-subcategory">Sub-category</Label>
+                  <Label htmlFor="exp-subcategory">Subcategoria</Label>
                   <Select value={subCatId || "none"} onValueChange={(v) => setSubCatId(v === "none" ? "" : v)}>
-                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="Optional" /></SelectTrigger>
+                    <SelectTrigger id="exp-subcategory" className="h-9"><SelectValue placeholder="Opcional" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">Nenhuma</SelectItem>
                       {subCategories.map(s => (
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                       ))}
@@ -133,11 +133,11 @@ export function ExpenseList() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="exp-desc">Description</Label>
-                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="e.g. Groceries at Continente" maxLength={120} />
+                <Label htmlFor="exp-desc">Descrição</Label>
+                <Input id="exp-desc" className="h-9" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={handleKeyDown} placeholder="ex.: Compras no Continente" maxLength={120} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="exp-amount">Amount <span className="text-destructive">*</span></Label>
+                <Label htmlFor="exp-amount">Valor <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">€</span>
                   <Input
@@ -163,9 +163,9 @@ export function ExpenseList() {
             {/* Right: calendar */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Date <span className="text-destructive">*</span></Label>
+                <Label>Data <span className="text-destructive">*</span></Label>
                 <span className="text-xs text-muted-foreground">
-                  {date ? format(parseISO(date), "PPP") : "Pick a day"}
+                  {date ? format(parseISO(date), "PPP") : "Escolhe um dia"}
                 </span>
               </div>
               <div className="rounded-md border border-border flex justify-center">
@@ -179,7 +179,7 @@ export function ExpenseList() {
               </div>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Update" : "Add"} Expense</Button>
+          <Button onClick={handleSave} disabled={!isValid} className="w-full mt-2">{editingId ? "Atualizar" : "Adicionar"} Despesa</Button>
         </DialogContent>
       </Dialog>
 
