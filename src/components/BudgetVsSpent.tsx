@@ -2,15 +2,7 @@ import { useStore } from "@/lib/store";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp } from "lucide-react";
-
-const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-6))",
-];
+import { buildCategoryPalette } from "@/lib/colors";
 
 export function BudgetVsSpent() {
   const { data, selectedMonth, getCategorySpent } = useStore();
@@ -18,6 +10,7 @@ export function BudgetVsSpent() {
   const fmt = (v: number) =>
     `€${v.toLocaleString("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const palette = buildCategoryPalette(data.categories.length);
   const rows = data.categories.map((c, i) => {
     const spent = getCategorySpent(c.id, selectedMonth);
     const budget = c.monthlyBudget || 0;
@@ -31,7 +24,7 @@ export function BudgetVsSpent() {
       budget,
       pct,
       over,
-      color: COLORS[i % COLORS.length],
+      color: palette[i] ?? `hsl(${(i * 53) % 360}, 70%, 52%)`,
     };
   });
 

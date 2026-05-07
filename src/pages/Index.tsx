@@ -35,8 +35,8 @@ const Index = () => {
             <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
               {view === "home" && (
                 <>
-                  <HomeHero />
                   <BankStatementImport />
+                  <HomeHero />
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                     <IncomeList />
                     <ExpenseList />
