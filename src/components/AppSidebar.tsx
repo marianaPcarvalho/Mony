@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Tags, PiggyBank, TrendingUp, CalendarDays, Home, UserCircle2 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import monyLogo from "@/assets/mony-logo.png";
 
 export type ViewKey = "home" | "categories" | "savings" | "investments" | "annual" | "profile";
 
@@ -33,13 +34,13 @@ export function AppSidebar({ active, onSelect }: { active: ViewKey; onSelect: (v
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2.5 px-1 py-1.5">
-          <div
-            className="h-9 w-9 rounded-xl flex items-center justify-center text-base font-extrabold flex-shrink-0 shadow-lg"
-            style={{ background: "var(--gradient-brand)", color: "hsl(var(--primary-foreground))" }}
-            aria-hidden
-          >
-            M
-          </div>
+          <img
+            src={monyLogo}
+            alt="MONY logo"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-xl object-contain flex-shrink-0 bg-white shadow-lg p-1"
+          />
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="text-base font-extrabold tracking-tight text-sidebar-foreground truncate font-display">MONY</p>
             <p className="text-xs text-sidebar-foreground/70 truncate">Olá, {profile.name} ✨</p>
