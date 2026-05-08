@@ -32,7 +32,7 @@ const defaultProfile: UserProfile = {
   defaultSalary: 3000,
   notifications: {
     budgetAlerts: true,
-    monthlySummary: true,
+    
     savingsReminders: false,
   },
 };
