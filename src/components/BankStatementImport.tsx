@@ -450,7 +450,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-foreground">Importar extrato bancário</h3>
-                <p className="text-xs text-muted-foreground">Carrega o PDF mensal — a MONY lê e organiza por ti.</p>
+                <p className="text-xs text-muted-foreground">Carrega o extrato mensal (PDF ou SVG) — a MONY lê e organiza por ti.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
