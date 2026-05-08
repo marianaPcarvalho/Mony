@@ -14,15 +14,16 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { pdfBase64, categories } = await req.json() as {
-      pdfBase64: string;
+    const { pdfBase64, svgContent, categories } = await req.json() as {
+      pdfBase64?: string;
+      svgContent?: string;
       categories: CategoryHint[];
     };
-    if (!pdfBase64) throw new Error("pdfBase64 is required");
+    if (!pdfBase64 && !svgContent) throw new Error("pdfBase64 or svgContent is required");
 
     const catList = (categories ?? []).map(c => `- ${c.id} :: ${c.icon} ${c.name}`).join("\n");
 
-    const systemPrompt = `You are Mony, a financial assistant. The user uploads a monthly bank statement PDF.
+    const systemPrompt = `You are Mony, a financial assistant. The user uploads a monthly bank statement (PDF or SVG).
 Extract every transaction. Classify each as either an "expense" (money out) or "income" (money in).
 For expenses, suggest the best matching category id from this user's categories:
 ${catList}
@@ -85,13 +86,18 @@ If none fits well, set categoryId to null. Detect the user's main salary deposit
         model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Extract all transactions from this monthly bank statement." },
-              { type: "file", file: { filename: "statement.pdf", file_data: `data:application/pdf;base64,${pdfBase64}` } },
-            ],
-          },
+          pdfBase64
+            ? {
+                role: "user",
+                content: [
+                  { type: "text", text: "Extract all transactions from this monthly bank statement." },
+                  { type: "file", file: { filename: "statement.pdf", file_data: `data:application/pdf;base64,${pdfBase64}` } },
+                ],
+              }
+            : {
+                role: "user",
+                content: `Extract all transactions from this monthly bank statement provided as SVG markup. Read the visible text content (including tables) and ignore styling.\n\n<svg-statement>\n${svgContent}\n</svg-statement>`,
+              },
         ],
         tools,
         tool_choice: { type: "function", function: { name: "submit_statement" } },

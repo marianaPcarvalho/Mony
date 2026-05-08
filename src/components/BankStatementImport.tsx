@@ -166,12 +166,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
       toast({ title: "Nenhum ficheiro selecionado", variant: "destructive" });
       return;
     }
-    if (file.type !== "application/pdf") {
-      toast({ title: "Apenas PDF", description: "Carrega um extrato bancário em PDF.", variant: "destructive" });
+    const isSvg = file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf && !isSvg) {
+      toast({ title: "Formato não suportado", description: "Carrega um extrato em PDF ou SVG.", variant: "destructive" });
       return;
     }
     if (file.size === 0) {
-      toast({ title: "Ficheiro vazio", description: "O PDF selecionado parece estar vazio.", variant: "destructive" });
+      toast({ title: "Ficheiro vazio", description: "O ficheiro selecionado parece estar vazio.", variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -180,16 +182,25 @@ export function BankStatementImport({ variant = "full" }: Props) {
     }
     setLoading(true);
     try {
-      const pdfBase64 = await fileToBase64(file).catch(() => {
-        throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
-      });
-      if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
+      const body: Record<string, unknown> = {
+        categories: data.categories.map(c => ({ id: c.id, name: c.name, icon: c.icon })),
+      };
+      if (isSvg) {
+        const svgContent = await file.text().catch(() => {
+          throw new Error("Não foi possível ler o SVG.");
+        });
+        if (!svgContent.trim()) throw new Error("O SVG parece estar vazio.");
+        body.svgContent = svgContent;
+      } else {
+        const pdfBase64 = await fileToBase64(file).catch(() => {
+          throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
+        });
+        if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
+        body.pdfBase64 = pdfBase64;
+      }
 
       const { data: result, error } = await supabase.functions.invoke("parse-bank-statement", {
-        body: {
-          pdfBase64,
-          categories: data.categories.map(c => ({ id: c.id, name: c.name, icon: c.icon })),
-        },
+        body,
       });
       if (error) {
         const msg = (error as any)?.message ?? "";
@@ -376,7 +387,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
   const triggerButton = (
     <Button onClick={() => fileRef.current?.click()} disabled={loading} size={variant === "compact" ? "sm" : "default"} className="gap-2">
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : meta.lastFileName ? <RefreshCw className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-      {loading ? "A analisar…" : meta.lastFileName ? "Reimportar PDF" : "Carregar PDF"}
+      {loading ? "A analisar…" : meta.lastFileName ? "Reimportar extrato" : "Carregar extrato"}
     </Button>
   );
 
@@ -384,7 +395,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
     <input
       ref={fileRef}
       type="file"
-      accept="application/pdf"
+      accept="application/pdf,image/svg+xml,.pdf,.svg"
       className="hidden"
       onChange={e => e.target.files?.[0] && onFileChange(e.target.files[0])}
     />
@@ -439,7 +450,7 @@ export function BankStatementImport({ variant = "full" }: Props) {
               </div>
               <div className="min-w-0">
                 <h3 className="font-semibold text-foreground">Importar extrato bancário</h3>
-                <p className="text-xs text-muted-foreground">Carrega o PDF mensal — a MONY lê e organiza por ti.</p>
+                <p className="text-xs text-muted-foreground">Carrega o extrato mensal (PDF ou SVG) — a MONY lê e organiza por ti.</p>
               </div>
             </div>
             <div className="flex items-center gap-2">{triggerButton}</div>
