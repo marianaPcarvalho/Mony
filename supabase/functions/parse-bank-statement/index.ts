@@ -14,11 +14,12 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { pdfBase64, categories } = await req.json() as {
-      pdfBase64: string;
+    const { pdfBase64, svgContent, categories } = await req.json() as {
+      pdfBase64?: string;
+      svgContent?: string;
       categories: CategoryHint[];
     };
-    if (!pdfBase64) throw new Error("pdfBase64 is required");
+    if (!pdfBase64 && !svgContent) throw new Error("pdfBase64 or svgContent is required");
 
     const catList = (categories ?? []).map(c => `- ${c.id} :: ${c.icon} ${c.name}`).join("\n");
 
