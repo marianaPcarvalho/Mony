@@ -152,7 +152,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth());
 
   useEffect(() => { saveData(data); }, [data]);
-  useCloudSync(data);
+  
 
   const update = useCallback((fn: (d: AppData) => AppData) => {
     setData(prev => fn(prev));
