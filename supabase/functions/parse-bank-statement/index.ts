@@ -86,13 +86,18 @@ If none fits well, set categoryId to null. Detect the user's main salary deposit
         model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Extract all transactions from this monthly bank statement." },
-              { type: "file", file: { filename: "statement.pdf", file_data: `data:application/pdf;base64,${pdfBase64}` } },
-            ],
-          },
+          pdfBase64
+            ? {
+                role: "user",
+                content: [
+                  { type: "text", text: "Extract all transactions from this monthly bank statement." },
+                  { type: "file", file: { filename: "statement.pdf", file_data: `data:application/pdf;base64,${pdfBase64}` } },
+                ],
+              }
+            : {
+                role: "user",
+                content: `Extract all transactions from this monthly bank statement provided as SVG markup. Read the visible text content (including tables) and ignore styling.\n\n<svg-statement>\n${svgContent}\n</svg-statement>`,
+              },
         ],
         tools,
         tool_choice: { type: "function", function: { name: "submit_statement" } },
