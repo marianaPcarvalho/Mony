@@ -166,12 +166,14 @@ export function BankStatementImport({ variant = "full" }: Props) {
       toast({ title: "Nenhum ficheiro selecionado", variant: "destructive" });
       return;
     }
-    if (file.type !== "application/pdf") {
-      toast({ title: "Apenas PDF", description: "Carrega um extrato bancário em PDF.", variant: "destructive" });
+    const isSvg = file.type === "image/svg+xml" || file.name.toLowerCase().endsWith(".svg");
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf && !isSvg) {
+      toast({ title: "Formato não suportado", description: "Carrega um extrato em PDF ou SVG.", variant: "destructive" });
       return;
     }
     if (file.size === 0) {
-      toast({ title: "Ficheiro vazio", description: "O PDF selecionado parece estar vazio.", variant: "destructive" });
+      toast({ title: "Ficheiro vazio", description: "O ficheiro selecionado parece estar vazio.", variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -180,16 +182,25 @@ export function BankStatementImport({ variant = "full" }: Props) {
     }
     setLoading(true);
     try {
-      const pdfBase64 = await fileToBase64(file).catch(() => {
-        throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
-      });
-      if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
+      const body: Record<string, unknown> = {
+        categories: data.categories.map(c => ({ id: c.id, name: c.name, icon: c.icon })),
+      };
+      if (isSvg) {
+        const svgContent = await file.text().catch(() => {
+          throw new Error("Não foi possível ler o SVG.");
+        });
+        if (!svgContent.trim()) throw new Error("O SVG parece estar vazio.");
+        body.svgContent = svgContent;
+      } else {
+        const pdfBase64 = await fileToBase64(file).catch(() => {
+          throw new Error("Não foi possível ler o ficheiro. Guarda o PDF novamente e tenta outra vez.");
+        });
+        if (!pdfBase64) throw new Error("O ficheiro parece estar vazio.");
+        body.pdfBase64 = pdfBase64;
+      }
 
       const { data: result, error } = await supabase.functions.invoke("parse-bank-statement", {
-        body: {
-          pdfBase64,
-          categories: data.categories.map(c => ({ id: c.id, name: c.name, icon: c.icon })),
-        },
+        body,
       });
       if (error) {
         const msg = (error as any)?.message ?? "";
