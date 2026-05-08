@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     const catList = (categories ?? []).map(c => `- ${c.id} :: ${c.icon} ${c.name}`).join("\n");
 
-    const systemPrompt = `You are Mony, a financial assistant. The user uploads a monthly bank statement PDF.
+    const systemPrompt = `You are Mony, a financial assistant. The user uploads a monthly bank statement (PDF or SVG).
 Extract every transaction. Classify each as either an "expense" (money out) or "income" (money in).
 For expenses, suggest the best matching category id from this user's categories:
 ${catList}
