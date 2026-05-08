@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { AppData, Category, Expense, MonthlyConfig, YearlyPlan, SavingsGoal, SubCategory, SavingsFundEntry, UserProfile, Investment, InvestmentTransaction, Income, IncomeCategory } from "./types";
-import { useCloudSync } from "./cloudSync";
+
 
 const STORAGE_KEY = "budget-app-data";
 
