@@ -78,7 +78,6 @@ export interface UserProfile {
   defaultSalary: number;
   notifications: {
     budgetAlerts: boolean;
-    monthlySummary: boolean;
     savingsReminders: boolean;
   };
 }
